@@ -1579,95 +1579,7 @@ async function replyOnComment(req , res){
 // }
 
 
-// async function storePost(req, res) {
-//   try {
-//     // POST_UPLOAD_DIR
-//     const user_id = req.user.userId; // extrcting from token
-
-//     const {
-//       is_public,
-//       description,
-//       buddies_id,
-//       tags,
-//       location,
-//       media_url,
-//       status,
-//       block_post,
-//     } = req.body;
-
-//     // Validate required fields
-//     if (!user_id ) {
-//       return res.status(400).json({
-//         message: "Missing required fields (user_id).",
-//       });
-//     }
-
-//     const postImages = [];
-
-//     if(media_url.length > 0) {
-//       for(let image of media_url) {
-//         // Extract Base64 part of the image
-//         const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-//         const extension = image.substring("data:image/".length, image.indexOf(";base64"));
-//         const fileName = `post_${Date.now()}.${extension}`;
-//         const filePath = path.join(POST_UPLOAD_DIR, fileName);
-//         const imagePath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
-//         postImages.push(imagePath);
-
-//         fs.writeFile(filePath, base64Data, { encoding: "base64" }, async(err) => {
-//           if (err) {
-//             return res.status(500).json({ error: "Failed to save image" });
-//           }
-//         });
-//         console.log("=====imagePath====>", imagePath);
-//       }
-//     }
-
-
-//     // Insert the post into the database
-//     const [result] = await pool.execute(
-//       `INSERT INTO posts (
-//         user_id,
-//         is_public,
-//         description,
-//         buddies_id,
-//         tag_id,
-//         location,
-//         media_url,
-//         status,
-//         block_post,
-//         created_at,
-//         updated_at
-//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-//       [
-//         user_id,
-//         is_public !== undefined ? is_public : 1, // Default to 1 (true) if not provided
-//         description || null, // Allow null for optional fields
-//         JSON.stringify(buddies_id) || [],
-//         JSON.stringify(tags) || [],
-//         location || null,
-//         JSON.stringify(postImages) || [], // Default to empty JSON array
-//         status || "active", // Default to 'active'
-//         block_post !== undefined ? block_post : 0, // Default to 0 (false)
-//       ]
-//     );
-
-    
-
-//     // Respond with success message
-//     return res.status(200).json({
-//       message: "Post created successfully.",
-//       post_id: result.insertId, // Return the ID of the newly created post
-//     });
-//   } catch (error) {
-//     console.error("Error in storing post:", error);
-//     return res.status(500).json({
-//       error: "Internal Server Error",
-//     });
-//   }
-// }
-
-async function storePost(req, res) {
+async function storePost1(req, res) {
   try {
     const user_id = req.user.userId; // Extracting user ID from the token
 
@@ -1755,6 +1667,119 @@ async function storePost(req, res) {
     });
   }
 }
+
+// to store the post
+async function storePost(req, res) {
+  try {
+    const user_id = req.user.userId; // Extracting user ID from the token
+
+    const {
+      is_public,
+      description,
+      buddies_id,
+      tags,
+      location,
+      media_url,
+      status,
+      block_post,
+    } = req.body;
+
+    // Validate required fields
+    if (!user_id) {
+      return res.status(400).json({
+        message: "Missing required fields (user_id).",
+      });
+    }
+
+    console.log("=====tags===>", tags)
+
+    // return res.status(404).json({error: 'not found'})
+
+    const postMedia = []; // Array to store media paths
+
+    // Validate and process media_url
+    if (Array.isArray(media_url) && media_url.length > 0) {
+      for (let media of media_url) {
+        try {
+          // Extract Base64 part of the media
+          const base64Data = media.replace(/^data:(.*);base64,/, "");
+          const mimeType = media.match(/^data:(.*);base64,/)[1]; // Extract MIME type
+          const extension = mimeType.split("/")[1]; // Extract file extension
+
+          // Generate file name and path
+          const fileName = `post_${Date.now()}.${extension}`;
+          const filePath = path.join(POST_UPLOAD_DIR, fileName);
+          const mediaPath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
+          postMedia.push(mediaPath);
+
+          // Write media to the server
+          await fs.promises.writeFile(filePath, base64Data, { encoding: "base64" });
+        } catch (err) {
+          console.error("Failed to save media:", err);
+          return res.status(500).json({ error: "Failed to save media." });
+        }
+      }
+    }
+
+    // Insert the post into the database
+    const [result] = await pool.execute(
+      `INSERT INTO posts (
+        user_id,
+        is_public,
+        description,
+        buddies_id,
+        tag_id,
+        location,
+        media_url,
+        status,
+        block_post,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        user_id,
+        is_public !== undefined ? is_public : 1, // Default to 1 (true) if not provided
+        description || null, // Allow null for optional fields
+        JSON.stringify(buddies_id) || [], // Serialize buddies_id as JSON
+        JSON.stringify(tags) || [], // Serialize tags as JSON
+        location || null, // Allow null for optional fields
+        JSON.stringify(postMedia) || [], // Serialize media paths as JSON
+        status || "active", // Default to 'active'
+        block_post !== undefined ? block_post : 0, // Default to 0 (false)
+      ]
+    );
+
+    const postId = result.insertId; // Get the newly created post ID
+
+    // Insert tags into the tags table
+    if (Array.isArray(tags) && tags.length > 0) {
+      for (const tag of tags) {
+        console.log("==tag==", tag)
+        try {
+          await pool.execute(
+            `INSERT INTO tags (post_id, name) VALUES (?, ?)`,
+            [postId, tag]
+          );
+        } catch (err) {
+          console.error("Failed to save tag:", err);
+          return res.status(500).json({ error: "Failed to save tags." });
+        }
+      }
+    }
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Post created successfully.",
+      post_id: result.insertId, // Return the ID of the newly created post
+    });
+  } catch (error) {
+    console.error("Error in storing post:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+   });
+ }
+}
+
 
 // delete comment
 async function   deleteComments(req, res) {
@@ -2481,6 +2506,59 @@ async function editComment(req, res) {
  }
 }
 
+// function to edit reply
+async function editReply(req, res) {
+  try {
+    const  user_id  = req.user.userId;
+    const { reply_id, content } = req.body;
+
+    // Validate the input
+    if (!reply_id || !user_id || !content) {
+      return res.status(400).json({
+        error: "All fields are required.",
+      });
+    }
+
+    // Check if the reply exists and belongs to the user
+    const [exist] = await pool.execute(
+      `SELECT * FROM comment_reply WHERE id = ? AND user_id = ?`,
+      [reply_id, user_id]
+    );
+
+    if (!exist.length) {
+      return res.status(404).json({
+        error: "Reply not found or you do not have permission to edit it.",
+      });
+    }
+
+    // Update the reply content
+    const [update] = await pool.execute(
+      `UPDATE comment_reply SET content = ? WHERE id = ? AND user_id = ?`,
+      [content, reply_id, user_id]
+    );
+
+    // Check if the update was successful
+    if (update.affectedRows === 0) {
+      return res.status(400).json({
+        error: "Failed to update reply. Please try again.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Reply updated successfully.",
+      data: {
+        reply_id,
+        content,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating reply:", error);
+    return res.status(500).json({
+      error: "Internal server error.",
+   });
+ }
+}
+
 module.exports = {
     allPosts,
     postWithlikes,
@@ -2508,5 +2586,6 @@ module.exports = {
     storeStoryView,
     deleteStory,
     shareStoryWithFriends,
-    editComment
+    editComment,
+    editReply
 }

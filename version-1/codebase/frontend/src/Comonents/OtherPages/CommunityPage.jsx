@@ -55,6 +55,7 @@ import StoryViewPageUser from "./AllStoriesPages/StoryViewPageUser";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import { useNavigate } from "react-router-dom";
 import StoryLoading from "./AllStoriesPages/StoryLoading";
+import { getAllTags } from "../../redux/slices/tagSlices";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();
@@ -423,6 +424,7 @@ const CommunityPage = () => {
       if (commentResult) {
         // console.log("=====commentResult===>", commentResult.message);
         await dispatch(getAllPosts());
+        await dispatch(getAllTags());  
         // await dispatch(getUserPosts());
         setPostData({
           description: "",
@@ -577,16 +579,18 @@ const CommunityPage = () => {
   //   }
   // };
 
-  const handleStoryCommentEnter = async (e, storyId, userId) => {
+  const handleStoryCommentEnter = async (e, storyId) => {
+    // console.log("=======storyOwnerId===>", storyOwnerId);
     if (e.key === "Enter" && !e.shiftKey) {
       try {
+        // console.log("====story", storyReply);
         // Retrieve the reply text from the ref
-        const replyText = storyReplyRef.current[storyId];
-        if (!replyText || replyText.trim() === "") return; // Prevent empty submissions
+        // const replyText = storyReplyRef.current[storyId];
+        // if (!replyText || replyText.trim() === "") return; // Prevent empty submissions
 
         const commentPayload = {
           story_id: storyId,
-          reply_text: replyText, // Use the ref value
+          reply_text: storyReply[storyId],
         };
 
         const replyResponse = await dispatch(
@@ -798,6 +802,7 @@ const CommunityPage = () => {
                         isOpen={isCreateSocialPopup}
                         // onClose={() => setIsCreateSocialPopup(false)}
                         onClose={() => handleStoryPopupClose()}
+                        closeThroughCancel = {() => setIsCreateSocialPopup(false)}
                       />
                     </div>
                   )}

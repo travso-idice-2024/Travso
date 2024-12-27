@@ -165,7 +165,7 @@ const StoryViewPageUser = ({
               type="text"
               placeholder="Add a comment"
               onKeyDown={(e) =>
-                handleStoryCommentEnter(e, story?.id, story?.user_id)
+                handleStoryCommentEnter(e, story?.id)
               }
               className="flex-1 bg-[#FFFFFFBF] focus:outline-none text-gray-600 rounded-[24px] md:w-[256px] h-[44px] placeholder:font-inter placeholder:font-medium placeholder:text-[14px] placeholder:text-[#212626] pl-9"
               value={storyReply[story?.id] || ""}

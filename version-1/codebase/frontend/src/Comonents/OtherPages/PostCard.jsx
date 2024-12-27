@@ -39,6 +39,7 @@ import foodieBadge from "../../assets/Badges/FO.svg";
 import luxuryTravelerBadge from "../../assets/Badges/LT.svg";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import { useNavigate } from "react-router-dom";
+import { getAllTags } from "../../redux/slices/tagSlices";
 
 const PostCard = () => {
   const dispatch = useDispatch();
@@ -267,6 +268,7 @@ const PostCard = () => {
       if (commentResult) {
         // await dispatch(getAllPosts());
         await dispatch(getUserPosts());
+        await dispatch(getAllTags());
         setPostData({
           description: "",
           location: "",

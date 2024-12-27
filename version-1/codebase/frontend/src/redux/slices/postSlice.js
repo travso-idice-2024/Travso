@@ -613,7 +613,7 @@ export const deleteStory = createAsyncThunk(
   'post/deleteStory',
   async (storyID,{ rejectWithValue }) => {
     try {
-      console.log("======storyID======",storyID);
+      // console.log("======storyID======",storyID);
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiUrl}/post/delete-story/${storyID}`, {
         method: 'POST',
@@ -642,7 +642,7 @@ export const deleteStory = createAsyncThunk(
 export const editComment = createAsyncThunk(
   'post/editComment',
   async (commentData,{ rejectWithValue }) => {
-    console.log("=====commentData====>", commentData);
+    // console.log("=====commentData====>", commentData);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiUrl}/post/edit-comment`, {
@@ -664,6 +664,38 @@ export const editComment = createAsyncThunk(
       return data;
     } catch (error) {
       console.log("error in editComment call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+// Thunk for editReply details
+export const editReply = createAsyncThunk(
+  'post/editReply',
+  async (replyData,{ rejectWithValue }) => {
+    // console.log("=====replyData====>", replyData);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/edit-reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(replyData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in editReply=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in editReply call thunk", error.message)
       return rejectWithValue(error.message);
     }
   }
@@ -945,6 +977,18 @@ const postSlice = createSlice({
         state.loading = false;
       })
       .addCase(editComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle editReply
+      .addCase(editReply.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editReply.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(editReply.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

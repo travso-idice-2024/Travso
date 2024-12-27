@@ -178,7 +178,7 @@ const Header = () => {
               .includes(searchedKeyword?.toLowerCase())
         );
       } else {
-        searchBuddies = userBuddies;
+        // searchBuddies = userBuddies;
       }
       setSearchResult(searchBuddies);
       setSearchAction("Buddies");
@@ -192,7 +192,7 @@ const Header = () => {
           item?.name?.toLowerCase().includes(searchedKeyword?.toLowerCase())
         );
       } else {
-        seacrhTags = allTags;
+        // seacrhTags = allTags;
       }
       setSearchResult(seacrhTags);
       setSearchAction("Hashtags");
@@ -213,7 +213,7 @@ const Header = () => {
             .includes(searchedKeyword?.toLowerCase())
         );
       } else {
-        searchPosts = allPosts;
+        // searchPosts = allPosts;
       }
       setSearchResult(searchPosts);
       setSearchAction("Post");
@@ -412,7 +412,7 @@ const Header = () => {
                                     {suggestion.user_name || "Test"}
                                   </p>
                                   <p className="text-sm text-gray-400">
-                                    {suggestion.total_followers}
+                                    {suggestion.total_followers} Followers
                                   </p>
                                 </div>
                               </div>
@@ -468,7 +468,7 @@ const Header = () => {
                           ))
                         ) : (
                           <>
-                            <p>No Data</p>
+                            <p>Try Searching</p>
                           </>
                         )}
                       </>
@@ -500,7 +500,7 @@ const Header = () => {
                           ))
                         ) : (
                           <>
-                            <p>No Data</p>
+                            <p>Try Searching</p>
                           </>
                         )}
                       </>
@@ -532,7 +532,7 @@ const Header = () => {
                           ))
                         ) : (
                           <>
-                            <p>No Data</p>
+                            <p>Try Searching</p>
                           </>
                         )}
                       </>
