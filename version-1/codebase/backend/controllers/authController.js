@@ -1,14 +1,16 @@
 const pool = require("../utils/db");
 const twilio = require("twilio");
 const bcrypt = require("bcrypt");
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 const generateOTP = require("../utils/generateOTP");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const fileUpload = require('express-fileupload');
+const fileUpload = require("express-fileupload");
 const sendMobileOTP = require("../utils/sendMobileOTP");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
+const axios = require("axios");
+const host = "http://localhost:5000";
 // const UPLOAD_DIR = require('../server/UPLOAD_DIR');
 
 const PROFILE_UPLOAD_DIR = path.join(__dirname, "../uploads/profile_img");
@@ -16,7 +18,8 @@ const COVER_UPLOAD_DIR = path.join(__dirname, "../uploads/cover_img");
 
 async function registerUser(req, res) {
   try {
-    const { fullName, gender, dob, state, city, email, mobileNumber } = req.body; 
+    const { fullName, gender, dob, state, city, email, mobileNumber } =
+      req.body;
 
     const [existingUsers] = await pool.execute(
       "SELECT * FROM users WHERE email = ? OR mobile_number = ?",
@@ -33,16 +36,12 @@ async function registerUser(req, res) {
       ) {
         if (existingUser.isOtpVerified === 0) {
           // console.log("yes i am in isOtpVerified")
-          return res
-            .status(200)
-            .json({ message: "User is registered" });
+          return res.status(200).json({ message: "User is registered" });
         } else {
-          return res
-            .status(400)
-            .json({
-              error:
-                "User already registered with the same email and mobile number",
-            });
+          return res.status(400).json({
+            error:
+              "User already registered with the same email and mobile number",
+          });
         }
       } else {
         return res
@@ -52,21 +51,20 @@ async function registerUser(req, res) {
     }
 
     // Split the full name into parts
-  const nameParts = fullName.trim().split(/\s+/); // Split by spaces, ignoring multiple spaces
+    const nameParts = fullName.trim().split(/\s+/); // Split by spaces, ignoring multiple spaces
 
-  let firstName = nameParts[0];
-  let lastName = nameParts.slice(1).join(' '); // Join the rest as last name
+    let firstName = nameParts[0];
+    let lastName = nameParts.slice(1).join(" "); // Join the rest as last name
 
-  // Handle edge cases where only one name is provided
-  if (nameParts.length === 1) {
-    lastName = ''; // If no last name, set to empty string
-  }
+    // Handle edge cases where only one name is provided
+    if (nameParts.length === 1) {
+      lastName = ""; // If no last name, set to empty string
+    }
 
     // generate otp
     const otp = await generateOTP();
     console.log("====otp====>", otp);
 
-    
     // Proceed with the insertion if no conflicts
     const valuesToInsert = [
       fullName,
@@ -79,9 +77,9 @@ async function registerUser(req, res) {
       otp,
       0,
       0,
-      'traveler',
+      "traveler",
       firstName,
-      lastName
+      lastName,
     ];
 
     // console.log("=====valuesToInsert===>", valuesToInsert);
@@ -90,7 +88,6 @@ async function registerUser(req, res) {
       "INSERT INTO users (full_name, gender, dob, state, city, email, mobile_number, otp, isOtpVerified, is_influencer, user_type, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       valuesToInsert
     );
-
 
     // Retrieve the inserted ID
     const insertedUserId = result.insertId;
@@ -110,12 +107,9 @@ async function registerUser(req, res) {
     //   .status(200)
     //   .json({ message: "User Registered Successfully", user: insertedUser });
 
-    return res
-      .status(200)
-      .json({ message: "User Registered Successfully" });
-
+    return res.status(200).json({ message: "User Registered Successfully" });
   } catch (error) {
-    console.log('error in register', error);
+    console.log("error in register", error);
     res.status(500).json({ message: "Internal server error" });
   }
   // res.status(200).json({'message': 'api working'})
@@ -172,7 +166,7 @@ async function sendOTP(req, res) {
 
     // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
     //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
-      
+
     //       console.log("===otpResult====>", otpResult);
 
     // if (result.success) {
@@ -181,11 +175,7 @@ async function sendOTP(req, res) {
     //   return res.status(500).json({ error: result.error });
     // }
 
-
-      return res
-      .status(200)
-      .json({ message: "OTP sent successfully" });
-    
+    return res.status(200).json({ message: "OTP sent successfully" });
   } catch (err) {
     console.log("error in catch part send otp", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -260,67 +250,65 @@ async function verifyOTP(req, res) {
 
 async function resendOTP(req, res) {
   const { email, mobileNumber } = req.body;
-    try {
+  try {
+    // find user by mobile number and email
+    const [user] = await pool.execute(
+      "SELECT * FROM users WHERE email = ? AND mobile_number = ?",
+      [email, mobileNumber]
+    );
 
-        // find user by mobile number and email
-        const [user] = await pool.execute(
-            "SELECT * FROM users WHERE email = ? AND mobile_number = ?",
-            [email, mobileNumber]
-        );
-  
-      if (user.length === 0) {
-        res.status(404).json({ error: "No User Found" });
-        return;
-      }
-  
-      if (user[0].isOtpVerified !== 0 ) {
-        return res.status(409).json({ error: "User is already registered" });
-      }
-
-        const otp = await generateOTP();
-
-        const otpSentResult = await sendMobileOTP(otp, mobileNumber);
-
-        // if otp sent succesfully,  commented till testing
-          // if (otpSentResult.success) {
-          //   // Update OTP in the database
-          //       const [result] = await pool.execute(
-          //         "UPDATE users SET otp = ? WHERE id = ? AND email = ? AND mobile_number = ?",
-          //         [otp, user[0].id, email, mobileNumber]
-          //     );
-
-          //     // Validate if the update was successful
-          //     if (result.affectedRows === 0) {
-          //         return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
-          //     }
-          //   return res.status(200).json({ message: otpSentResult.message });
-          // } else {
-          //   return res.status(500).json({ error: otpSentResult.error });
-          // }
-
-
-        // Update OTP in the database
-        const [result] = await pool.execute(
-            "UPDATE users SET otp = ? WHERE id = ? AND email = ? AND mobile_number = ?",
-            [otp, user[0].id, email, mobileNumber]
-        );
-
-        // Validate if the update was successful
-        if (result.affectedRows === 0) {
-            return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
-        }
-
-        // Respond with success
-        return res.status(200).json({ message: "OTP resent successfully" });
-
-    } catch (err) {
-        console.log("error in catch part resend otp", err);
-        res.status(500).json({ error: "Internal Server Error" });
+    if (user.length === 0) {
+      res.status(404).json({ error: "No User Found" });
+      return;
     }
+
+    if (user[0].isOtpVerified !== 0) {
+      return res.status(409).json({ error: "User is already registered" });
+    }
+
+    const otp = await generateOTP();
+
+    const otpSentResult = await sendMobileOTP(otp, mobileNumber);
+
+    // if otp sent succesfully,  commented till testing
+    // if (otpSentResult.success) {
+    //   // Update OTP in the database
+    //       const [result] = await pool.execute(
+    //         "UPDATE users SET otp = ? WHERE id = ? AND email = ? AND mobile_number = ?",
+    //         [otp, user[0].id, email, mobileNumber]
+    //     );
+
+    //     // Validate if the update was successful
+    //     if (result.affectedRows === 0) {
+    //         return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
+    //     }
+    //   return res.status(200).json({ message: otpSentResult.message });
+    // } else {
+    //   return res.status(500).json({ error: otpSentResult.error });
+    // }
+
+    // Update OTP in the database
+    const [result] = await pool.execute(
+      "UPDATE users SET otp = ? WHERE id = ? AND email = ? AND mobile_number = ?",
+      [otp, user[0].id, email, mobileNumber]
+    );
+
+    // Validate if the update was successful
+    if (result.affectedRows === 0) {
+      return res
+        .status(500)
+        .json({ error: "Failed to update OTP. Please try again later." });
+    }
+
+    // Respond with success
+    return res.status(200).json({ message: "OTP resent successfully" });
+  } catch (err) {
+    console.log("error in catch part resend otp", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }
 
 async function finalSignUp(req, res) {
-
   try {
     const {
       city,
@@ -343,7 +331,11 @@ async function finalSignUp(req, res) {
 
     if (existingUsers.length > 0) {
       // If a user with the same username exists, return an error
-      return res.status(400).json({ error: "Username already exists. Please choose a different username." });
+      return res
+        .status(400)
+        .json({
+          error: "Username already exists. Please choose a different username.",
+        });
     }
 
     // Hash the password
@@ -380,8 +372,16 @@ async function finalSignUp(req, res) {
       [email, mobileNumber]
     );
 
-    const token = await jwt.sign({ userId: updatedUser[0].id, email: updatedUser[0].email, userName: updatedUser[0].user_name }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
-    
+    const token = await jwt.sign(
+      {
+        userId: updatedUser[0].id,
+        email: updatedUser[0].email,
+        userName: updatedUser[0].user_name,
+      },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
     const userData = {
       id: updatedUser[0].id,
       dob: updatedUser[0].dob,
@@ -397,9 +397,27 @@ async function finalSignUp(req, res) {
       gender: updatedUser[0].gender,
       full_name: updatedUser[0].full_name,
     };
-    return res.status(200).json({ message: "User updated successfully", token, data: userData });
 
- 
+    //insert user for chat module
+    //26-12-2024
+    axios
+      .post(`${host}/api/auth/register`, {
+        username: userName,
+        email: email,
+        password: password,
+        user_id: updatedUser[0].id
+      })
+      .then((response) => {
+        console.log("Response:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error:", error.message);
+      });
+    //26-12-2024
+    //end
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", token, data: userData });
   } catch (err) {
     console.error("Error in catch part final update", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -417,26 +435,26 @@ async function getFollowersCount1(req, res) {
     // Navigate to Instagram profile URL
     // const url = 'https://www.instagram.com/nikhil__patankar/';
     const url = smlink1;
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.goto(url, { waitUntil: "domcontentloaded" });
 
     // Extract meta tag content (e.g., followers, following, posts)
     const data = await page.evaluate(() => {
-        const metaTags = {};
-        document.querySelectorAll('meta').forEach(tag => {
-            if (tag.getAttribute('property')) {
-                metaTags[tag.getAttribute('property')] = tag.getAttribute('content');
-            }
-        });
-        return metaTags;
+      const metaTags = {};
+      document.querySelectorAll("meta").forEach((tag) => {
+        if (tag.getAttribute("property")) {
+          metaTags[tag.getAttribute("property")] = tag.getAttribute("content");
+        }
+      });
+      return metaTags;
     });
 
     // Extract followers count from the og:description meta tag
-    const description = data['og:description'] || '';
+    const description = data["og:description"] || "";
     const followersMatch = description.match(/(\d+) Followers/); // Match the number of followers
 
     let followersCount = null;
     if (followersMatch && followersMatch[1]) {
-        followersCount = followersMatch[1]; // Get the first capturing group
+      followersCount = followersMatch[1]; // Get the first capturing group
     }
 
     // Close the browser
@@ -448,23 +466,23 @@ async function getFollowersCount1(req, res) {
     );
 
     // set user as influencer if followers are more than 3000 otherwise traveler
-    if(followersCount > 3000) {
+    if (followersCount > 3000) {
       // update user type to influencer
       const [updateResult] = await pool.execute(
         "UPDATE users SET is_influencer = ?, user_type = ?, smlink1 = ? WHERE id = ? AND email = ? AND mobile_number = ?",
-        [1, 'influencer', smlink1 ,user[0].id, email, mobileNumber]
+        [1, "influencer", smlink1, user[0].id, email, mobileNumber]
       );
 
       if (updateResult.affectedRows === 0) {
         return res.status(404).json({ message: "User not found" });
       }
-    
+
       return res.status(200).json({ setInfluencer: true });
     } else {
-     // update user type to traveler
+      // update user type to traveler
       const [updateResult] = await pool.execute(
         "UPDATE users SET is_influencer = ?, user_type = ?, smlink1 = ? WHERE id = ? AND email = ? AND mobile_number = ?",
-        [0, 'traveler', smlink1, user[0].id, email, mobileNumber]
+        [0, "traveler", smlink1, user[0].id, email, mobileNumber]
       );
 
       if (updateResult.affectedRows === 0) {
@@ -492,23 +510,22 @@ async function getFollowersCount(req, res) {
     const { smlink1, smlink2, mobileNumber, email } = req.body;
     // console.log("====smlink1====>", smlink1);
 
-      const [user] = await pool.execute(
-        "SELECT * FROM users WHERE email = ? OR mobile_number = ?",
-        [email, mobileNumber]
-      );
-  
-      // update user type to influencer
-      const [updateResult] = await pool.execute(
-        "UPDATE users SET is_influencer = ?, user_type = ?, smlink1 = ?, smlink2 = ?, WHERE id = ? AND email = ? AND mobile_number = ?",
-        [1, 'influencer', smlink1, smlink2 ,user[0].id, email, mobileNumber]
-      );
+    const [user] = await pool.execute(
+      "SELECT * FROM users WHERE email = ? OR mobile_number = ?",
+      [email, mobileNumber]
+    );
 
-      if (updateResult.affectedRows === 0) {
-        return res.status(404).json({ message: "User not found" });
-      }
-    
-      return res.status(200).json({ setInfluencer: true });
+    // update user type to influencer
+    const [updateResult] = await pool.execute(
+      "UPDATE users SET is_influencer = ?, user_type = ?, smlink1 = ?, smlink2 = ?, WHERE id = ? AND email = ? AND mobile_number = ?",
+      [1, "influencer", smlink1, smlink2, user[0].id, email, mobileNumber]
+    );
 
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ setInfluencer: true });
 
     // Send extracted data as response
     // res.status(200).json({
@@ -523,13 +540,14 @@ async function getFollowersCount(req, res) {
   }
 }
 
-
 async function loginUser(req, res) {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: "username and password are required" });
+      return res
+        .status(400)
+        .json({ message: "username and password are required" });
     }
 
     const [user] = await pool.execute(
@@ -551,7 +569,11 @@ async function loginUser(req, res) {
     }
 
     // Generate JWT
-    const token = await jwt.sign({ userId: user[0].id, email: user[0].email, userName: user[0].user_name }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+    const token = await jwt.sign(
+      { userId: user[0].id, email: user[0].email, userName: user[0].user_name },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1d" }
+    );
 
     const [result] = await pool.execute(
       "UPDATE users SET is_online = ? WHERE id = ? AND email = ?",
@@ -562,8 +584,29 @@ async function loginUser(req, res) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    return res.status(200).json({ message: "Login successful", token, is_follow_selected: user[0].is_follow_selected });
+    //call chat module login api
+    //26-12-2024
+    // const { data }  = await axios
+    //   .post(`${host}/api/auth/login`, {
+    //     username: username,
+    //     password: password
+    //   });
 
+    //   const externalApiResponse  = data.user;
+
+     
+    //26-12-2024
+    //end
+    //console.log("userdata", externalApiResponse.user);
+
+
+    return res
+      .status(200)
+      .json({
+        message: "Login successful",
+        token,
+        is_follow_selected: user[0].is_follow_selected
+      });
   } catch (err) {
     console.log("Error in catch part login api", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -603,16 +646,17 @@ async function sendEmailOTP(req, res) {
       text: `Your OTP code is ${otp}`,
     };
 
-
     // Send the email
-      const info = await transporter.sendMail(mailOptions);
-      console.log("Email sent: " + info.response);
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent: " + info.response);
 
-      // Validate if the email was sent successfully
-      // The receiving server returns a 250 response code when it has successfully processed an SMTP command.
-      if (!info || !info.response.includes("250")) {
-        return res.status(500).json({ error: "Failed to send email. Please try again later." });
-      }
+    // Validate if the email was sent successfully
+    // The receiving server returns a 250 response code when it has successfully processed an SMTP command.
+    if (!info || !info.response.includes("250")) {
+      return res
+        .status(500)
+        .json({ error: "Failed to send email. Please try again later." });
+    }
 
     // Update OTP in the database
     const [result] = await pool.execute(
@@ -622,11 +666,12 @@ async function sendEmailOTP(req, res) {
 
     // Validate if the update was successful
     if (result.affectedRows === 0) {
-        return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
+      return res
+        .status(500)
+        .json({ error: "Failed to update OTP. Please try again later." });
     }
 
-    return res.status(200).json({ message: 'OTP sent successfully' });
-
+    return res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.log("Error in catch part send email otp api", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -651,39 +696,38 @@ async function sendOTPForgotPassword(req, res) {
 
     const otpSentResult = await sendMobileOTP(otp, mobileNumber);
 
-            // if otp sent succesfully,  commented till testing
-          // if (otpSentResult.success) {
-          //   // Update OTP in the database
-          //       const [result] = await pool.execute(
-          //         "UPDATE users SET otp = ? WHERE id = ? AND mobile_number = ?",
-          //         [otp, user[0].id, mobileNumber]
-          //     );
+    // if otp sent succesfully,  commented till testing
+    // if (otpSentResult.success) {
+    //   // Update OTP in the database
+    //       const [result] = await pool.execute(
+    //         "UPDATE users SET otp = ? WHERE id = ? AND mobile_number = ?",
+    //         [otp, user[0].id, mobileNumber]
+    //     );
 
-          //     // Validate if the update was successful
-          //     if (result.affectedRows === 0) {
-          //         return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
-          //     }
-          //   return res.status(200).json({ message: otpSentResult.message });
-          // } else {
-          //   return res.status(500).json({ error: otpSentResult.error });
-          // }
+    //     // Validate if the update was successful
+    //     if (result.affectedRows === 0) {
+    //         return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
+    //     }
+    //   return res.status(200).json({ message: otpSentResult.message });
+    // } else {
+    //   return res.status(500).json({ error: otpSentResult.error });
+    // }
 
+    // Update OTP in the database
+    const [result] = await pool.execute(
+      "UPDATE users SET otp = ? WHERE id = ? AND mobile_number = ?",
+      [otp, user[0].id, mobileNumber]
+    );
 
-        // Update OTP in the database
-        const [result] = await pool.execute(
-          "UPDATE users SET otp = ? WHERE id = ? AND mobile_number = ?",
-          [otp, user[0].id, mobileNumber]
-      );
+    // Validate if the update was successful
+    if (result.affectedRows === 0) {
+      return res
+        .status(500)
+        .json({ error: "Failed to update OTP. Please try again later." });
+    }
 
-      // Validate if the update was successful
-      if (result.affectedRows === 0) {
-          return res.status(500).json({ error: "Failed to update OTP. Please try again later." });
-      }
-
-      // Respond with success
-      return res.status(200).json({ message: "OTP resent successfully" });
-
-
+    // Respond with success
+    return res.status(200).json({ message: "OTP resent successfully" });
   } catch (error) {
     console.log("Error in catch part send mobile otp api", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -691,36 +735,35 @@ async function sendOTPForgotPassword(req, res) {
 }
 
 async function forgotPassVerify(req, res) {
-
   try {
-     const { mobileNumber, email, userName, otp } = req.body;
-     let user;
-     if(mobileNumber) {
+    const { mobileNumber, email, userName, otp } = req.body;
+    let user;
+    if (mobileNumber) {
       // console.log("in mobile block");
       [user] = await pool.execute(
         "SELECT * FROM users WHERE user_name = ? AND mobile_number = ?",
         [userName, mobileNumber]
       );
-     } else if(email) {
+    } else if (email) {
       // console.log("in email block");
       [user] = await pool.execute(
         "SELECT * FROM users WHERE user_name = ? AND email = ?",
         [userName, email]
       );
-     }
-  
-     // return if no user is found
-      if (user.length === 0) {
-        res.status(404).json({ error: "No User Found" });
-        return;
-      }
+    }
 
-      // OTP matches or not
-      if(otp === user[0].otp) {
-        return res.status(200).json({ message: 'OTP Verified Successfully'});
-      } else {
-        return res.status(400).json({ error: "Invalid OTP" });
-      }
+    // return if no user is found
+    if (user.length === 0) {
+      res.status(404).json({ error: "No User Found" });
+      return;
+    }
+
+    // OTP matches or not
+    if (otp === user[0].otp) {
+      return res.status(200).json({ message: "OTP Verified Successfully" });
+    } else {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
   } catch (error) {
     console.log("Error in catch part verify forgot password otp api", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -730,48 +773,44 @@ async function forgotPassVerify(req, res) {
 async function updatePassword(req, res) {
   try {
     const { mobileNumber, email, userName, password } = req.body;
-     let user;
-     if(mobileNumber) {
+    let user;
+    if (mobileNumber) {
       // console.log("in mobile block");
       [user] = await pool.execute(
         "SELECT * FROM users WHERE user_name = ? AND mobile_number = ?",
         [userName, mobileNumber]
       );
-     } else if(email) {
+    } else if (email) {
       // console.log("in email block");
       [user] = await pool.execute(
         "SELECT * FROM users WHERE user_name = ? AND email = ?",
         [userName, email]
       );
-     }
-  
-     // return if no user is found
-      if (user.length === 0) {
-        res.status(404).json({ error: "No User Found" });
-        return;
-      }
+    }
 
-      // Hash the password
-      const saltRounds = 10; // Adjust based on security needs
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // return if no user is found
+    if (user.length === 0) {
+      res.status(404).json({ error: "No User Found" });
+      return;
+    }
 
-      const [result] = await pool.execute(
-        `UPDATE users 
+    // Hash the password
+    const saltRounds = 10; // Adjust based on security needs
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const [result] = await pool.execute(
+      `UPDATE users 
                SET password = ?
                WHERE email = ? AND mobile_number = ?`,
-        [
-          hashedPassword,
-          user[0].email,
-          user[0].mobile_number
-        ]
-      );
-     
-      // Check if any rows were updated
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      [hashedPassword, user[0].email, user[0].mobile_number]
+    );
 
-      return res.status(200).json({ message: 'Password Updated Successfully' });
+    // Check if any rows were updated
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Password Updated Successfully" });
   } catch (error) {
     console.log("Error in catch part updatePassword api", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -789,21 +828,23 @@ async function getUserBuddies1(req, res) {
       [userId]
     );
 
-    const buddiesIds = buddies.map(buddy => buddy.buddies_id);
+    const buddiesIds = buddies.map((buddy) => buddy.buddies_id);
 
     if (buddiesIds.length === 0) {
       return res.status(404).json({ message: "No buddies found." });
     }
 
-     // Fetch details from users_table using the buddies_id
-    const placeholders = buddiesIds.map(() => '?').join(','); // Create placeholders for IN clause
+    // Fetch details from users_table using the buddies_id
+    const placeholders = buddiesIds.map(() => "?").join(","); // Create placeholders for IN clause
 
     const [buddiesDetails] = await pool.execute(
       `SELECT id, full_name, user_name, profile_image FROM users WHERE id IN (${placeholders})`,
       buddiesIds
     );
 
-    return res.status(200).json({ message: "Buddies fetched successfully", data: buddiesDetails});
+    return res
+      .status(200)
+      .json({ message: "Buddies fetched successfully", data: buddiesDetails });
   } catch (error) {
     console.log("Error in catch part getUserBuddies api", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -812,13 +853,11 @@ async function getUserBuddies1(req, res) {
 
 async function getUserBuddies(req, res) {
   try {
-    
     const userId = req.user.userId;
     const [buddies] = await pool.execute(
       `
       SELECT DISTINCT
         u.id,
-        u.badge,
         u.profile_image,
         u.full_name,
         u.user_name,
@@ -908,9 +947,7 @@ async function getUserBuddies(req, res) {
 //     console.log("Error in catch part getUserFollower api", error);
 //     return res.status(500).json({ error: "Internal Server Error" });
 //   }
-// } 
-
-
+// }
 
 // API to get user followers
 async function getUserFollower1(req, res) {
@@ -936,7 +973,7 @@ async function getUserFollower1(req, res) {
       [userId]
     );
 
-    const userFollowingIds = new Set(following.map((f) => f.follower_id)); 
+    const userFollowingIds = new Set(following.map((f) => f.follower_id));
     const placeholders = followingIds.map(() => "?").join(","); // Create placeholders for IN clause
 
     // Fetch followee details
@@ -951,26 +988,22 @@ async function getUserFollower1(req, res) {
       isMutual: userFollowingIds.has(followee.id),
     }));
 
-    return res
-      .status(200)
-      .json({
-        message: "Followers fetched successfully",
-        data: enrichedFollowees,
-      });
+    return res.status(200).json({
+      message: "Followers fetched successfully",
+      data: enrichedFollowees,
+    });
   } catch (error) {
     console.log("Error in catch part getUserFollower API", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
-async function getUserFollower(req , res){
-  
+async function getUserFollower(req, res) {
   try {
     const userId = req.user.userId;
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
-        u.badge,
         u.user_name,
         u.full_name,
         u.profile_image,
@@ -999,28 +1032,26 @@ async function getUserFollower(req , res){
         f.follower_id = u.id
       WHERE 
         f.followee_id = ?
-      ` ,[userId,userId,userId,userId ]
-    )
+      `,
+      [userId, userId, userId, userId]
+    );
 
     return res.status(200).json({
-      message:"followers fetched",
-      data:followers
+      message: "followers fetched",
+      data: followers,
     });
-    
   } catch (error) {
-    console.log("=====followeers====>",error)
+    console.log("=====followeers====>", error);
     return res.status(500).json({
-      error:"error followers fetched",
-
+      error: "error followers fetched",
     });
   }
 }
 
 async function toWhomUserFollows1(req, res) {
   try {
-
     const userId = req.user.userId;
-    
+
     // Fetch user to whom user follows
     const [userFollowing] = await pool.execute(
       "SELECT * FROM followers WHERE followee_id = ?",
@@ -1041,34 +1072,26 @@ async function toWhomUserFollows1(req, res) {
       followingIds
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Following fetched successfully",
-        data: followerDetail,
-      });
-
-
+    return res.status(200).json({
+      message: "Following fetched successfully",
+      data: followerDetail,
+    });
   } catch (error) {
     console.log("Error in catch part toWhomUserFollows API", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
-async function toWhomUserFollows(req , res){
-  
+async function toWhomUserFollows(req, res) {
   try {
-  
     const userId = req.user.userId;
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
-        u.badge,
         u.user_name,
         u.full_name,
         u.profile_image,
         u.cover_image,
-        u.description,
         u.is_influencer,
         EXISTS (
           SELECT 1 
@@ -1092,19 +1115,18 @@ async function toWhomUserFollows(req , res){
         f.followee_id = u.id
       WHERE 
         f.follower_id = ?
-      ` ,[userId,userId, userId,userId ]
-    )
+      `,
+      [userId, userId, userId, userId]
+    );
 
     return res.status(200).json({
-      message:"followee fetched",
-      data:followers
+      message: "followee fetched",
+      data: followers,
     });
-    
   } catch (error) {
-    console.log("=====followeers====>",error)
+    console.log("=====followeers====>", error);
     return res.status(500).json({
-      error:"error followee fetched",
-
+      error: "error followee fetched",
     });
   }
 }
@@ -1116,7 +1138,6 @@ const getUserDetails = async (req, res) => {
     // console.log("===userId===>", userId);
     // const { userId } = req.params;
 
-
     // Query to fetch user details
     const [rows] = await pool.query(
       "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge FROM users WHERE id = ?",
@@ -1127,34 +1148,25 @@ const getUserDetails = async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    return res.status(200).json({ message:'Profile Fetched', data: rows[0] });
+    return res.status(200).json({ message: "Profile Fetched", data: rows[0] });
   } catch (error) {
     console.error("Error in getUserDetails API", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-const updateUser = async(req, res) => {
+const updateUser = async (req, res) => {
   try {
     const userId = req.user.userId; // Assuming `id` is part of the token payload
     const { firstName, lastName, gender, city, description, badge } = req.body;
-  
+
     const fullName = `${firstName} ${lastName}`;
     // Update user in the database using email and mobile number
     const [updateResult] = await pool.execute(
       `UPDATE users 
              SET first_name = ?, last_name = ?, full_name = ?, city = ?, description = ?, gender = ?, badge = ?
              WHERE id = ?`,
-      [
-        firstName,
-        lastName,
-        fullName,
-        city,
-        description,
-        gender,
-        badge,
-        userId,
-      ]
+      [firstName, lastName, fullName, city, description, gender, badge, userId]
     );
 
     // Check if any rows were updated
@@ -1162,96 +1174,113 @@ const updateUser = async(req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-
-    return res.status(200).json({ message: 'Data Updated Successfully' });
+    return res.status(200).json({ message: "Data Updated Successfully" });
   } catch (error) {
     console.error("Error in updateUser API", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
 
 async function insertProfileImage(req, res) {
-
   try {
     // Assuming req.user contains the authenticated user details
     const userId = req.user.userId;
     const { image } = req.body;
 
-  if (!image) {
-    return res.status(400).json({ error: "No image provided" });
-  }
-
-  // Extract Base64 part of the image
-  const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-  const extension = image.substring("data:image/".length, image.indexOf(";base64"));
-  const fileName = `profile_${Date.now()}.${extension}`;
-  const filePath = path.join(PROFILE_UPLOAD_DIR, fileName);
-  const imagePath = `${process.env.APP_SERVER_URL}/uploads/profile_img/${fileName}`;
-  fs.writeFile(filePath, base64Data, { encoding: "base64" }, async(err) => {
-    if (err) {
-      return res.status(500).json({ error: "Failed to save image" });
+    if (!image) {
+      return res.status(400).json({ error: "No image provided" });
     }
 
-       const [result] = await pool.execute(
-        'UPDATE users SET profile_image = ? WHERE id = ?',
-         [imagePath, userId]
-       );
-    
-       // Check if the user was found and updated
-       if (result.affectedRows === 0) {
-         return res.status(404).json({ error: "User not found" });
-       }
+    // Extract Base64 part of the image
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const extension = image.substring(
+      "data:image/".length,
+      image.indexOf(";base64")
+    );
+    const fileName = `profile_${Date.now()}.${extension}`;
+    const filePath = path.join(PROFILE_UPLOAD_DIR, fileName);
+    const imagePath = `${process.env.APP_SERVER_URL}/uploads/profile_img/${fileName}`;
+    fs.writeFile(filePath, base64Data, { encoding: "base64" }, async (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to save image" });
+      }
 
-    // Save the file path or URL in the database (if needed)
-     res.status(201).json({ message: "Image uploaded and saved" });
-  });
+      const [result] = await pool.execute(
+        "UPDATE users SET profile_image = ? WHERE id = ?",
+        [imagePath, userId]
+      );
 
+      // Check if the user was found and updated
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Save the file path or URL in the database (if needed)
+      res.status(201).json({ message: "Image uploaded and saved" });
+    });
+
+    //insert profile image for chat sysytem
+    //26-12-2024
+
+    axios
+      .post(`${host}/api/auth/setavatar/${req.user.userId}`, {
+        image: imagePath,
+      })
+      .then((response) => {
+        console.log("Response:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error:", error.message);
+      });
+    //26/12-2024
+    //end
   } catch (error) {
     console.log("Error in insertProfileImage:", error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
 // for uploading cover image
 async function uploadCoverImage(req, res) {
-
   try {
     // Assuming req.user contains the authenticated user details
     const userId = req.user.userId;
     const { image } = req.body;
 
-  if (!image) {
-    return res.status(400).json({ error: "No image provided" });
-  }
-
-  // Extract Base64 part of the image
-  const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-  const extension = image.substring("data:image/".length, image.indexOf(";base64"));
-  const fileName = `profile_${Date.now()}.${extension}`;
-  const filePath = path.join(COVER_UPLOAD_DIR, fileName);
-  const imagePath = `${process.env.APP_SERVER_URL}/uploads/cover_img/${fileName}`;
-  fs.writeFile(filePath, base64Data, { encoding: "base64" }, async(err) => {
-    if (err) {
-      return res.status(500).json({ error: "Failed to save image" });
+    if (!image) {
+      return res.status(400).json({ error: "No image provided" });
     }
 
-       const [result] = await pool.execute(
-        'UPDATE users SET cover_image = ? WHERE id = ?',
-         [imagePath, userId]
-       );
-    
-       // Check if the user was found and updated
-       if (result.affectedRows === 0) {
-         return res.status(404).json({ error: "User not found" });
-       }
+    // Extract Base64 part of the image
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const extension = image.substring(
+      "data:image/".length,
+      image.indexOf(";base64")
+    );
+    const fileName = `profile_${Date.now()}.${extension}`;
+    const filePath = path.join(COVER_UPLOAD_DIR, fileName);
+    const imagePath = `${process.env.APP_SERVER_URL}/uploads/cover_img/${fileName}`;
+    fs.writeFile(filePath, base64Data, { encoding: "base64" }, async (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to save image" });
+      }
 
-    // Save the file path or URL in the database (if needed)
-     res.status(201).json({ message: "Image uploaded and saved" });
-  });
+      const [result] = await pool.execute(
+        "UPDATE users SET cover_image = ? WHERE id = ?",
+        [imagePath, userId]
+      );
 
+      // Check if the user was found and updated
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Save the file path or URL in the database (if needed)
+      res.status(201).json({ message: "Image uploaded and saved" });
+    });
   } catch (error) {
     console.log("Error in insertProfileImage:", error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -1262,25 +1291,26 @@ async function removeProfileImage(req, res) {
 
     // Execute SQL query to update profile_image
     const [result] = await pool.execute(
-      'UPDATE users SET profile_image = ? WHERE id = ?',
+      "UPDATE users SET profile_image = ? WHERE id = ?",
       [null, userId]
     );
 
-    if(result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found'});
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    return res.status(200).json({message:'Profile image removed successfully'});
+    return res
+      .status(200)
+      .json({ message: "Profile image removed successfully" });
   } catch (error) {
     console.log("Error removing profile image:", error); // Log actual error
     return res.status(500).json({ error: "Internal server error" });
   }
 }
 
-async function getallUsers(req , res){
+async function getallUsers(req, res) {
   try {
     const [allusers] = await pool.execute(
-
       `SELECT 
               u.id,
               u.full_name,
@@ -1293,16 +1323,16 @@ async function getallUsers(req , res){
         WHERE
               is_active;`
     );
-   
+
     return res.status(200).json({
-      message:"All users Fetched",
-      data: allusers
-    })
+      message: "All users Fetched",
+      data: allusers,
+    });
   } catch (error) {
-    console.log("==error==getallUsers=>", error)
+    console.log("==error==getallUsers=>", error);
     return res.status(500).json({
-      error: "Internal Server Error"
-    })
+      error: "Internal Server Error",
+    });
   }
 }
 
@@ -1312,15 +1342,17 @@ async function removeCoverImage(req, res) {
 
     // Execute SQL query to update profile_image
     const [result] = await pool.execute(
-      'UPDATE users SET cover_image = ? WHERE id = ?',
+      "UPDATE users SET cover_image = ? WHERE id = ?",
       [null, userId]
     );
 
-    if(result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found'});
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    return res.status(200).json({message:'Cover image removed successfully'});
+    return res
+      .status(200)
+      .json({ message: "Cover image removed successfully" });
   } catch (error) {
     console.log("Error removing profile image:", error); // Log actual error
     return res.status(500).json({ error: "Internal server error" });
@@ -1328,11 +1360,10 @@ async function removeCoverImage(req, res) {
 }
 
 async function logOut(req, res) {
-
   const userId = req.user.userId;
 
   if (!userId) {
-    return res.status(400).json({ error: 'User ID is required.' });
+    return res.status(400).json({ error: "User ID is required." });
   }
 
   try {
@@ -1342,13 +1373,13 @@ async function logOut(req, res) {
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: "User not found." });
     }
 
-    res.status(200).json({ message: 'Logout successful.' });
+    res.status(200).json({ message: "Logout successful." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ error: "Internal server error." });
   }
 }
 
@@ -1357,8 +1388,8 @@ async function addSearch(req, res) {
     const userId = req.user.userId; // Extract user ID from token
     const { searchedId } = req.body;
 
-    if(!userId || !searchedId) {
-      return res.status(404).json({ message: 'Misssing details' });
+    if (!userId || !searchedId) {
+      return res.status(404).json({ message: "Misssing details" });
     }
 
     // Check if the search already exists
@@ -1378,10 +1409,9 @@ async function addSearch(req, res) {
     );
 
     return res.status(200).json({ message: "Search added successfully" });
-
   } catch (error) {
     console.log("Error in add search function:", error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ error: "Internal server error." });
   }
 }
 
@@ -1389,8 +1419,8 @@ async function updateFollowSelect(req, res) {
   try {
     const userId = req.user.userId; // Extract user ID from token
 
-    if(!userId) {
-      return res.status(404).json({ message: 'Misssing User Id' });
+    if (!userId) {
+      return res.status(404).json({ message: "Misssing User Id" });
     }
 
     // Update user in the database using user id
@@ -1398,23 +1428,24 @@ async function updateFollowSelect(req, res) {
       `UPDATE users 
              SET is_follow_selected = ?
              WHERE id = ?`,
-      [
-        true,
-        userId,
-      ]
+      [true, userId]
     );
 
-    console.log("=======in updateCommunitySelect====>", updateResult.affectedRows);
+    console.log(
+      "=======in updateCommunitySelect====>",
+      updateResult.affectedRows
+    );
     // Check if any rows were updated
     if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    return res.status(200).json({ message: "follow selected updated successfully" });
-    
+    return res
+      .status(200)
+      .json({ message: "follow selected updated successfully" });
   } catch (error) {
     console.log("Error in updateCommunitySelect function:", error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ error: "Internal server error." });
   }
 }
 
@@ -1423,7 +1454,7 @@ async function updateFollowSelect(req, res) {
 //     const userId = req.user.userId; // Extract user ID from token
 //     console.log("======userId====onlineFriends===>", userId);
 //     const [online]  = await pool.execute(
-//     `SELECT * FROM users WHERE is_online = 1`, 
+//     `SELECT * FROM users WHERE is_online = 1`,
 //     );
 
 //     return res.status(200).json({
@@ -1594,14 +1625,14 @@ async function removeBuddy(req, res) {
   }
 }
 
-async function blockAccount(req , res){
+async function blockAccount(req, res) {
   try {
-
     const userId = req.user.userId; // Extract user ID from token
     const { block_id } = req.params;
 
-    const [ data ] = await pool.execute(
-      `INSERT INTO block_user (user_id, blocked_id) VALUES (?, ?)`,[userId, block_id]
+    const [data] = await pool.execute(
+      `INSERT INTO block_user (user_id, blocked_id) VALUES (?, ?)`,
+      [userId, block_id]
     );
 
     await pool.execute(
@@ -1623,12 +1654,12 @@ async function blockAccount(req , res){
       [userId, block_id, block_id, userId]
     );
     return res.status(200).json({
-      message:"Account Blocked  Successfully"
+      message: "Account Blocked  Successfully",
     });
   } catch (error) {
-    console.log("=======error block account====",error);
+    console.log("=======error block account====", error);
     return res.status(500).json({
-      error:"Error Blocking Account"
+      error: "Error Blocking Account",
     });
   }
 }
@@ -1671,11 +1702,19 @@ async function suggestions1(req, res) {
       ORDER BY followers_count DESC, posts_count DESC -- Sort by activity/popularity
       LIMIT ? OFFSET ?;
       `,
-      [userId, userId, userId,userId,userId, parseInt(limit), parseInt(offset)] // Bind params
+      [
+        userId,
+        userId,
+        userId,
+        userId,
+        userId,
+        parseInt(limit),
+        parseInt(offset),
+      ] // Bind params
     );
 
     return res.status(200).json({
-      message: 'Suggestions fetched successfully',
+      message: "Suggestions fetched successfully",
       data: suggestions,
       pagination: {
         page: parseInt(page),
@@ -1683,9 +1722,9 @@ async function suggestions1(req, res) {
       },
     });
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
+    console.error("Error fetching suggestions:", error);
     return res.status(500).json({
-      error: 'Error getting suggestions',
+      error: "Error getting suggestions",
     });
   }
 }
@@ -1727,11 +1766,19 @@ async function suggestions(req, res) {
       ORDER BY followers_count DESC, posts_count DESC -- Sort by activity/popularity
       LIMIT ? OFFSET ?;
       `,
-      [userId, userId, userId,userId,userId, parseInt(limit), parseInt(offset)] // Bind params
+      [
+        userId,
+        userId,
+        userId,
+        userId,
+        userId,
+        parseInt(limit),
+        parseInt(offset),
+      ] // Bind params
     );
 
     return res.status(200).json({
-      message: 'Suggestions fetched successfully',
+      message: "Suggestions fetched successfully",
       data: suggestions,
       pagination: {
         page: parseInt(page),
@@ -1739,9 +1786,9 @@ async function suggestions(req, res) {
       },
     });
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
+    console.error("Error fetching suggestions:", error);
     return res.status(500).json({
-      error: 'Error getting suggestions',
+      error: "Error getting suggestions",
     });
   }
 }
@@ -1750,14 +1797,16 @@ async function validateToken(req, res) {
   const token = req.body.token;
   console.log("====token===>", token);
   if (!token) {
-    return res.status(401).json({ valid: false, message: 'Token is missing' });
+    return res.status(401).json({ valid: false, message: "Token is missing" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // Replace 'your_secret_key' with your JWT secret
     return res.status(200).json({ valid: true, decoded });
   } catch (error) {
-    return res.status(401).json({ valid: false, message: 'Token is invalid or expired' });
+    return res
+      .status(401)
+      .json({ valid: false, message: "Token is invalid or expired" });
   }
 }
 
@@ -1791,5 +1840,5 @@ module.exports = {
   removeBuddy,
   blockAccount,
   suggestions,
-  validateToken
+  validateToken,
 };
