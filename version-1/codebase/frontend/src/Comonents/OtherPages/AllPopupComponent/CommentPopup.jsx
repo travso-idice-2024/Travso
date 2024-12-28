@@ -789,6 +789,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     };
   }, [isOpen]);
 
+  // console.log("====activePostId===>", activePostId);
+
   if (!isOpen) return null;
 
   return (
@@ -1117,7 +1119,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                   isOpen={isSharePopup}
                   onClose={() => handleSharePopupClose()}
                   postId={activePostId}
-                  // userName={allPosts[0]?.user_name}
+                  userName={allPosts[0]?.user_name}
                 />
               )}
 

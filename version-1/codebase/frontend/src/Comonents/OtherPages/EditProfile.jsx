@@ -100,7 +100,6 @@ const EditProfile = () => {
     }
 
     if (cities.length === 0 && userDetails) {
-      console.log("running");
       dispatch(fetchCities({ state: userDetails?.state, country: "India" }));
     }
 
@@ -330,6 +329,11 @@ const EditProfile = () => {
           navigate("/login");
           return;
         }
+        // console.log("userDetails", userDetails);
+        if(userDetails?.is_follow_selected == 1) {
+          navigate("/profile");
+          return;
+        }
 
         const updateResult = await dispatch(
           updateUserDetails(formData)
@@ -454,7 +458,6 @@ const handleCoverUpload = async (e) => {
     setProfilePhoto(null); // Remove the profile photo
   };
 
-  console.log("===setFlashMessage===>", flashMessage);
 
   return (
     <>
@@ -800,7 +803,7 @@ const handleCoverUpload = async (e) => {
             <button
               type="button"
               className="mt-4 w-[234px] h-[53px] bg-[#2DC6BE] text-white py-3 px-4 rounded-[7px] hover:bg-[#2DC6BE] transition text-[16px] font-bold font-poppins"
-              onClick={handleSave}
+              onClick={() => handleSave()}
             >
               Next
             </button>

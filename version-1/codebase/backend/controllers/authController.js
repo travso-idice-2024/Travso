@@ -1140,7 +1140,7 @@ const getUserDetails = async (req, res) => {
 
     // Query to fetch user details
     const [rows] = await pool.query(
-      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge FROM users WHERE id = ?",
+      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge, is_follow_selected FROM users WHERE id = ?",
       [userId]
     );
 
@@ -1428,13 +1428,9 @@ async function updateFollowSelect(req, res) {
       `UPDATE users 
              SET is_follow_selected = ?
              WHERE id = ?`,
-      [true, userId]
+      [1, userId]
     );
 
-    console.log(
-      "=======in updateCommunitySelect====>",
-      updateResult.affectedRows
-    );
     // Check if any rows were updated
     if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });

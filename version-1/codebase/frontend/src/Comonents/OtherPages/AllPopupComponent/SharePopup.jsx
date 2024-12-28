@@ -10,6 +10,7 @@ import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
 import { getUserBuddies } from "../../../redux/slices/authSlice";
 
 const SharePopup = ({ isOpen, onClose, postId, userName }) => {
+  // console.log("===isOpen==>", isOpen)
   const dispatch = useDispatch();
   const { userBuddies } = useSelector((state) => state.auth);
   const [shareIds, setShareIds] = useState([]);
@@ -119,6 +120,8 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
     };
   }, [isOpen]);
 
+  console.log("====buddieList====>",buddieList)
+
   if (!isOpen) return null;
 
   return (
@@ -169,7 +172,7 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
             }
             
             <div className="grid grid-cols-5 gap-4">
-              {buddieList || buddieList.length !== 0 && 
+              {buddieList && buddieList.length !== 0 && 
                 buddieList.map((item) => (
                   <div
                     key={item.id}
@@ -203,7 +206,7 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
                       </div>
                     )}
                     <img
-                      src={item.profile_image || dummyUserImage}
+                      src={item?.profile_image || dummyUserImage}
                       alt={"Profile"}
                       className="w-[96px] h-[96px] rounded-full border-2 border-gray-300 object-cover"
                     />
