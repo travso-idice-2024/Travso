@@ -577,16 +577,21 @@ const CommunityPage = () => {
   //   }
   // };
 
-  const handleStoryCommentEnter = async (e, storyId, userId) => {
+  const handleStoryCommentEnter = async (e, storyId, storyOwnerId, imageUrl, userFullName) => {
+    // console.log("=======storyOwnerId===>", storyOwnerId);
     if (e.key === "Enter" && !e.shiftKey) {
       try {
+        // console.log("====story", storyReply);
         // Retrieve the reply text from the ref
-        const replyText = storyReplyRef.current[storyId];
-        if (!replyText || replyText.trim() === "") return; // Prevent empty submissions
+        // const replyText = storyReplyRef.current[storyId];
+        // if (!replyText || replyText.trim() === "") return; // Prevent empty submissions
 
         const commentPayload = {
           story_id: storyId,
-          reply_text: replyText, // Use the ref value
+          reply_text: storyReply[storyId], // Use the ref value
+          story_owner_id: storyOwnerId,
+          image_url: imageUrl,
+          user_full_name: userFullName
         };
 
         const replyResponse = await dispatch(
