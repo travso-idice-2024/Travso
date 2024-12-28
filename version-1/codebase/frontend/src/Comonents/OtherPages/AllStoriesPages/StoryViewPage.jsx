@@ -687,10 +687,18 @@ const StoryViewPage = ({
                         <ul>
                           <li
                             className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center gap-[5px] cursor-pointer hover:bg-[#f0f0f0]"
+                            // onClick={() => {
+                            //   deleteThisStory(storyData[activeStory].id);
+                            //   setDropdownSetting(false);
+                            // }}
+                            //28-12-2024
                             onClick={() => {
-                              deleteThisStory(storyData[activeStory].id);
-                              setDropdownSetting(false);
+                              if (window.confirm("Are you sure you want to delete this story?")) {
+                                deleteThisStory(storyData[activeStory].id);
+                                setDropdownSetting(false);
+                              }
                             }}
+                            //28-12-2024
                           >
                             <svg
                               width="24"
