@@ -30,21 +30,29 @@ const StoryViewPageUser = ({
   handleEmojiClickStory,
   handleLikeUnlikeStory,
   increaseViewersCount,
+  showEmojiPicker,
+  handleCloseEmojiPicker
 }) => {
   const dispatch = useDispatch();
   const [viewedStoryId, setViewedStoryId] = useState("");
-  console.log("====storyData===>", storyData);
+  const [dropdownSetting, setDropdownSetting] = useState(false);
+  // console.log("====storyData===>", storyData);
   // console.log("====storyReply===>", storyReply);
   // console.log("====currentBuddiesReelIndex===>", currentBuddiesReelIndex);
 
-  const handleStoryViewed = async () => {
-    console.log("====viewedStoryId===>", viewedStoryId);
-    await increaseViewersCount(viewedStoryId);
-  };
+  // const handleStoryViewed = async () => {
+  //   console.log("====viewedStoryId===>", story?.id);
+  //   await increaseViewersCount(viewedStoryId);
+  // };
 
   // useEffect(() => {
   //   handleStoryViewed();
   // }, []);
+
+  const handleSetting = (storyId) => {
+    // console.log("sdsddadafafafafafaf",storyId)
+    setDropdownSetting(true);
+  };
 
   // Verify and preprocess the stories data to ensure correct formatting
   const processedStoriesData = storyData?.map((story) => ({
@@ -90,6 +98,128 @@ const StoryViewPageUser = ({
             </div>
           </div>
           <div className="flex items-center gap-[5px]">
+                  <div>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19.7479 4.99993C21.1652 6.97016 22 9.38756 22 11.9999C22 14.6123 21.1652 17.0297 19.7479 18.9999M15.7453 7.99993C16.5362 9.13376 17 10.5127 17 11.9999C17 13.4872 16.5362 14.8661 15.7453 15.9999M9.63432 5.36561L6.46863 8.5313C6.29568 8.70425 6.2092 8.79073 6.10828 8.85257C6.01881 8.9074 5.92127 8.9478 5.81923 8.9723C5.70414 8.99993 5.58185 8.99993 5.33726 8.99993H3.6C3.03995 8.99993 2.75992 8.99993 2.54601 9.10892C2.35785 9.20479 2.20487 9.35777 2.10899 9.54594C2 9.75985 2 10.0399 2 10.5999V13.3999C2 13.96 2 14.24 2.10899 14.4539C2.20487 14.6421 2.35785 14.7951 2.54601 14.8909C2.75992 14.9999 3.03995 14.9999 3.6 14.9999H5.33726C5.58185 14.9999 5.70414 14.9999 5.81923 15.0276C5.92127 15.0521 6.01881 15.0925 6.10828 15.1473C6.2092 15.2091 6.29568 15.2956 6.46863 15.4686L9.63431 18.6342C10.0627 19.0626 10.2769 19.2768 10.4608 19.2913C10.6203 19.3038 10.7763 19.2392 10.8802 19.1175C11 18.9773 11 18.6744 11 18.0686V5.9313C11 5.32548 11 5.02257 10.8802 4.88231C10.7763 4.76061 10.6203 4.69602 10.4608 4.70858C10.2769 4.72305 10.0627 4.93724 9.63432 5.36561Z"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 5.12037C5 4.14921 5 3.66363 5.20249 3.39595C5.37889 3.16277 5.64852 3.01847 5.9404 3.00104C6.27544 2.98103 6.67946 3.25039 7.48752 3.78909L18.0031 10.7995C18.6708 11.2446 19.0046 11.4672 19.1209 11.7477C19.2227 11.9929 19.2227 12.2686 19.1209 12.5138C19.0046 12.7943 18.6708 13.0169 18.0031 13.462L7.48752 20.4724C6.67946 21.0111 6.27544 21.2805 5.9404 21.2604C5.64852 21.243 5.37889 21.0987 5.20249 20.8655C5 20.5979 5 20.1123 5 19.1411V5.12037Z"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div className="cursor-pointer">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      onClick={() => handleSetting(storyData[activeStory]?.id)}
+                    >
+                      <path
+                        d="M12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13Z"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 6C12.5523 6 13 5.55228 13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44772 11 5C11 5.55228 11.4477 6 12 6Z"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 20C12.5523 20 13 19.5523 13 19C13 18.4477 12.5523 18 12 18C11.4477 18 11 18.4477 11 19C11 19.5523 11.4477 20 12 20Z"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {/* DropdownSetting Menu */}
+
+                    {dropdownSetting && (
+                      <div className="fixed top-[20%] left-[56%] transform -translate-x-1/2 -translate-y-1/2 bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px] z-10">
+                        <div className="flex items-center justify-between p-2 px-4 border-b border-b-gray-500 w-full">
+                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626] ">
+                            More Options
+                          </h6>
+
+                          {/* Close Button (X) */}
+                          <button
+                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                            onClick={() => setDropdownSetting(false)}
+                            aria-label="Close"
+                          >
+                            &#x2715;
+                          </button>
+                        </div>
+                        <ul>
+                          <li
+                            className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center gap-[5px] cursor-pointer hover:bg-[#f0f0f0]"
+                            // onClick={() => {
+                            //   deleteThisStory(storyData[activeStory].id);
+                            //   setDropdownSetting(false);
+                            // }}
+                            //28-12-2024
+                            onClick={() => {
+                              if (window.confirm("Are you sure you want to delete this story?")) {
+                                deleteThisStory(storyData[activeStory].id);
+                                setDropdownSetting(false);
+                              }
+                            }}
+                            //28-12-2024
+                          >
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9 3H15M3 6H21M19 6L18.2987 16.5193C18.1935 18.0975 18.1409 18.8867 17.8 19.485C17.4999 20.0118 17.0472 20.4353 16.5017 20.6997C15.882 21 15.0911 21 13.5093 21H10.4907C8.90891 21 8.11803 21 7.49834 20.6997C6.95276 20.4353 6.50009 20.0118 6.19998 19.485C5.85911 18.8867 5.8065 18.0975 5.70129 16.5193L5 6M10 10.5V15.5M14 10.5V15.5"
+                                stroke="#E30000"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            Delete story
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+          {/* <div className="flex items-center gap-[5px]">
             <div>
               <svg
                 width="24"
@@ -156,11 +286,11 @@ const StoryViewPageUser = ({
                 />
               </svg>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center justify-between absolute -bottom-[585px] z-10 w-[396px] px-4">
-          <div className="relative flex items-center">
+          {/* <div className="relative flex items-center">
             <input
               type="text"
               placeholder="Add a comment"
@@ -206,7 +336,73 @@ const StoryViewPageUser = ({
                 />
               </div>
             )}
+          </div> */}
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Add a comment"
+              onKeyDown={(e) =>
+                handleStoryCommentEnter(
+                  e,
+                  story?.id,
+                  story?.user_id,
+                  story?.url,
+                  story?.full_name
+                )
+              }
+              className="flex-1 bg-[#FFFFFFBF] focus:outline-none text-gray-600 rounded-[24px] md:w-[256px] h-[44px] placeholder:font-inter placeholder:font-medium placeholder:text-[14px] placeholder:text-[#212626] pl-9"
+              value={storyReply[story?.id] || ""}
+              onChange={(e) => handleStoryReplyInputChange(e, story?.id)}
+            />
+
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="absolute left-2 cursor-pointer"
+              onClick={() => handleEmojiSelectUserID(story?.id)}
+            >
+              <g clipPath="url(#clip0_40000261_30967)">
+                <path
+                  d="M6.66602 11.6665C6.66602 11.6665 7.91602 13.3332 9.99935 13.3332C12.0827 13.3332 13.3327 11.6665 13.3327 11.6665M12.4993 7.49984H12.5077M7.49935 7.49984H7.50768M18.3327 9.99984C18.3327 14.6022 14.6017 18.3332 9.99935 18.3332C5.39698 18.3332 1.66602 14.6022 1.66602 9.99984C1.66602 5.39746 5.39698 1.6665 9.99935 1.6665C14.6017 1.6665 18.3327 5.39746 18.3327 9.99984ZM12.916 7.49984C12.916 7.72996 12.7295 7.9165 12.4993 7.9165C12.2692 7.9165 12.0827 7.72996 12.0827 7.49984C12.0827 7.26972 12.2692 7.08317 12.4993 7.08317C12.7295 7.08317 12.916 7.26972 12.916 7.49984ZM7.91602 7.49984C7.91602 7.72996 7.72947 7.9165 7.49935 7.9165C7.26923 7.9165 7.08268 7.72996 7.08268 7.49984C7.08268 7.26972 7.26923 7.08317 7.49935 7.08317C7.72947 7.08317 7.91602 7.26972 7.91602 7.49984Z"
+                  stroke="#212626"
+                  strokeWidth="1.66667"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_40000261_30967">
+                  <rect width="20" height="20" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+
+            {/* {activeEmojiStoryId === story.id && showEmojiPickerStory && ( */}
+            {/* Cancel Button to Close Emoji Picker */}
+            {showEmojiPicker && (
+              <button
+                className="absolute top-0 right-0 z-60 p-2 bg-gray-300 rounded-full"
+                onClick={handleCloseEmojiPicker}
+              >
+               X
+              </button>
+            )}
+            {showEmojiPicker && (
+              <div className="absolute -top-[380px] left-0 z-50">
+                <EmojiPicker
+                  onEmojiClick={(emojiObject) =>
+                    handleEmojiClickStory(emojiObject, story.id)
+                  }
+                  className="w-[250px] h-[300px] shadow-lg rounded-lg"
+                />
+              </div>
+            )}
+            
           </div>
+
           <div>
             <svg
               width="44"

@@ -523,6 +523,7 @@ const CommunityPage = () => {
   // };
 
   const handleStoryReplyInputChange = (e, storyId) => {
+
     const { value } = e.target;
     setStoryReply((prev) => ({
       ...prev,
@@ -550,6 +551,7 @@ const CommunityPage = () => {
 
     setShowEmojiPickerStory(false); // Close the emoji picker after selection
     setActiveEmojiStoryId(null); // Reset the active story ID
+    setShowEmojiPicker(true);
   };
 
   /* when user press enters on comment section after writing comment in story */
@@ -702,8 +704,14 @@ const CommunityPage = () => {
   // };
 
   const handleEmojiSelectUserID = (id) => {
+    setShowEmojiPicker(true); // Open the emoji picker
     setActiveEmojiStoryId((prevId) => (prevId === id ? null : id)); // Toggle the picker for the selected story
     setShowEmojiPickerStory((prevId) => (prevId === id ? false : true)); // Ensure the picker state is consistent
+  };
+
+  // Handle Emoji Picker Close (Cancel)
+  const handleCloseEmojiPicker = () => {
+    setShowEmojiPicker(false); // Close the emoji picker
   };
 
   // console.log("===activestories", activeStories)
@@ -713,7 +721,6 @@ const CommunityPage = () => {
     setIsCreateSocialPopup(false);
     setIsStoryLoaderOpen(true);
   }
-
   return (
     <>
       <Header />
@@ -878,6 +885,8 @@ const CommunityPage = () => {
                     handleEmojiClickStory={handleEmojiClickStory}
                     handleLikeUnlikeStory={handleLikeUnlikeStory}
                     increaseViewersCount={increaseViewersCount}
+                    showEmojiPicker={showEmojiPicker}
+                    handleCloseEmojiPicker={handleCloseEmojiPicker}
                   />
                 )}
               </div>

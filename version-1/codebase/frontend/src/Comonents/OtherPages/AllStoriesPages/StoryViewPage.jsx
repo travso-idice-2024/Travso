@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { deleteStory, getActiveStories } from "../../../redux/slices/postSlice";
 import ShowBadgeIcon from "../ShowBadgeIcons";
 
+
 const StoryViewPage = ({
   closeStoryPopup,
   toggleSettingStoryView,
@@ -55,6 +56,7 @@ const StoryViewPage = ({
   const renderViewers = (viewers) => {
     // Count of viewers
     const viewerCount = viewers ? viewers.length : 0;
+
 
     return (
       <div className="absolute top-32 left-2 text-white bg-opacity-70 p-2 rounded-md">

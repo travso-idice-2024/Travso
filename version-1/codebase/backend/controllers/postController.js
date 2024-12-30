@@ -378,7 +378,9 @@ async function getActiveStories(req, res) {
 
     const parseFields = (story) => ({
       ...story,
-      type: "image",
+      //type: "image",
+      type:story.type,
+      paused: true,
       media_url: story.media_url || "",
       url: story.media_url || "", // Parse media_url to array
       tag: JSON.parse(story.tag || "[]"), // Parse tag to array
@@ -2206,17 +2208,109 @@ async function storeStory1(req, res) {
   }
 }
 
+// async function storeStory(req, res) {
+  
+//   try {
+//     // const { user_id } = req.params;
+//     const user_id = req.user.userId;
+//     const userName = req.user.userName;
+//     const {
+//       media_url = [],
+//       tags = [],
+//       view = "public",
+//       story_text = [],
+//     } = req.body;
+
+//     // Validate required fields
+//     if (!user_id) {
+//       return res.status(400).json({
+//         message: "Missing required fields (user_id).",
+//       });
+//     }
+
+//     const storyImages = [];
+//     const created_at = new Date();
+//     const expires_at = new Date(created_at.getTime() + 12 * 60 * 60 * 1000);
+
+//     // Validate and process media_url
+//     if (Array.isArray(media_url) && media_url.length > 0) {
+//       for (let image of media_url) {
+//         try {
+//           // Extract Base64 part of the image
+//           const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+//           const extension = image.substring(
+//             "data:image/".length,
+//             image.indexOf(";base64")
+//           );
+//           //const fileName = `story_${Date.now()}.${extension}_${user_id}_${userName}`;
+//           const fileName = `story_${Date.now()}_${user_id}_${userName}.${extension}`;
+//           const filePath = path.join(STORY_UPLOAD_DIR, fileName);
+//           const imagePath = `${process.env.APP_SERVER_URL}/uploads/story_img/${fileName}`;
+//           storyImages.push(imagePath);
+
+//           // Write image to file system
+//           await fs.promises.writeFile(filePath, base64Data, {
+//             encoding: "base64",
+//           });
+//         } catch (err) {
+//           console.error("Failed to save image:", err);
+//           return res.status(500).json({ error: "Failed to save image." });
+//         }
+//       }
+//     }
+
+//     // Insert each image as a separate story record
+//     const queries = storyImages.map((image) =>
+//       pool.execute(
+//         `INSERT INTO stories (
+//             user_id,
+//             tag,
+//             media_url,
+//             view,
+//             story_text,
+//             created_at,
+//             expires_at
+//           ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+//         [
+//           user_id,
+//           JSON.stringify(tags), // Serialize tags as JSON
+//           image, // Single media URL
+//           view,
+//           JSON.stringify(story_text), // Serialize story text as JSON
+//           created_at,
+//           expires_at,
+//         ]
+//       )
+//     );
+
+//     // Execute all insertion queries
+//     const results = await Promise.all(queries);
+
+//     // Collect inserted story IDs
+//     const storyIds = results.map((result) => result[0].insertId);
+
+//     // Respond with success message and story IDs
+//     return res.status(200).json({
+//       message: "Stories added successfully.",
+//       story_ids: storyIds,
+//     });
+//   } catch (error) {
+//     console.error("Error in storing story:", error);
+//     return res.status(500).json({
+//       error: "Internal Server Error",
+//     });
+//   }
+// }
+
+// to store the count on story view
+
+//28-12-2024
+//author:uma sharma
 async function storeStory(req, res) {
   try {
-    // const { user_id } = req.params;
     const user_id = req.user.userId;
     const userName = req.user.userName;
-    const {
-      media_url = [],
-      tags = [],
-      view = "public",
-      story_text = [],
-    } = req.body;
+    const { media_url = [], tags = [], view = "public", story_text = [] } = req.body;
 
     // Validate required fields
     if (!user_id) {
@@ -2226,52 +2320,63 @@ async function storeStory(req, res) {
     }
 
     const storyImages = [];
+    const mediaTypes = [];
     const created_at = new Date();
-    const expires_at = new Date(created_at.getTime() + 12 * 60 * 60 * 1000);
+    const expires_at = new Date(created_at.getTime() + 12 * 60 * 60 * 1000); // 12 hours expiration
 
     // Validate and process media_url
     if (Array.isArray(media_url) && media_url.length > 0) {
-      for (let image of media_url) {
+      for (let media of media_url) {
         try {
-          // Extract Base64 part of the image
-          const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-          const extension = image.substring(
-            "data:image/".length,
-            image.indexOf(";base64")
-          );
-          //const fileName = `story_${Date.now()}.${extension}_${user_id}_${userName}`;
-          const fileName = `story_${Date.now()}_${user_id}_${userName}.${extension}`;
-          const filePath = path.join(STORY_UPLOAD_DIR, fileName);
-          const imagePath = `${process.env.APP_SERVER_URL}/uploads/story_img/${fileName}`;
-          storyImages.push(imagePath);
+          // Extract the media type and extension from base64
+          const base64Match = media.match(/^data:(image|video)\/(\w+);base64,/);
+          if (base64Match) {
+            const type = base64Match[1]; // 'image' or 'video'
+            const extension = base64Match[2]; // e.g., 'png', 'mp4'
 
-          // Write image to file system
-          await fs.promises.writeFile(filePath, base64Data, {
-            encoding: "base64",
-          });
+            // Generate file name and path
+            const fileName = `story_${Date.now()}_${user_id}_${userName}.${extension}`;
+            const filePath = path.join(STORY_UPLOAD_DIR, fileName);
+            const mediaPath = `${process.env.APP_SERVER_URL}/uploads/story_img/${fileName}`;
+
+            // Push media URL and type to arrays
+            storyImages.push(mediaPath);
+            mediaTypes.push(type);
+
+            // Extract base64 data and write the file to the system
+            const base64Data = media.replace(/^data:(image|video)\/\w+;base64,/, "");
+            await fs.promises.writeFile(filePath, base64Data, { encoding: "base64" });
+          } else {
+            console.error("Invalid media format, skipping...");
+            return res.status(400).json({
+              message: "Invalid media format provided.",
+            });
+          }
         } catch (err) {
-          console.error("Failed to save image:", err);
-          return res.status(500).json({ error: "Failed to save image." });
+          console.error("Failed to save media:", err);
+          return res.status(500).json({ error: "Failed to save media." });
         }
       }
     }
 
-    // Insert each image as a separate story record
-    const queries = storyImages.map((image) =>
+    // Insert each image/media as a separate story record
+    const queries = storyImages.map((image, index) =>
       pool.execute(
         `INSERT INTO stories (
             user_id,
             tag,
             media_url,
+            type,
             view,
             story_text,
             created_at,
             expires_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           user_id,
           JSON.stringify(tags), // Serialize tags as JSON
           image, // Single media URL
+          mediaTypes[index], // Media type ('image' or 'video')
           view,
           JSON.stringify(story_text), // Serialize story text as JSON
           created_at,
@@ -2299,7 +2404,7 @@ async function storeStory(req, res) {
   }
 }
 
-// to store the count on story view
+//28-12-2024
 async function storeStoryView(req, res) {
   try {
     const { story_id } = req.params;
