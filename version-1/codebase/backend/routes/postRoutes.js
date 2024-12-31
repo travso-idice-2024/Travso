@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {  allPosts, postWithlikes , getActiveStories , getPostComments ,getUserPosts, postComment, postLike, likeAnyComment, replyOnComment, storePost, deleteComments, deleteReply, followAndUnfollow, likeToReply, followAndUnfollowFollowing, getPostData, sharePostWithFriends, communityPagePosts, likeStory, replyOnStory, storeStory, storeStoryView, deleteStory, shareStoryWithFriends, editComment} = require('../controllers/postController');
+const {  allPosts, postWithlikes ,getAllCategoryLists,removeBucketCollection,  getBucketListByName, getActiveStories,getAllBucketLists , getPostComments ,getUserPosts, postComment, postLike, likeAnyComment, replyOnComment, storePost,storeBucketPost, deleteComments, deleteReply, followAndUnfollow, likeToReply, followAndUnfollowFollowing, getPostData, sharePostWithFriends, communityPagePosts, likeStory, replyOnStory, storeStory, storeStoryView, deleteStory, shareStoryWithFriends, editComment} = require('../controllers/postController');
 const verifyToken = require("../utils/verifyToken");
 
 
@@ -13,6 +13,10 @@ const verifyToken = require("../utils/verifyToken");
 
 // router.get('/allposts', postWithlikes);
 router.get('/allposts', verifyToken, communityPagePosts );
+router.get('/getAllBucketLists',verifyToken,getAllBucketLists);
+router.get('/getAllCategoryLists', verifyToken, getAllCategoryLists);
+router.get('/getBucketListByName/:bucketTitle',verifyToken, getBucketListByName);
+router.delete('/delete-bucket/:bucketTitle',verifyToken, removeBucketCollection);
 // router.get('/allposts/:userId', communityPagePosts );   // for testing
 router.get('/stories', verifyToken, getActiveStories);
 // router.get('/stories/:userid', getActiveStories);  // for testing
@@ -24,6 +28,7 @@ router.post("/like-unlike-post", verifyToken, postLike);
 router.post("/like-a-comment/:comment_id",verifyToken, likeAnyComment);
 router.post("/reply-on-comment",verifyToken, replyOnComment);
 router.post("/commit-post",verifyToken, storePost);
+router.post("/bucket-post",verifyToken, storeBucketPost);
 router.post("/owner-delete-comment/:id",verifyToken, deleteComments);
 router.post("/owner-delete-reply/:replyId",verifyToken, deleteReply);
 router.post("/follow-unfollow",verifyToken, followAndUnfollow);

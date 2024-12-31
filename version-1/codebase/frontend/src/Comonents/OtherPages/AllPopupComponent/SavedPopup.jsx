@@ -5,8 +5,72 @@ import Boy1 from "../../../assets/headerIcon/boy1.png";
 import Boy2 from "../../../assets/headerIcon/boy2.jpg";
 import communityafter from "../../../assets/communityafter.png";
 import communitybefore from "../../../assets/communitybefore.png";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import CreateBucketListPopup from "./CreateBucketListPopup";
+import {
+  blockAccount,
+  getAllUsers,
+  getOnlineFriends,
+  getUserDetails,
+  getUserPosts,
+} from "../../../redux/slices/authSlice";
+import {
+  addCountOnStoryView,
+  commentOnStory,
+  bucketPost,
+  getActiveStories,
+  getAllPosts,
+  LikeUnlikePost,
+  likeUnlikeStory,
+} from "../../../redux/slices/postSlice";
 
-const SavedPopup = ({ isOpen, onClose }) => {
+const SavedPopup = ({post_id, isOpen, onClose }) => {
+  const dispatch = useDispatch();
+   const navigate = useNavigate();
+  const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
+  const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
+  
+  const [postData, setPostData] = useState({
+      list_name:'',
+      buddies: [],
+      buddies_id: [],
+      post_id:''
+    });
+  const {
+    onlineFriends,
+    allUsers,
+    user: userDetails,
+    error: reduxSliceError
+  } = useSelector((state) => state.auth);
+  const { allPosts, activeStories } = useSelector((state) => state.postSlice);
+  useEffect(() => {
+      if (!onlineFriends) {
+        dispatch(getOnlineFriends());
+      }
+  
+      if (!allUsers) {
+        dispatch(getAllUsers());
+      }
+  
+      if (!userDetails) {
+        dispatch(getUserDetails());
+      }
+  
+      if (!activeStories) {
+        dispatch(getActiveStories());
+      }
+    }, [dispatch]);
+
+ useEffect(() => {
+    if (reduxSliceError?.message === 'Unauthorized') {
+      localStorage.removeItem('token');
+      navigate('/login'); // Redirect to login page
+    }
+  }, [reduxSliceError, navigate]);
+
+  
+
   const [joinBucket, setJoinBucket] = useState([
     {
       id: 1,
@@ -132,9 +196,19 @@ const SavedPopup = ({ isOpen, onClose }) => {
             <div className="mb-4 space-y-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <button className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
+                  <button onClick={() => setIsCreatePostPopup(true)} className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
                     <span style={{ fontSize: "35px" }}>&#43;</span>
                   </button>
+                  {isCreatePostPopup && (
+                    <CreateBucketListPopup
+                      post_id={post_id}
+                      isOpen={isCreatePostPopup}
+                      onClose={() => setIsCreatePostPopup(false)}
+                      openPostDetail={() => setIsPostDetailPopup(true)}
+                      postData={postData}
+                      setPostData={setPostData}
+                    />
+                  )}
                   <div>
                     <h2 className="font-inter font-medium text-[16px] text-[#212626] text-left">
                       Create New Bucket List

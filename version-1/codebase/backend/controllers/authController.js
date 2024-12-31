@@ -906,7 +906,7 @@ async function getUserBuddies(req, res) {
       [userId, userId, userId, userId, userId] // Pass userId for both user-to-buddy and buddy-to-user checks
     );
 
-    console.log("===buddies data====>", buddies);
+    //console.log("===buddies data====>", buddies);
     return res.status(200).json({
       message: "Data fetched successfully",
       data: buddies,

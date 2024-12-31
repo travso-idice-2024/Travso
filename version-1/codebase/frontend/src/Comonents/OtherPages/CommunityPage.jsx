@@ -228,7 +228,7 @@ const CommunityPage = () => {
   } = useSelector((state) => state.auth);
   const { allPosts, activeStories } = useSelector((state) => state.postSlice);
 
-  // console.log("=====allPosts===>", allPosts);
+  //console.log("=====allPosts===>", allPosts);
 
   useEffect(() => {
     if (!onlineFriends) {
@@ -1463,6 +1463,7 @@ const CommunityPage = () => {
                         {activePostId === post?.id &&
                           isCommentWithSavedPopup && (
                             <SavedPopup
+                              post_id={post.id}
                               isOpen={isCommentWithSavedPopup}
                               // onClose={() => setIsCommentWithSavedPopup(false)}
                               onClose={() => handleBucketSavedPopupClose()}

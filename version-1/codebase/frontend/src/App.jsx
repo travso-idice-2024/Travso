@@ -13,6 +13,7 @@ import SuggestionPage from './Comonents/OtherPages/SuggestionPage';
 import CommunityPage from './Comonents/OtherPages/CommunityPage';
 import ChatPage from './Comonents/OtherPages/ChatModule/ChatPage';
 import BucketList from './Comonents/OtherPages/BucketList';
+import BucketDetail from './Comonents/OtherPages/BucketDetail';
 import BuddiesPage from "./Comonents/OtherPages/BuddiesPage";
 import FollowersPage from "./Comonents/OtherPages/FollowersPage";
 import FollowingPage from "./Comonents/OtherPages/FollowingPage";
@@ -41,6 +42,7 @@ function App() {
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/bucketlist" element={<BucketList />} />
+        <Route path="/profile/:bucketTitle" element={<BucketDetail />} />
         <Route path="/buddiespage" element={<BuddiesPage />} />
         <Route path="/followers" element={<FollowersPage />} />
         <Route path="/following" element={<FollowingPage />} />

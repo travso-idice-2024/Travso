@@ -31,6 +31,65 @@ export const getAllPosts = createAsyncThunk(
   }
 );
 
+
+export const getAllBucketLists = createAsyncThunk(
+  'post/getAllBucketLists',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getAllBucketLists`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in getAllPosts=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in getAllBucketLists call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+export const getBucketListByName = createAsyncThunk(
+  'post/getBucketListByName',
+  async (bucketTitle, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getBucketListByName/${bucketTitle}`, {  // Passing bucketTitle in the query string
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("error in getBucketListByName call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+
 // Thunk for commentOnPost details
 export const commentOnPost = createAsyncThunk(
   'post/commentOnPost',
@@ -192,6 +251,37 @@ export const commitPost = createAsyncThunk(
   
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiUrl}/post/commit-post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in commentOnReply===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in commentOnReply call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for addBucket details
+export const bucketPost = createAsyncThunk(
+  'post/bucketPost',
+  async (postData,{ rejectWithValue }) => {
+    try {
+  
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/bucket-post`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -676,9 +766,11 @@ const postSlice = createSlice({
     loading: false,
     error: null,
     allPosts: null,
+    allBucketLists:null,
     postComment: null,
     sharedPostData: null,
-    activeStories: null
+    activeStories: null,
+    allBucketListByName:null
   },
   reducers: {
     resetPostsState: (state) => {
@@ -688,6 +780,8 @@ const postSlice = createSlice({
       state.sharedPostData = null;
       state.activeStories = null;
       state.allPosts = null;
+      state.allBucketLists = null;
+      state.allBucketListByName = null;
     },
    },
   extraReducers: (builder) => {
@@ -705,6 +799,34 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      .addCase(getAllBucketLists.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllBucketLists.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allBucketLists = action.payload.data;
+      })
+      .addCase(getAllBucketLists.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      
+      .addCase(getBucketListByName.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBucketListByName.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allBucketListByName = action.payload.data;
+      })
+      .addCase(getBucketListByName.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
       // Handle commentOnPost
       .addCase(commentOnPost.pending, (state) => {
         state.loading = true;
@@ -775,6 +897,18 @@ const postSlice = createSlice({
         state.loading = false;
       })
       .addCase(commitPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      .addCase(bucketPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bucketPost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(bucketPost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

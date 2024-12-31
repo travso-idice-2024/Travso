@@ -13,7 +13,7 @@ async function allPosts(req, res) {
       "SELECT * FROM posts WHERE status = 'active'"
     );
 
-    console.log("===allpost===>", allpost);
+    //console.log("===allpost===>", allpost);
     return res.status(200).json({
       message: "All Posts data",
       data: allpost,
@@ -25,6 +25,145 @@ async function allPosts(req, res) {
     });
   }
 }
+
+
+// async function getAllBucketLists(req, res) {
+//   try {
+//     const userId = req.user.userId;
+//     const [allbucketlist] = await pool.execute(`
+//       SELECT 
+//         bcl.id,
+//         bcl.list_name,
+//         bcl.is_default,
+//         bcl.created_at,
+//         p.media_url,
+//         u.user_name,
+//         u.profile_image,
+//         u.badge 
+//       FROM 
+//         bucket_category_list bcl
+//       LEFT JOIN 
+//         posts p ON bcl.post_id = p.id
+//       LEFT JOIN 
+//         users u ON bcl.user_id = u.id
+//       WHERE 
+//         bcl.user_id = ? 
+//         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
+//     `, [userId, userId]);
+    
+//     return res.status(200).json({
+//       message: "All Posts data",
+//       data: allbucketlist,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching bucket lists:", error);
+//     return res.status(500).json({
+//       error: "Internal Server Error",
+//     });
+//   }
+// }
+
+async function getAllBucketLists(req, res) {
+  try {
+    const userId = req.user.userId;
+    const [allbucketlist] = await pool.execute(`
+      SELECT 
+        bcl.id,
+        bcl.list_name,
+        bcl.is_default,
+        bcl.created_at,
+        p.media_url,
+        u.user_name,
+        u.profile_image,
+        u.badge 
+      FROM 
+        bucket_category_list bcl
+      LEFT JOIN 
+        posts p ON bcl.post_id = p.id
+      LEFT JOIN 
+        users u ON bcl.user_id = u.id
+      WHERE 
+        bcl.user_id = ? 
+        OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
+      GROUP BY 
+        bcl.list_name
+    `, [userId, userId]);
+
+    return res.status(200).json({
+      message: "All Posts data",
+      data: allbucketlist,
+    });
+  } catch (error) {
+    console.error("Error fetching bucket lists:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
+
+async function getBucketListByName(req, res) {
+  try {
+    const userId = req.user.userId;
+    const {bucketTitle} = req.params;
+    //console.log("check", bucketTitle);
+    
+    const [allbucketlistByName] = await pool.execute(`
+      SELECT 
+        bcl.id,
+        bcl.list_name,
+        bcl.is_default,
+        bcl.created_at,
+        bcl.post_id,
+        p.media_url,
+        u.user_name,
+        u.profile_image,
+        u.badge 
+      FROM 
+        bucket_category_list bcl
+      LEFT JOIN 
+        posts p ON bcl.post_id = p.id
+      LEFT JOIN 
+        users u ON bcl.user_id = u.id
+      WHERE 
+        bcl.user_id = ? 
+        AND bcl.list_name =?
+        OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
+    `, [userId, bucketTitle , userId]);
+    
+    return res.status(200).json({
+      message: "All data",
+      data: allbucketlistByName,
+    });
+  } catch (error) {
+    console.error("Error fetching bucket lists:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
+async function getAllCategoryLists(req, res) {
+  try {
+    const [allCategorylist] = await pool.execute(`
+      SELECT 
+        list_name,id
+      FROM 
+        bucket_category_list
+    `);
+
+    return res.status(200).json({
+      message: "All Posts data",
+      data: allCategorylist,
+    });
+  } catch (error) {
+    console.error("Error fetching category lists:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
 
 // get all post of user buddies, followers and public posts
 async function communityPagePosts(req, res) {
@@ -115,7 +254,7 @@ async function communityPagePosts(req, res) {
       })
     );
 
-    console.log("===alldata===>", parsedData);
+    //console.log("===alldata===>", parsedData);
     return res.status(200).json({
       message: "Data fetched successfully",
       data: parsedData,
@@ -748,7 +887,7 @@ async function getUserPosts(req, res) {
       })
     );
 
-    console.log("===AllPosts Data===>", parsedData);
+    //console.log("===AllPosts Data===>", parsedData);
     return res.status(200).json({
       message: "Posts fetched successfully",
       data: parsedData,
@@ -1242,7 +1381,7 @@ async function getPostComments1(req, res) {
       replies: groupedReplies[comment.id] || [],
     }));
 
-    console.log("==data Fetched==>", getComments);
+    //console.log("==data Fetched==>", getComments);
     return res.status(200).json({
       message: "All comments of post",
       data: finalComments,
@@ -1353,7 +1492,7 @@ async function getPostComments(req, res) {
       [postId]
     );
 
-    console.log("=========replies=============>", replies);
+    //console.log("=========replies=============>", replies);
 
     // Group replies by comment ID
     const groupedReplies = replies.reduce((acc, reply) => {
@@ -1647,6 +1786,61 @@ async function replyOnComment(req, res) {
 //   }
 // }
 
+
+async function storeBucketPost(req, res) {
+  try {
+    const user_id = req.user.userId; // Extracting user ID from the token
+    let { buddies_id, list_name, post_id } = req.body;
+
+    // Validate required fields
+    if (!user_id) {
+      return res.status(400).json({
+        message: "Missing required fields (user_id).",
+      });
+    }
+
+    // Set default values
+    let is_default = 0;
+    if (!list_name) {
+      list_name = "Generic List";
+      is_default = 1;
+    } else {
+      is_default = 0;
+    }
+
+    // Insert the post into the database
+    const [result] = await pool.execute(
+      `INSERT INTO bucket_category_list (
+        user_id,
+        list_name,
+        post_id,
+        buddy_id,
+        is_default,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        user_id,
+        list_name,
+        post_id,
+        JSON.stringify(buddies_id || []),
+        is_default,
+      ]
+    );
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Bucket List created successfully.",
+      bucket_id: result.insertId, // Return the ID of the newly created post
+    });
+  } catch (error) {
+    console.error("Error in storing bucket:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
 async function storePost(req, res) {
   try {
     const user_id = req.user.userId; // Extracting user ID from the token
@@ -1758,7 +1952,7 @@ async function deleteComments(req, res) {
       "DELETE FROM comments WHERE id = ?",
       [id]
     );
-    console.log("===Comment Deleted===>", commentData);
+    //console.log("===Comment Deleted===>", commentData);
 
     if (commentData.affectedRows === 0) {
       return res.status(404).json({ error: "comment not found" });
@@ -1786,13 +1980,13 @@ async function deleteComments(req, res) {
 async function deleteReply(req, res) {
   try {
     const { replyId } = req.params;
-    console.log("====output===>", replyId);
+    //console.log("====output===>", replyId);
     const [existingComment] = await pool.execute(
       `SELECT * FROM comment_reply WHERE id = ?`,
       [replyId]
     );
 
-    console.log("reply not found", existingComment);
+    //console.log("reply not found", existingComment);
 
     if (existingComment.length === 0) {
       return res.status(409).json({
@@ -1805,7 +1999,7 @@ async function deleteReply(req, res) {
       [replyId]
     );
 
-    console.log("===comment=deleted====>", data);
+    //console.log("===comment=deleted====>", data);
     return res.status(200).json({
       message: "comment Deleted successfully",
     });
@@ -1923,8 +2117,8 @@ async function followAndUnfollowFollowing(req, res) {
 async function likeToReply(req, res) {
   const user_id = req.user.userId; // extracting from token
   const { reply_id } = req.params;
-  console.log("===reply_id==>", reply_id);
-  console.log("===user_id==>", user_id);
+  //console.log("===reply_id==>", reply_id);
+  //console.log("===user_id==>", user_id);
   try {
     //check reply exist or not.
     // const [
@@ -2135,7 +2329,7 @@ async function storeStory1(req, res) {
       story_text = "",
     } = req.body;
 
-    console.log("===media_url===>", media_url.length);
+    //console.log("===media_url===>", media_url.length);
     // Validate required fields
     if (!user_id) {
       return res.status(400).json({
@@ -2588,6 +2782,39 @@ async function editComment(req, res) {
   }
 }
 
+
+async function removeBucketCollection(req, res) {
+  try {
+    const UserId = req.user.userId; // Correct destructuring for UserId from params
+    const { bucketTitle } = req.params; // Ensure list_name is retrieved from the request body
+
+    // Execute the DELETE query
+    const [result] = await pool.execute(
+      `DELETE FROM bucket_category_list WHERE user_id = ? AND list_name = ?`, // SQL query should be a string
+      [UserId, bucketTitle]
+    );
+
+    // Check if any rows were affected (deleted)
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        error: "Bucket List not found",
+      });
+    }
+
+    // Success response
+    return res.status(200).json({
+      status:true,
+      message: "Bucket List Deleted Successfully",
+    });
+  } catch (error) {
+    console.error("===Error Removing Bucket List===>", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
+
 module.exports = {
   allPosts,
   postWithlikes,
@@ -2616,4 +2843,10 @@ module.exports = {
   deleteStory,
   shareStoryWithFriends,
   editComment,
+  storeBucketPost,
+  getAllBucketLists,
+  getAllCategoryLists,
+  getBucketListByName,
+  removeBucketCollection
+
 };
