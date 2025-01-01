@@ -5,6 +5,7 @@ import { getUserDetails, getUserPosts } from "../../redux/slices/authSlice";
 // import ProfilePageHeaderData from "./ProfilePageHeaderData";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
 import { useNavigate } from "react-router-dom";
+import ShowBadgeIcon from "./ShowBadgeIcons";
 
 const PostDataDetailPage = () => {
   const dispatch = useDispatch();
@@ -187,7 +188,39 @@ const PostDataDetailPage = () => {
                             <div className="flex items-center justify-between">
                               <h4 className="font-poppins text-[20px] text-[#212626] font-semibold flex items-center gap-[5px]">
                                 {post.user_name}
-                                <span className="ml-1 text-blue-500 text-xs">
+                                {/* Images beside h3 */}
+                                <div className="ml-1 flex space-x-1">
+                                  {post?.badge?.split("-")[0]?.trim() ==
+                                    "Solo Traveler" && (
+                                    // <img
+                                    //   src={badges["Solo Traveler"]?.trim()}
+                                    //   alt="BadgesIconFirst"
+                                    //   className="w-[24px] h-[24px]"
+                                    // />
+                                    <ShowBadgeIcon badge={post?.badge} />
+                                  )}
+
+                                  {post?.badge?.split("-")[0]?.trim() ==
+                                    "Luxury Traveler" && (
+                                    <ShowBadgeIcon badge={post?.badge} />
+                                  )}
+
+                                  {post?.badge?.split("-")[0]?.trim() ==
+                                    "Adventurer" && (
+                                    <ShowBadgeIcon badge={post?.badge} />
+                                  )}
+
+                                  {post?.badge?.split("-")[0]?.trim() ==
+                                    "Explorer" && (
+                                    <ShowBadgeIcon badge={post?.badge} />
+                                  )}
+
+                                  {post?.badge?.split("-")[0]?.trim() ==
+                                    "Foodie" && (
+                                    <ShowBadgeIcon badge={post?.badge} />
+                                  )}
+                                </div>
+                                {/* <span className="ml-1 text-blue-500 text-xs">
                                   <svg
                                     width="16"
                                     height="16"
@@ -206,7 +239,7 @@ const PostDataDetailPage = () => {
                                       fill="white"
                                     />
                                   </svg>
-                                </span>
+                                </span> */}
                               </h4>
                               <svg
                                 width="24"
@@ -257,7 +290,9 @@ const PostDataDetailPage = () => {
                           className="w-full rounded-[5px] h-[432px] object-cover"
                         /> */}
 
-                        {post.media_url[0].match(/\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/) ? (
+                        {post.media_url[0].match(
+                          /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/
+                        ) ? (
                           <video
                             src={post.media_url[0]}
                             alt="Post"

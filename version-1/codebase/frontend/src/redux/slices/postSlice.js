@@ -608,7 +608,7 @@ export const addCountOnStoryView = createAsyncThunk(
   }
 );
 
-// Thunk for deleteStory details(user can delete comment on it's post)
+// Thunk for deleteStory details
 export const deleteStory = createAsyncThunk(
   'post/deleteStory',
   async (storyID,{ rejectWithValue }) => {
@@ -696,6 +696,36 @@ export const editReply = createAsyncThunk(
       return data;
     } catch (error) {
       console.log("error in editReply call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for deletePost 
+export const deletePost = createAsyncThunk(
+  'post/deletePost',
+  async (postID,{ rejectWithValue }) => {
+    try {
+      // console.log("======postID======", postID);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/delete-post/${postID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in deletePost===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in deletePost call thunk", error.message)
       return rejectWithValue(error.message);
     }
   }
@@ -989,6 +1019,18 @@ const postSlice = createSlice({
         state.loading = false;
       })
       .addCase(editReply.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle deletePost
+      .addCase(deletePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deletePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

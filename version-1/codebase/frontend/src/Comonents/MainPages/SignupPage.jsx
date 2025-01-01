@@ -217,7 +217,7 @@ const SignupPage = () => {
         setFormDataError(formErrors);
       }
     
-      console.log("=====formErrors=====>", formErrors);
+      // console.log("=====formErrors=====>", formErrors);
     
       return Object.keys(formErrors).length === 0;
     }

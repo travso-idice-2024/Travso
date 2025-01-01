@@ -24,6 +24,7 @@ import Girl from "../../../assets/headerIcon/girl.jpg";
 import "../Header.css";
 import leftIcon from "../../../assets/lefticon.png";
 import dotThree from "../../../assets/dotThree.png";
+import blockIcon from "../../../assets/block-icon.png";
 import chevron_down from "../../../assets/chevron-down.png";
 import dots_vertical from "../../../assets/dots-vertical.png";
 import noto_fire from "../../../assets/noto_fire.png";
@@ -37,6 +38,7 @@ import {
   getUserBuddies,
   getUserDetails,
   getUserPosts,
+  unBlockAccount,
 } from "../../../redux/slices/authSlice";
 import {
   commentOnPost,
@@ -232,7 +234,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   // to handle like and unlike
   const handleLikeUnlike = async (postId) => {
-    console.log("===postId===>", postId);
+    // console.log("===postId===>", postId);
     try {
       const likeUnlikeResult = await dispatch(
         LikeUnlikePost({ post_id: postId })
@@ -353,6 +355,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
     return `${minutesDifference}m`;
   }
+
+  /* for validating edit time in comment */
+  function isTimeDifferenceWithinFiveMinutes(timestamp) {
+    const givenDate = new Date(timestamp);
+    const currentDate = new Date();
+  
+    // Calculate the absolute difference in milliseconds
+    const timeDifference = Math.abs(givenDate - currentDate);
+  
+    // Convert the difference to minutes
+    const minutesDifference = Math.floor(timeDifference / (1000 * 60));
+    // console.log("=====minutesDifference====>", minutesDifference)
+    // Check if the difference is within 5 minutes
+    return minutesDifference <= 5;
+  }
+  
 
   // Sample data for the popup
   const postDetails = {
@@ -617,18 +635,39 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     dispatch(getUserPosts());
   };
 
+  /* to block a user */
   const blockTheUser = async (blockId) => {
     try {
       // console.log("=====blockId===>", blockId);
       const response = await dispatch(blockAccount(blockId)).unwrap();
-      console.log("===response===>", response);
+      // console.log("===response===>", response);
       if (response) {
         setOpenDropdownId(null);
+        setOpenDropdownReplyId(null);
+        await dispatch(getCommentOnPost(postId));
+        await dispatch(getAllPosts());
       }
     } catch (error) {
       console.log("===error in blocktheuser===>", error);
     }
   };
+
+  /* to unblock an account */
+    const unBlockTheUser = async (unBlockId) => {
+      // console.log("=====unBlockId===>", unBlockId);
+      try {
+        const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+        // console.log("===response===>", response);
+        if (response) {
+          setOpenDropdownId(null);
+          setOpenDropdownReplyId(null);
+          await dispatch(getCommentOnPost(postId));
+          await dispatch(getAllPosts());
+        }
+      } catch (error) {
+        console.log("===error in unBlockTheUser===>", error);
+      }
+    };
 
   // console.log("===allposts===", allPosts)
 
@@ -1216,7 +1255,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                     </li> */}
 
                                           {userPosts?.user_id ===
-                                            userDetails?.id && (
+                                            userDetails?.id && isTimeDifferenceWithinFiveMinutes(userPosts?.created_at) && (
                                             <li
                                               className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
                                               onClick={() =>
@@ -1262,16 +1301,25 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                             userDetails?.id && (
                                             <li
                                               className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                              onClick={() =>
-                                                blockTheUser(userPosts?.user_id)
-                                              }
+                                              // onClick={() =>
+                                              //   blockTheUser(userPosts?.user_id)
+                                              // }
+                                              onClick={() => {
+                                                const isConfirmed = window.confirm(
+                                                  `Are you sure you want to ${userPosts?.is_blocked ? "unblock" : "block"} this user?`
+                                                );
+                                                if (isConfirmed) {
+                                                  userPosts?.is_blocked ? unBlockTheUser(userPosts?.user_id) : blockTheUser(userPosts?.user_id);
+                                                }
+                                              }}
                                             >
                                               <img
-                                                src={trash}
+                                                src={blockIcon}
                                                 alt="alert"
                                                 className="w-[20px] h-[20px] cursor-pointer mr-2"
                                               />{" "}
-                                              Block Account
+                                              {/* Block Account */}
+                                              {userPosts?.is_blocked ? "Unblock Account" : "Block Account"}
                                             </li>
                                           )}
                                         </ul>
@@ -1282,22 +1330,24 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   {openDropdownEditId === userPosts?.id && (
                                     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                                       <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
-                                        <div className="flex items-center justify-between p-2 px-4 ">
-                                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
-                                            Edit Comment
-                                          </h6>
+                                        
+                                          <div className="flex items-center justify-between p-2 px-4 ">
+                                            <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                              Edit Comment
+                                            </h6>
 
-                                          {/* Close Button (X) */}
-                                          <button
-                                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
-                                            onClick={() =>
-                                              setOpenDropdownEditId(null)
-                                            }
-                                            aria-label="Close"
-                                          >
-                                            &#x2715;
-                                          </button>
-                                        </div>
+                                            {/* Close Button (X) */}
+                                            <button
+                                              className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                              onClick={() =>
+                                                setOpenDropdownEditId(null)
+                                              }
+                                              aria-label="Close"
+                                            >
+                                              &#x2715;
+                                            </button>
+                                          </div>
+                                       
                                         <ul>
                                           {userPosts?.user_id ===
                                             userDetails?.id && (
@@ -1538,7 +1588,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                     </li> */}
 
                                                     {userReply?.user_id ===
-                                                      userDetails?.id && (
+                                                      userDetails?.id && isTimeDifferenceWithinFiveMinutes(userReply?.reply_created_at) && (
                                                       <li
                                                         className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
                                                         onClick={() =>
@@ -1583,18 +1633,27 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                       userDetails?.id && (
                                                       <li
                                                         className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                        onClick={() =>
-                                                          blockTheUser(
-                                                            userReply?.user_id
-                                                          )
-                                                        }
+                                                        // onClick={() =>
+                                                        //   blockTheUser(
+                                                        //     userReply?.user_id
+                                                        //   )
+                                                        // }
+                                                        onClick={() => {
+                                                          const isConfirmed = window.confirm(
+                                                            `Are you sure you want to ${userReply?.is_blocked ? "unblock" : "block"} this user?`
+                                                          );
+                                                          if (isConfirmed) {
+                                                            userReply?.is_blocked ? unBlockTheUser(userReply?.user_id) : blockTheUser(userReply?.user_id);
+                                                          }
+                                                        }}
                                                       >
                                                         <img
-                                                          src={trash}
+                                                          src={blockIcon}
                                                           alt="alert"
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />{" "}
-                                                        Block Account
+                                                        {/* Block Account */}
+                                                        {userReply?.is_blocked ? "Unblock Account" : "Block Account"}
                                                       </li>
                                                     )}
                                                   </ul>

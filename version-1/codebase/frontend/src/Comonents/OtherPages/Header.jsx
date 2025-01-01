@@ -103,6 +103,7 @@ const Header = () => {
     user: userDetails,
     userBuddies,
     allUsers,
+    error: reduxSliceError
   } = useSelector((state) => state.auth);
   const { allTags } = useSelector((state) => state.tagSlice);
   const { allPosts } = useSelector((state) => state.postSlice);
@@ -128,6 +129,13 @@ const Header = () => {
       dispatch(getAllPosts());
     }
   }, [dispatch]);
+
+  useEffect(() => {
+    if (reduxSliceError?.message === 'Unauthorized') {
+      localStorage.removeItem('token');
+      navigate('/login'); // Redirect to login page
+    }
+  }, [reduxSliceError, navigate]);
 
   const recentUsers = [
     { name: "Madhulika Gupta", img: girl },

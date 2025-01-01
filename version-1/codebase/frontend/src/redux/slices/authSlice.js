@@ -872,6 +872,35 @@ export const blockAccount = createAsyncThunk(
   }
 );
 
+// Thunk for unBlockAccount 
+export const unBlockAccount = createAsyncThunk(
+  'auth/unBlockAccount',
+  async (unBlockId,{ rejectWithValue }) => {
+    try {
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/auth/unblock-account/${unBlockId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in unBlockAccount===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in unBlockAccount call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 
 
@@ -1259,6 +1288,18 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(blockAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle unBlockAccount
+      .addCase(unBlockAccount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unBlockAccount.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(unBlockAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

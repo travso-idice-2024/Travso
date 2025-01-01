@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   getUserDetails,
+  getUserPosts,
   removeCoverImage,
   removeProfileImage,
   updateUserDetails,
@@ -15,6 +16,7 @@ import {
 import { fetchCities } from "../../redux/slices/stateCitySlice";
 import SuccessError from "./SuccessError";
 import "./EditProfile.css";
+import { getAllPosts } from "../../redux/slices/postSlice";
 // import dummyImage from "../../assets/user_image-removebg-preview.png";
 
 const genderOptions = [
@@ -330,18 +332,25 @@ const EditProfile = () => {
           return;
         }
         // console.log("userDetails", userDetails);
-        if(userDetails?.is_follow_selected == 1) {
-          navigate("/profile");
-          return;
-        }
+        // if(userDetails?.is_follow_selected == 1) {
+        //   navigate("/profile");
+        //   return;
+        // }
 
         const updateResult = await dispatch(
           updateUserDetails(formData)
         ).unwrap();
         console.log("updateResult", updateResult);
         if (updateResult) {
-          dispatch(getUserDetails());
-          navigate("/suggestion");
+          await dispatch(getUserDetails());
+          await dispatch(getUserPosts());
+          await dispatch(getAllPosts());
+          /* redirect according to follow selected from suggestion page */
+          if(userDetails?.is_follow_selected == 1) {
+            navigate("/profile");
+          } else {
+            navigate("/suggestion");
+          }
         }
       } catch (error) {
         console.log("error in catch part of handle save", error);

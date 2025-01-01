@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken } = require('../controllers/authController');
+const { registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken, unBlockUser } = require('../controllers/authController');
 const verifyToken = require("../utils/verifyToken");
 
 router.post('/signup', registerUser);
@@ -26,14 +26,15 @@ router.post("/cover-img-upload", verifyToken, uploadCoverImage);     // will be 
 router.get("/remove-profile-img", verifyToken, removeProfileImage);     // will be using with frontend
 router.get("/remove-cover-img", verifyToken, removeCoverImage);     // will be using with frontend
 router.get("/get-all-users", getallUsers);
-router.get("/logout",verifyToken, logOut);
-router.post("/add-search",verifyToken, addSearch);
-router.post("/update-follow-select",verifyToken, updateFollowSelect);
-router.get("/online-friends",verifyToken, onlineFriends);
-router.post("/add-buddy",verifyToken, addBuddies);
-router.post("/remove-buddy/:buddies_id",verifyToken, removeBuddy);
-router.post("/block-account/:block_id",verifyToken, blockAccount);
-router.get("/get-suggestions",verifyToken, suggestions);
+router.get("/logout", verifyToken, logOut);
+router.post("/add-search", verifyToken, addSearch);
+router.post("/update-follow-select", verifyToken, updateFollowSelect);
+router.get("/online-friends", verifyToken, onlineFriends);
+router.post("/add-buddy", verifyToken, addBuddies);
+router.post("/remove-buddy/:buddies_id", verifyToken, removeBuddy);
+router.post("/block-account/:block_id", verifyToken, blockAccount);
+router.post("/unblock-account/:blockId", verifyToken, unBlockUser);
+router.get("/get-suggestions", verifyToken, suggestions);
 router.post("/validate-token", validateToken);
 
 module.exports = router;

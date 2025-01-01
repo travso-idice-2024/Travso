@@ -858,6 +858,7 @@ async function getUserBuddies(req, res) {
       `
       SELECT DISTINCT
         u.id,
+        u.badge,
         u.profile_image,
         u.full_name,
         u.user_name,
@@ -906,7 +907,7 @@ async function getUserBuddies(req, res) {
       [userId, userId, userId, userId, userId] // Pass userId for both user-to-buddy and buddy-to-user checks
     );
 
-    console.log("===buddies data====>", buddies);
+    // console.log("===buddies data====>", buddies);
     return res.status(200).json({
       message: "Data fetched successfully",
       data: buddies,
@@ -1004,6 +1005,7 @@ async function getUserFollower(req, res) {
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
+        u.badge,
         u.user_name,
         u.full_name,
         u.profile_image,
@@ -1088,6 +1090,8 @@ async function toWhomUserFollows(req, res) {
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
+        u.badge,
+        u.description,
         u.user_name,
         u.full_name,
         u.profile_image,
@@ -1621,6 +1625,7 @@ async function removeBuddy(req, res) {
   }
 }
 
+// to block the an account
 async function blockAccount(req, res) {
   try {
     const userId = req.user.userId; // Extract user ID from token
@@ -1657,6 +1662,35 @@ async function blockAccount(req, res) {
     return res.status(500).json({
       error: "Error Blocking Account",
     });
+  }
+}
+
+// to unblock an account
+async function unBlockUser(req ,res){
+  try {
+    // const {userId} = req.params;
+    const userId = req.user.userId; // Extract user ID from token
+    const { blockId } = req.params;
+
+    console.table({
+      userId,
+      blockId
+    })
+
+    const unblock = await pool.execute(
+      `DELETE FROM block_user WHERE user_id = ? AND blocked_id = ?`, [userId, blockId]
+    );
+
+    console.log("22222222")
+    return res.status(200).json({
+      message:"Unblocked Successfully",
+      // data:[unblock]
+    });
+  } catch (error) {
+    console.log("===error==in unblock==>", error)
+    return res.status(500).json({
+      error:"Error"
+   });
   }
 }
 
@@ -1837,4 +1871,5 @@ module.exports = {
   blockAccount,
   suggestions,
   validateToken,
+  unBlockUser
 };

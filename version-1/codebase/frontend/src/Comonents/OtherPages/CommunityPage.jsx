@@ -9,11 +9,13 @@ import Travel from "../../assets/travel.png";
 import First from "../../assets/1.png";
 import BucketImageSecond from "../../assets/bucketimageSecond.png";
 import dotThree from "../../assets/dotThree.png";
+import trash from "../../assets/trash.png";
 import leftIcon from "../../assets/lefticon.png";
 import like from "../../assets/like.png";
 import Dialog from "../../assets/Dialog.png";
 import entypo_bucket from "../../assets/entypo_bucket.png";
 import send from "../../assets/headerIcon/send.png";
+import blockIcon from "../../assets/block-icon.png";
 import p1 from "../../assets/headerIcon/p1.png";
 import p2 from "../../assets/headerIcon/p2.png";
 import p3 from "../../assets/headerIcon/p3.png";
@@ -28,6 +30,7 @@ import {
   getOnlineFriends,
   getUserDetails,
   getUserPosts,
+  unBlockAccount,
 } from "../../redux/slices/authSlice";
 import CreateaPostPopup from "./AllPopupComponent/CreateaPostPopup";
 import PostDetailPopup from "./AllPopupComponent/PostDetailPopup";
@@ -35,6 +38,7 @@ import {
   addCountOnStoryView,
   commentOnStory,
   commitPost,
+  deletePost,
   getActiveStories,
   getAllPosts,
   LikeUnlikePost,
@@ -94,16 +98,25 @@ const CommunityPage = () => {
     useState(false);
   const [openDropdownIdUser, setOpenDropdownIdUser] = useState(null);
 
+  /* for edit and delete post popup */
+  const editPostRef = useRef(null);
+  const [openPostPopupId, setOpenPostPopupId] = useState(null);
+  const [showPostDotsOption, setShowPostDotsOption] = useState(false);
+
   const popupRef = useRef(null);
 
   const handleOutsideClick = (event) => {
     if (popupRef.current && !popupRef.current.contains(event.target)) {
       setIsotherDataVisible(false);
     }
+    if (editPostRef.current && !editPostRef.current.contains(event.target)) {
+      setOpenPostPopupId(null);
+      setShowPostDotsOption(false);
+    }
   };
 
   useEffect(() => {
-    if (isotherDataVisible) {
+    if (isotherDataVisible || openPostPopupId) {
       document.addEventListener("mousedown", handleOutsideClick);
     } else {
       document.removeEventListener("mousedown", handleOutsideClick);
@@ -111,7 +124,7 @@ const CommunityPage = () => {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [isotherDataVisible]);
+  }, [isotherDataVisible, openPostPopupId]);
 
   const hadleShowViewStory = (storyId) => {
     setIsShowvisibleStoryViewID(!isShowvisibleStoryViewID);
@@ -225,7 +238,7 @@ const CommunityPage = () => {
     onlineFriends,
     allUsers,
     user: userDetails,
-    error: reduxSliceError
+    error: reduxSliceError,
   } = useSelector((state) => state.auth);
   const { allPosts, activeStories } = useSelector((state) => state.postSlice);
 
@@ -250,9 +263,9 @@ const CommunityPage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (reduxSliceError?.message === 'Unauthorized') {
-      localStorage.removeItem('token');
-      navigate('/login'); // Redirect to login page
+    if (reduxSliceError?.message === "Unauthorized") {
+      localStorage.removeItem("token");
+      navigate("/login"); // Redirect to login page
     }
   }, [reduxSliceError, navigate]);
 
@@ -424,7 +437,7 @@ const CommunityPage = () => {
       if (commentResult) {
         // console.log("=====commentResult===>", commentResult.message);
         await dispatch(getAllPosts());
-        await dispatch(getAllTags());  
+        await dispatch(getAllTags());
         // await dispatch(getUserPosts());
         setPostData({
           description: "",
@@ -645,14 +658,33 @@ const CommunityPage = () => {
 
   /* to block an account */
   const blockTheUser = async (blockId) => {
+    // console.log("=====blockId===>", blockId);
     try {
       const response = await dispatch(blockAccount(blockId)).unwrap();
-      console.log("===response===>", response);
+      // console.log("===response===>", response);
       if (response) {
-        setOpenDropdownId(null);
+        setOpenPostPopupId(null);
+        setShowPostDotsOption(false);
+        await dispatch(getAllPosts());
       }
     } catch (error) {
       console.log("===error in blocktheuser===>", error);
+    }
+  };
+
+  /* to unblock an account */
+  const unBlockTheUser = async (unBlockId) => {
+    // console.log("=====unBlockId===>", unBlockId);
+    try {
+      const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+      // console.log("===response===>", response);
+      if (response) {
+        setOpenPostPopupId(null);
+        setShowPostDotsOption(false);
+        await dispatch(getAllPosts());
+      }
+    } catch (error) {
+      console.log("===error in unBlockTheUser===>", error);
     }
   };
 
@@ -681,7 +713,7 @@ const CommunityPage = () => {
   // console.log("===popupBuddiesReelVisible====>", popupBuddiesReelVisible)
 
   const toggleSettingStoryView = (storyId) => {
-    console.log("=====storyId====>", storyId);
+    // console.log("=====storyId====>", storyId);
     setOpenDropdownIdUser(storyId);
     // setDropdownOpenStoryViewSetting(!dropdownOpenStoryViewSetting);
   };
@@ -711,7 +743,33 @@ const CommunityPage = () => {
   const handleStoryPopupClose = () => {
     setIsCreateSocialPopup(false);
     setIsStoryLoaderOpen(true);
+  };
+
+  /* open popup on particular post */
+  const showDeleteEdit = async(post_id) => {
+    setOpenPostPopupId(post_id);
+    setShowPostDotsOption(true);
+  };
+
+  /* option close post dots option */
+  const closeDeleteEditPopup = async() => {
+    await setOpenPostPopupId(null);
+    await setShowPostDotsOption(false);
   }
+
+  /* delete the post */
+  const deleteThisPost = async (post_id) => {
+    try {
+      const deleteResponse = await dispatch(deletePost(post_id)).unwrap();
+      // console.log("====deleteResponse===>", deleteResponse);
+      if (deleteResponse) {
+        await dispatch(getUserPosts());
+        await dispatch(getAllPosts());
+      }
+    } catch (error) {
+      console.log("===error in delete post api===>", error);
+    }
+  };
 
   return (
     <>
@@ -802,18 +860,16 @@ const CommunityPage = () => {
                         isOpen={isCreateSocialPopup}
                         // onClose={() => setIsCreateSocialPopup(false)}
                         onClose={() => handleStoryPopupClose()}
-                        closeThroughCancel = {() => setIsCreateSocialPopup(false)}
+                        closeThroughCancel={() => setIsCreateSocialPopup(false)}
                       />
                     </div>
                   )}
-                  {
-                    isStoryLoaderOpen && (
-                      <StoryLoading 
-                       isOpenLoader={isStoryLoaderOpen}
-                       onCloseLoader={() => setIsStoryLoaderOpen(false)}
-                      />
-                    )
-                  }
+                  {isStoryLoaderOpen && (
+                    <StoryLoading
+                      isOpenLoader={isStoryLoaderOpen}
+                      onCloseLoader={() => setIsStoryLoaderOpen(false)}
+                    />
+                  )}
                 </div>
                 {activeStories &&
                   activeStories.slice(1).map((user, index) => {
@@ -958,7 +1014,10 @@ const CommunityPage = () => {
 
                                       {isotherDataVisible &&
                                         showTaggedBuddiesPostId == post?.id && (
-                                          <div ref={popupRef} className="absolute mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px]">
+                                          <div
+                                            ref={popupRef}
+                                            className="absolute mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px]"
+                                          >
                                             {post?.buddies_id?.map((buddy) => {
                                               return (
                                                 <div
@@ -1142,12 +1201,82 @@ const CommunityPage = () => {
                             </p>
                           </div>
                         </div>
-                        <div>
+                        <div
+                          className="relative cursor-pointer"
+                          onClick={() => showDeleteEdit(post?.id)}
+                        >
                           <img
                             src={dotThree}
                             alt="dotThree"
                             className="h-4 object-cover"
                           />
+                          {openPostPopupId === post?.id && showPostDotsOption && (
+                            <div
+                              className="bg-white border border-[#ddd] rounded-[8px] shadow-md w-[200px] absolute z-10 right-0"
+                              ref={editPostRef}
+                            >
+                              <div className="flex items-center justify-between p-2 px-4 ">
+                                <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                  More Options
+                                </h6>
+
+                                {/* Close Button (X) */}
+                                <button
+                                  className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                  // onClick={() => setOpenPostPopupId(null)}
+                                  onClick={() => closeDeleteEditPopup()}
+                                  aria-label="Close"
+                                >
+                                  &#x2715;
+                                </button>
+                              </div>
+                              <ul>
+                                {post?.user_id === userDetails?.id && (
+                                  <li
+                                    className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                    // onClick={() =>
+                                    onClick={() => {
+                                      const isConfirmed = window.confirm(
+                                        "Are you sure you want to delete this post?"
+                                      );
+                                      if (isConfirmed) {
+                                        deleteThisPost(post?.id);
+                                      }
+                                    }}
+                                  >
+                                    <img
+                                      src={trash}
+                                      alt="alert"
+                                      className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                    />
+                                    Delete Post
+                                  </li>
+                                )}
+
+                                {post?.user_id !== userDetails?.id && (
+                                  <li
+                                    className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                    onClick={() => {
+                                      const isConfirmed = window.confirm(
+                                        `Are you sure you want to ${post?.is_blocked ? "unblock" : "block"} this user?`
+                                      );
+                                      if (isConfirmed) {
+                                        post?.is_blocked ? unBlockTheUser(post?.user_id) : blockTheUser(post?.user_id);
+                                      }
+                                    }}
+                                  >
+                                    <img
+                                      src={blockIcon}
+                                      alt="alert"
+                                      className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                    />
+                                    {post?.is_blocked ? "Unblock Account" : "Block Account"}
+                                    
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
                       {/* Top Fixed Section */}
