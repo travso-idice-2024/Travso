@@ -143,9 +143,10 @@ const [coverPhoto, setCoverPhoto] = useState(null);
 
     if (!formData.dob.trim()) {
       formErrors.dob = "*Date of Birth is required.";
-    } else if (!isDobValid) {
-      formErrors.dob = "*User must be 16 years or older.";
     }
+    // } else if (!isDobValid) {
+    //   formErrors.dob = "*User must be 16 years or older.";
+    // }
 
     // City validation
     if (!formData.city.trim()) {
@@ -372,7 +373,7 @@ const [coverPhoto, setCoverPhoto] = useState(null);
           console.log("updateResult", updateResult);
           if (updateResult) {
             dispatch(getUserDetails());
-            navigate("/suggestion");
+            navigate("/settings");
           }
         } catch (error) {
           console.log("error in catch part of handle save", error);

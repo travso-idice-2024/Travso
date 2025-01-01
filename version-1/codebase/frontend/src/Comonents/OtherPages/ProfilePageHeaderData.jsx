@@ -13,7 +13,7 @@ import adventureBadge from "../../assets/Badges/adventurer.svg";
 import soloTraveller from "../../assets/Badges/soloTraveler.svg";
 import explorerBadge from "../../assets/Badges/Explorer.svg";
 import foodieBadge from "../../assets/Badges/Foddie.svg";
-import luxuryTravelerBadge from "../../assets/Badges/Foddie.svg";
+import luxuryTravelerBadge from "../../assets/Badges/LuxuryTravel.svg";
 import StoryLoading from "./AllStoriesPages/StoryLoading";
 
 const ProfilePageHeaderData = () => {
