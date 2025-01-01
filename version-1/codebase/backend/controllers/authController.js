@@ -1158,15 +1158,15 @@ const getUserDetails = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const userId = req.user.userId; // Assuming `id` is part of the token payload
-    const { firstName, lastName, gender, city, description, badge } = req.body;
+    const { firstName, lastName, gender, city, description, badge ,dob} = req.body;
 
     const fullName = `${firstName} ${lastName}`;
     // Update user in the database using email and mobile number
     const [updateResult] = await pool.execute(
       `UPDATE users 
-             SET first_name = ?, last_name = ?, full_name = ?, city = ?, description = ?, gender = ?, badge = ?
+             SET first_name = ?, last_name = ?, full_name = ?, city = ?, description = ?, gender = ?, badge = ? , dob= ?
              WHERE id = ?`,
-      [firstName, lastName, fullName, city, description, gender, badge, userId]
+      [firstName, lastName, fullName, city, description, gender, badge, dob, userId]
     );
 
     // Check if any rows were updated

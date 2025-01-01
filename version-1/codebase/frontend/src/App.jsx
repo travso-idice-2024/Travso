@@ -36,6 +36,7 @@ function App() {
         <Route path="/almostthere" element={<AlmostPage />} />
         {/* <Route element={<ProtectedRoute />}> */}
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingPages />} />
         {/* </Route> */}
         <Route path="/editprofile" element={<EditProfile />} />
         <Route path="/suggestion" element={<SuggestionPage />} />

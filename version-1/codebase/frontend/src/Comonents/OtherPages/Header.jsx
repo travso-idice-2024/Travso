@@ -921,7 +921,8 @@ const Header = () => {
                       </button>
                       <button className="w-full text-left text-gray-700 hover:bg-gray-100 p-2 rounded flex items-center">
                         <Settings className="mr-2 navitemDatas" />
-                        Settings
+                        
+                        <Link to="/settings" >Settings</Link>
                       </button>
                       <button
                         className="w-full text-left text-gray-700 hover:bg-gray-100 p-2 rounded flex items-center"
