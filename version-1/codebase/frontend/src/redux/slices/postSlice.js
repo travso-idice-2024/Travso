@@ -31,6 +31,63 @@ export const getAllPosts = createAsyncThunk(
   }
 );
 
+export const getArchivePosts = createAsyncThunk(
+  'post/getArchivePosts',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getArchivePosts`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in getAllPosts=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in getArchivePosts call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+export const getArchiveStory = createAsyncThunk(
+  'post/getArchiveStory',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getArchiveStory`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in getAllPosts=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in getArchiveStory call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 
 export const getAllBucketLists = createAsyncThunk(
   'post/getAllBucketLists',
@@ -770,7 +827,9 @@ const postSlice = createSlice({
     postComment: null,
     sharedPostData: null,
     activeStories: null,
-    allBucketListByName:null
+    allBucketListByName:null,
+    allArchivePosts:null,
+    allArchiveStory:null,
   },
   reducers: {
     resetPostsState: (state) => {
@@ -782,6 +841,8 @@ const postSlice = createSlice({
       state.allPosts = null;
       state.allBucketLists = null;
       state.allBucketListByName = null;
+      state.allArchivePosts= null;
+      state.allArchiveStory = null;
     },
    },
   extraReducers: (builder) => {
@@ -796,6 +857,34 @@ const postSlice = createSlice({
         state.allPosts = action.payload.data;
       })
       .addCase(getAllPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      
+      .addCase(getArchivePosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getArchivePosts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allArchivePosts = action.payload.data;
+      })
+      .addCase(getArchivePosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+
+      .addCase(getArchiveStory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getArchiveStory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allArchiveStory = action.payload.data;
+      })
+      .addCase(getArchiveStory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

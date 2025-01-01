@@ -2814,6 +2814,183 @@ async function removeBucketCollection(req, res) {
   }
 }
 
+async function getArchiveStory(req, res) {
+  try {
+    const userId  = req.user.userId;
+    const [
+      data,
+    ] = await pool.execute(
+      // SELECT * FROM stories WHERE user_id = ? AND expires_at < CURRENT_TIMESTAMP,
+      `SELECT 
+        s.*,
+        u.full_name,
+        u.user_name,
+        u.profile_image,
+        u.badge
+      FROM 
+        stories s
+      JOIN 
+        users u ON s.user_id = u.id
+      WHERE 
+        s.user_id = ? AND s.expires_at < CURRENT_TIMESTAMP
+        ORDER BY 
+        s.id DESC`,
+      
+      [userId]
+    );
+    return res.status(200).json({
+      message: "Archive Story Fetched.",
+      data: data,
+    });
+  } catch (error) {
+    console.log("====ERROR====>", error);
+    return res.status(500).json({
+      error: "Error fetching Data",
+    });
+  }
+}
+
+
+
+async function getArchivePosts(req, res) {
+  try {
+    const  UserId  = req.user.userId;
+
+    // Fetch the post data along with aggregate details
+    const [data] = await pool.execute(
+      `SELECT DISTINCT
+        p.id as pid,
+        p.is_archive,
+        p.user_id,
+        p.is_public,
+        p.description,
+        p.buddies_id,
+        p.tag_id,
+        p.location,
+        p.media_url,
+        p.status,
+        p.block_post,
+        u.full_name ,
+        u.user_name ,
+        u.profile_image ,
+        u.badge ,
+        p.created_at AS post_created_at,
+        p.updated_at AS post_updated_at,
+        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS total_likes,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS total_comments,
+        (SELECT COUNT(*) FROM shared_post sp WHERE sp.post_id = p.id) AS total_shared,
+        (SELECT COUNT(*) FROM bucket_list bl WHERE bl.post_id = p.id) AS total_buckets,
+        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS user_liked_post
+      FROM 
+        posts p 
+      JOIN users u ON p.user_id = u.id
+      LEFT JOIN buddies b ON b.buddies_id = p.user_id
+      LEFT JOIN followers f ON f.followee_id = p.user_id
+      WHERE 
+         p.is_archive = 1
+        AND p.status = 'active' 
+        AND  p.user_id = ?
+      ORDER BY 
+        p.created_at DESC;`,
+      [UserId, UserId] // Bind userId for likes, followers, and buddies
+    );
+
+    // Parse buddies_id and enrich with user details
+    const parsedData = await Promise.all(
+      data.map(async (post) => {
+        let taggedBuddies = [];
+        try {
+          const buddiesIds = post.buddies_id ? JSON.parse(post.buddies_id) : [];
+          if (buddiesIds.length > 0) {
+            const placeholders = buddiesIds.map(() => "?").join(", ");
+            const [buddiesData] = await pool.execute(
+              `SELECT 
+                id, 
+                full_name, 
+                profile_image, 
+                badge,
+                (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
+                (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count
+              FROM users
+              WHERE id IN (${placeholders})`,
+              buddiesIds
+            );
+            taggedBuddies = buddiesData;
+          }
+        } catch (parseError) {
+          console.error("Error parsing buddies_id:", parseError);
+        }
+
+        // Parse other JSON fields safely
+        let tagId = [];
+        let mediaUrl = [];
+        try {
+          tagId = post.tag_id ? JSON.parse(post.tag_id) : [];
+          mediaUrl = post.media_url ? JSON.parse(post.media_url) : [];
+        } catch (parseError) {
+          console.error("Error parsing tag_id or media_url:", parseError);
+        }
+
+        return {
+          ...post,
+          buddies_id: taggedBuddies, // Enriched buddies data
+          tag_id: tagId,
+          media_url: mediaUrl,
+          is_liked: !!post.is_liked,
+        };
+      })
+    );
+
+    console.log("===AllPosts Data===>", parsedData);
+    return res.status(200).json({
+      message: "Posts fetched successfully",
+      data: parsedData,
+    });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+async function unArchivePost(req, res) {
+  //console.log("api call");
+  try {
+    const userId = req.user.userId; // Extract user ID from request object
+    const { postId } = req.body; // Extract post ID from request body
+
+    // Check if the post exists and belongs to the user
+    const [rows] = await pool.execute(
+      'SELECT id FROM posts WHERE id = ? AND user_id = ?',
+      [postId, userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    // Update the archive status of the post
+    await pool.execute(
+      'UPDATE posts SET is_archive = 0 WHERE id = ?',
+      [postId]
+    );
+
+    return res.status(200).json({
+      status:true,
+      message: "Post archive status updated successfully.",
+    });
+  } catch (error) {
+    console.error("Error updating archive status:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+
 
 module.exports = {
   allPosts,
@@ -2847,6 +3024,9 @@ module.exports = {
   getAllBucketLists,
   getAllCategoryLists,
   getBucketListByName,
-  removeBucketCollection
+  removeBucketCollection,
+  getArchivePosts,
+  getArchiveStory,
+  unArchivePost
 
 };

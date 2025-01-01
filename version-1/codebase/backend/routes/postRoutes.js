@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {  allPosts, postWithlikes ,getAllCategoryLists,removeBucketCollection,  getBucketListByName, getActiveStories,getAllBucketLists , getPostComments ,getUserPosts, postComment, postLike, likeAnyComment, replyOnComment, storePost,storeBucketPost, deleteComments, deleteReply, followAndUnfollow, likeToReply, followAndUnfollowFollowing, getPostData, sharePostWithFriends, communityPagePosts, likeStory, replyOnStory, storeStory, storeStoryView, deleteStory, shareStoryWithFriends, editComment} = require('../controllers/postController');
+const {  allPosts, postWithlikes ,getAllCategoryLists,removeBucketCollection, unArchivePost ,getArchivePosts, getArchiveStory, getBucketListByName, getActiveStories,getAllBucketLists , getPostComments ,getUserPosts, postComment, postLike, likeAnyComment, replyOnComment, storePost,storeBucketPost, deleteComments, deleteReply, followAndUnfollow, likeToReply, followAndUnfollowFollowing, getPostData, sharePostWithFriends, communityPagePosts, likeStory, replyOnStory, storeStory, storeStoryView, deleteStory, shareStoryWithFriends, editComment} = require('../controllers/postController');
 const verifyToken = require("../utils/verifyToken");
 
 
@@ -12,7 +12,10 @@ const verifyToken = require("../utils/verifyToken");
 // router.get('/userpost',verifyToken, getUserPosts);
 
 // router.get('/allposts', postWithlikes);
+router.post('/unArchivePost', verifyToken, unArchivePost);
 router.get('/allposts', verifyToken, communityPagePosts );
+router.get('/getArchivePosts', verifyToken, getArchivePosts);
+router.get('/getArchiveStory', verifyToken, getArchiveStory);
 router.get('/getAllBucketLists',verifyToken,getAllBucketLists);
 router.get('/getAllCategoryLists', verifyToken, getAllCategoryLists);
 router.get('/getBucketListByName/:bucketTitle',verifyToken, getBucketListByName);
