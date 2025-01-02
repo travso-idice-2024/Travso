@@ -525,6 +525,35 @@ export const getUserPosts = createAsyncThunk(
   }
 );
 
+//thunk for getBlockedUser
+export const getBlockedUser = createAsyncThunk(
+  'auth/getBlockedUser',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/auth/getBlockedUser`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in getUserPosts=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in getBlockedUser call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 // Thunk for removeProfileImage details
 export const removeProfileImage = createAsyncThunk(
   'auth/removeProfileImage',
@@ -893,6 +922,7 @@ const authSlice = createSlice({
     allUsers: null,
     onlineFriends: null,
     suggestionList: null,
+    blockUsers:null,
   },
   reducers: {
     resetAuthState: (state) => {
@@ -906,6 +936,7 @@ const authSlice = createSlice({
       state.userFollowers = null;
       state.toWhomUserFollows = null;
       state.onlineFriends = null;
+      state.blockUsers = null;
     },
   },
   extraReducers: (builder) => {
@@ -1093,6 +1124,21 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      //handle getBlockedUser
+      .addCase(getBlockedUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBlockedUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.blockUsers = action.payload.data;
+      })
+      .addCase(getBlockedUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // Handle getUserFollowers
       .addCase(getUserFollowers.pending, (state) => {
         state.loading = true;

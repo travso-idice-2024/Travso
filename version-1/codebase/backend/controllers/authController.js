@@ -1810,7 +1810,76 @@ async function validateToken(req, res) {
   }
 }
 
+
+//getblock users list
+async function getBlockedUser(req, res) {
+  try {
+    //const { userId } = req.params;
+    const userId = req.user.userId;
+
+    const [blockedUsers] = await pool.execute(
+      `
+      SELECT 
+        bc.blocked_id,
+        u.user_name,
+        u.profile_image,
+        u.full_name,
+        u.is_influencer,
+        u.badge
+      FROM 
+        block_user bc
+      JOIN
+        users u 
+      ON
+        u.id = bc.blocked_id
+      WHERE 
+        bc.user_id = ?
+      `,
+      [userId]
+    );
+
+    const updatedBlockedUsers = blockedUsers.map((user) => ({
+      ...user,
+      buttonLabel: "Unblock",
+    }));
+    //console.log("====data=====.",updatedBlockedUsers)
+    return res.status(200).json({
+      message: "Blocked User list fetched successfully.",
+      data: updatedBlockedUsers, // Return the list directly
+    });
+  } catch (error) {
+    console.error("====error====>", error);
+    return res.status(500).json({
+      error: "Error fetching data",
+    });
+  }
+}
+
+
+async function unblockUser(req ,res){
+  try {
+    //const {userId} = req.params;
+    const userId = req.user.userId;
+    const {blockId} = req.body;
+
+    const [unblock] = await pool.execute(
+      "DELETE FROM block_user WHERE user_id = ? AND blocked_id = ?",
+      [userId, blockId]
+    );
+    return res.status(200).json({
+      message:"Unblocked Successfully",
+      data:[unblock]
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error:"Error"
+    });
+  }
+}
+
 module.exports = {
+  getBlockedUser,
+  unblockUser,
   registerUser,
   sendOTP,
   verifyOTP,
