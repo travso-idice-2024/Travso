@@ -407,7 +407,7 @@ const PostCard = () => {
 
   /* to open popup for edit post */
   const openEditPostPopup = async (postFullData) => {
-    console.log("===postFullData====>", postFullData);
+    // console.log("===postFullData====>", postFullData);
     await setEditPostData({
       description: postFullData?.description || "",
       location: postFullData?.location || "",
@@ -415,7 +415,7 @@ const PostCard = () => {
       tags: postFullData?.tag_id || [],
       media_url: postFullData?.media_url || [],
       post_id: postFullData?.id || "",
-      buddies_id: postFullData?.buddies_id || [],
+      buddies_id: postFullData?.my_buddies_id || [],
       is_public: postFullData?.is_public
     });
     await setIsEditPostPopup(true);
@@ -441,8 +441,9 @@ const PostCard = () => {
 
   /* to update a post */
   const handlePostUpdate = async() => {
+    console.log("==handlePostUpdate called==", editPostData);
+    // return;
     try {
-      console.log("==handlePostUpdate called==", editPostData);
       const updateResult = await dispatch(updatePost(editPostData)).unwrap();
       if(updateResult) {
         await dispatch(getAllPosts());
@@ -695,7 +696,7 @@ const PostCard = () => {
                                         );
                                       })}
                                     </div>
-                                  )}
+                                )}
                               </div>
                             )}
                           </div>
@@ -977,7 +978,7 @@ const PostCard = () => {
 
                   {/* Hashtags */}
                   <p className="text-left text-[#1DB2AA] mb-4">
-                    {post?.tag_id}
+                    {post?.tag_id?.join(" ")}
                   </p>
                 </div>
 

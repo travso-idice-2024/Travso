@@ -22,6 +22,7 @@ import ExplorerPage from './Comonents/OtherPages/ExplorerPage';
 import BuddiesRequestPage from './Comonents/OtherPages/BuddiesRequestPage';
 import SettingPages from './Comonents/OtherPages/AllSettingPages/SettingPages';
 import LandingPage from './Comonents/MainPages/LandingPage';
+import OtherUserPageHeader from './Comonents/OtherPages/OtherUserProfile/OtherUserPageHeader';
 
 
 function App() {
@@ -50,7 +51,10 @@ function App() {
         
         <Route path="/PostData" element={<PostDataDetailPage />} />
         {/* <Route path={`/:Krishna005/14`} element={<ShowSharedPost />} /> */}
-        <Route path="/:userName/:postId" element={<ShowSharedPost />} />
+        <Route path="/post/:userName/:postId" element={<ShowSharedPost />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile/:userName/:userId" element={<OtherUserPageHeader />} />
+        </Route>
       </Routes>
     </Router>
   );

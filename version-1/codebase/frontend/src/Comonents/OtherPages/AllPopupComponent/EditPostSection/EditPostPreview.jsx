@@ -424,7 +424,7 @@ const EditPostPreview = ({ isOpen, onClose, editPostData, handlePostUpdate }) =>
             {/* Hashtags */}
             {editPostData.tags.length > 0 && (
               <>
-                <p className="text-left text-[#1DB2AA] mb-2">{editPostData.tags}</p>
+                <p className="text-left text-[#1DB2AA] mb-2">{editPostData?.tags?.join(" ")}</p>
               </>
             )}
           </div>

@@ -1840,6 +1840,97 @@ async function validateToken(req, res) {
   }
 }
 
+// to get the details of other user
+async function getOtherUserDetail1(req, res){
+  try {
+
+    const userId = req.user.userId;
+    const { otherUser_id } = req.params;
+
+    const [data] = await pool.execute(
+      `SELECT 
+        u.full_name,
+        u.user_name,
+        u.description,
+        u.badge,
+        u.profile_image,
+        u.cover_image,
+        (SELECT COUNT(*) FROM followers f WHERE f.followee_id = ?) AS total_followers,
+        (SELECT COUNT (*) FROM buddies b WHERE user_id = ? AND buddies_id = ?) AS total_buddies
+      FROM 
+        users u 
+      WHERE id = ?`,[otherUser_id, otherUser_id, userId, otherUser_id]
+    )
+   
+    return res.status(200).json({
+      message:"Data Fetched",
+      data:data[0]
+    });
+  } catch (error) {
+    console.log("======data=====>",error);
+    return res.status(500).json({
+      message:"Internal server Error"
+   });
+  }
+}
+
+async function getOtherUserDetail(req, res) {
+  try {
+    const userId = req.user.userId; // Logged-in user ID 
+    const { otherUser_id } = req.params; // Other user's ID
+
+    // Query to fetch user details and relationship information
+    const [rows] = await pool.execute(
+      `SELECT 
+        u.full_name,
+        u.user_name,
+        u.description,
+        u.badge,
+        u.profile_image,
+        u.cover_image,
+        (SELECT COUNT(*) FROM followers f WHERE f.followee_id = ?) AS total_followers,
+        (SELECT COUNT(*) FROM buddies b WHERE b.user_id = ? AND b.buddies_id = ?) AS total_buddies,
+        EXISTS (
+          SELECT 1 
+          FROM buddies 
+          WHERE user_id = ? AND buddies_id = ?
+        ) AS is_buddies,
+        EXISTS (
+          SELECT 1
+          FROM followers
+          WHERE follower_id = ? AND followee_id = ?
+        ) AS is_follow
+      FROM 
+        users u 
+      WHERE id = ?`,
+      [
+        otherUser_id, // For total_followers
+        userId, otherUser_id, // For total_buddies
+        userId, otherUser_id, // For is_buddies
+        userId, otherUser_id, // For is_follow
+        otherUser_id // For user details
+      ]
+    );
+
+    const parsedData = rows.map((user) => ({
+      ...user,
+      is_buddies: !!user.is_buddies, // Convert to boolean
+      is_follow: !!user.is_follow,   // Convert to boolean
+    }));
+
+    // Respond with the fetched data
+    return res.status(200).json({
+      message: "Data Fetched",
+      data: parsedData[0], // Fetch the first row
+    });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    return res.status(500).json({
+      message: "Internal server Error",
+   });
+  }
+}
+
 module.exports = {
   registerUser,
   sendOTP,
@@ -1871,5 +1962,6 @@ module.exports = {
   blockAccount,
   suggestions,
   validateToken,
-  unBlockUser
+  unBlockUser,
+  getOtherUserDetail
 };

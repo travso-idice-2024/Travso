@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken, unBlockUser } = require('../controllers/authController');
+const { registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken, unBlockUser, getOtherUserDetail } = require('../controllers/authController');
 const verifyToken = require("../utils/verifyToken");
 
 router.post('/signup', registerUser);
@@ -36,5 +36,6 @@ router.post("/block-account/:block_id", verifyToken, blockAccount);
 router.post("/unblock-account/:blockId", verifyToken, unBlockUser);
 router.get("/get-suggestions", verifyToken, suggestions);
 router.post("/validate-token", validateToken);
+router.get("/other-user-detail/:otherUser_id", verifyToken, getOtherUserDetail);
 
 module.exports = router;

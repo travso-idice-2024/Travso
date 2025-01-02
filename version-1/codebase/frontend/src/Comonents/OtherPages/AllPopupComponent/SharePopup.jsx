@@ -48,7 +48,7 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
   const handleShare = async () => {
     try {
       const host = window.location.origin;
-      const link = `${host}/${userName}/${postId}`;
+      const link = `${host}/post/${userName}/${postId}`;
       const shareData = {
         post_id: postId,
         shared_to_id: shareIds,
@@ -97,7 +97,7 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
     try {
       // Replace `window.location.origin` with your desired host if needed
       const host = window.location.origin;
-      const link = `${host}/${userName}/${postId}`;
+      const link = `${host}/post/${userName}/${postId}`;
 
       console.log("====Generated Link===>", link);
 
@@ -119,8 +119,6 @@ const SharePopup = ({ isOpen, onClose, postId, userName }) => {
       document.body.classList.remove("no-scroll");
     };
   }, [isOpen]);
-
-  console.log("====buddieList====>",buddieList)
 
   if (!isOpen) return null;
 

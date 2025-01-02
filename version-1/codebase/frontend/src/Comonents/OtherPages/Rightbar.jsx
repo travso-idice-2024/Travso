@@ -425,7 +425,7 @@ const handleBuddyRemove = async(buddyId) => {
                       ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
-                onClick={() => handleAddBuddy(follower?.id)}
+                  onClick={() => handleAddBuddy(follower?.id)}
                 >
                   <svg
                     width="14"

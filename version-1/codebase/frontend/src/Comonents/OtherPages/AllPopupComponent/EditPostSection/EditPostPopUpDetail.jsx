@@ -401,7 +401,7 @@ const EditPostPopUpDetail = ({
           {/* Header */}
           <div className="px-4 flex justify-between items-center border-b border-gray-200 sticky top-0 bg-white z-10 md:h-[55px]">
             <h4 className="text-[#303037] font-ubuntu font-bold text-[24px]">
-              Create a Post
+              Update Post
             </h4>
             <button
               className="text-black hover:text-[#2DC6BE] font-bold text-xl"

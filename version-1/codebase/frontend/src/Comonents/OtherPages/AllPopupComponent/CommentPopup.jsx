@@ -241,7 +241,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       ).unwrap();
       if (likeUnlikeResult) {
         await dispatch(getAllPosts());
-        // await dispatch(getUserPosts());
+        await dispatch(getUserPosts());
         // handleFlashMessage(likeUnlikeResult.message, 'success');
       }
     } catch (error) {
@@ -279,7 +279,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           // handleFlashMessage(commentResult.message, 'success');
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
-          // await dispatch(getUserPosts());   // will be using getAllPosts later
+          await dispatch(getUserPosts());   // will be using getAllPosts later
           setCommentInputVal("");
           setTaggedUsers([]);
         }
@@ -306,7 +306,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         // await dispatch(getAllPosts());
         // handleFlashMessage(commentResult.message, 'success');
         await dispatch(getCommentOnPost(postId));
-        // await dispatch(getUserPosts());  // will be using getAllPosts later
+        await dispatch(getUserPosts());  // will be using getAllPosts later
         await dispatch(getAllPosts());
       }
     } catch (error) {
@@ -413,7 +413,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       if (deleteResponse) {
         setOpenDropdownId(null);
         await dispatch(getCommentOnPost(postId));
-        // await dispatch(getUserPosts());
+        await dispatch(getUserPosts());
         await dispatch(getAllPosts());
         handleFlashMessage(deleteResponse.message, "success");
       }
@@ -446,6 +446,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const response = await dispatch(likeAnyComment(commentId)).unwrap();
       if (response) {
         await dispatch(getCommentOnPost(postId));
+        await dispatch(getUserPosts());
       }
       // console.log("=====response=====>", response);
     } catch (error) {
@@ -458,6 +459,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const response = await dispatch(likeUnlikeAnyReply(replyId)).unwrap();
       if (response) {
         await dispatch(getCommentOnPost(postId));
+        await dispatch(getUserPosts());
       }
       // console.log("=====response=====>", response);
     } catch (error) {
@@ -579,7 +581,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           content: commentReplyInputVal[commentId],
         })
       ).unwrap();
-      console.log("====replyResponse===>", replyResponse);
+      // console.log("====replyResponse===>", replyResponse);
       if (replyResponse) {
         await dispatch(getCommentOnPost(postId));
         await dispatch(getUserPosts());
@@ -606,7 +608,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
             (prevComment) =>
               prevComment + `<img src="${reader.result}" alt="comment-image" />`
           );
-          console.log("Image uploaded successfully");
+          // console.log("Image uploaded successfully");
         } catch (error) {
           console.error("Image upload failed handleCommentImageUpload:", error);
         } finally {
@@ -684,7 +686,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const editResponse = await dispatch(
         editComment({ comment_id: commentId, content: EditInputVal })
       ).unwrap();
-      console.log("===editResponse===>", editResponse);
+      // console.log("===editResponse===>", editResponse);
       if (editResponse) {
         setEditInputVal("");
         setOpenDropdownEditId(null);
@@ -704,12 +706,13 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         const editResponse = await dispatch(
           editComment({ comment_id: commentId, content: EditInputVal })
         ).unwrap();
-        console.log("===editResponse==through enter button=>", editResponse);
+        // console.log("===editResponse==through enter button=>", editResponse);
         if (editResponse) {
           setEditInputVal("");
           setOpenDropdownEditId(null);
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
+          await dispatch(getUserPosts());
         }
       } catch (error) {
         console.log("error in edit api", error);
@@ -1026,7 +1029,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
                 {/* Hashtags */}
                 <p className="text-left text-[#1DB2AA] mb-2">
-                  {allPosts && allPosts[0]?.tag_id}
+                  {allPosts && allPosts[0]?.tag_id?.join(" ")}
                 </p>
               </div>
               {/*---------- Scrollable Part ---------*/}
@@ -1035,12 +1038,12 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
               <div className="flex items-center justify-between">
                 <ul className="flex gap-2">
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_likes) || ""} Love &nbsp;
+                    {(allPosts && allPosts[0]?.total_likes) || 0} {allPosts && allPosts[0]?.total_likes > 1 ? "Likes" : "Like"} &nbsp;
                     &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_comments) || ""} comments
+                    {(allPosts && allPosts[0]?.total_comments) || 0} {allPosts && allPosts[0]?.total_comments > 1 ? "comments" : "comment" }
                     &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
@@ -1050,7 +1053,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_shared) || ""} Shared
+                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared
                     &nbsp; &nbsp;
                   </li>
                 </ul>
