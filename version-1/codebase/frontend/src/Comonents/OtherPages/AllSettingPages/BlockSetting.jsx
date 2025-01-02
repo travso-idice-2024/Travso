@@ -4,11 +4,11 @@ import BadgesIconFirst from "../../../assets/BadgesIconFirst.png";
 import { useDispatch, useSelector } from "react-redux";
 import { getBlockedUser } from "../../../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
-import adventureBadge from "../../../assets/Badges/adventurer.svg";
-import soloTraveller from "../../../assets/Badges/soloTraveler.svg";
-import explorerBadge from "../../../assets/Badges/Explorer.svg";
-import foodieBadge from "../../../assets/Badges/Foddie.svg";
-import luxuryTravelerBadge from "../../../assets/Badges/LuxuryTravel.svg";
+import adventureBadge from "../../../assets/Badges/AD.svg";
+import soloTraveller from "../../../assets/Badges/ST.svg";
+import explorerBadge from "../../../assets/Badges/EX.svg";
+import foodieBadge from "../../../assets/Badges/FO.svg";
+import luxuryTravelerBadge from "../../../assets/Badges/LT.svg";
 const apiUrl = import.meta.env.VITE_API_URL;
 //getBlockedUser
 
@@ -61,7 +61,7 @@ const BlockSetting = () => {
   const [popupDataBlock, setPopupDataBlock] = useState(null);
 
   const { blockUsers } = useSelector((state) => state.auth || {});
-  //console.log("block users", blockUsers);
+  console.log("block users", blockUsers);
 
   useEffect(() => {
     if (!blockUsers) {
@@ -145,10 +145,10 @@ const BlockSetting = () => {
                             <img
                               src={badgeImage}
                               alt={`${badgeName} Badge`}
-                              className="w-[150px] h-[30px]"
+                              className="w-[150px] h-[30px] ml-[-37px]"
                             />
-                            <div className="absolute left-0 mt-1 hidden group-hover:block bg-[#2DC6BE] text-white text-sm p-2 rounded shadow-lg w-[250px] text-justify">
-                              {badgeDescription}
+                            <div className="absolute left-0 mt-1 hidden group-hover:block bg-[#2DC6BE] text-white text-sm p-2 rounded shadow-lg w-[100px] text-justify">
+                              {badgeName}
                             </div>
                           </div>
                         ) : null;
