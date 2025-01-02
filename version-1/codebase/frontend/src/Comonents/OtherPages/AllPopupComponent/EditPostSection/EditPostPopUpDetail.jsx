@@ -1,17 +1,12 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
-import Girl from "../../../assets/headerIcon/girl.jpg";
-import chevron_down from "../../../assets/chevron-down.png";
-import ImageBoxed from "../../../assets/ImageBoxed.png";
-import image_add_logo from "../../../assets/image_add_logo.png";
-import BadgesIconFirst from "../../../assets/BadgesIconFirst.png";
-import Select from "react-select";
-import "./AllPopupPage.css";
+import chevron_down from "../../../../assets/chevron-down.png";
+import ImageBoxed from "../../../../assets/ImageBoxed.png";
+import "../AllPopupPage.css";
 import { useDispatch, useSelector } from "react-redux";
-import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
-import PostDetailPopup from "./PostDetailPopup";
-import { fetchCities } from "../../../redux/slices/stateCitySlice";
-import ShowBadgeIcon from "../ShowBadgeIcons";
+// import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
+import dummyUserImage from "../../../../assets/user_image-removebg-preview.png";
+import ShowBadgeIcon from "../../ShowBadgeIcons";
 
 const options = [
   { value: "chocolate", label: "Chocolate" },
@@ -19,19 +14,19 @@ const options = [
   { value: "vanilla", label: "Vanilla" },
 ];
 
-const CreateaPostPopup = ({
+const EditPostPopUpDetail = ({
   isOpen,
   onClose,
   openPostDetail,
-  postData,
-  setPostData,
+  editPostData,
+  setEditPostData,
 }) => {
-
+  // console.log("===editPostData===>", editPostData);
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Select View");
   const [wordsCount, setWordsCount] = useState(
-    postData?.description?.length || 0
+    editPostData?.description?.length || 0
   );
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showTagBuddySuggestions, setShowBuddyTagSuggestions] = useState(false);
@@ -43,8 +38,8 @@ const CreateaPostPopup = ({
   const fileInputRef = useRef(null); // Create a ref for the file input
 
   const validateFields = () => {
-    const { description, location, buddies, tags, media_url, buddies_id } =
-      postData;
+    const { description, location, buddies, tags, media_url } =
+      editPostData;
 
     if (!description.trim() && media_url.length === 0) {
       return false;
@@ -52,19 +47,18 @@ const CreateaPostPopup = ({
     return true;
   };
 
-  const handlePostUpload = async () => {
+  /* to see post preview */
+  const goToPostPreview = async () => {
     // console.log("running");
     const isValid = await validateFields();
     if (isValid) {
       onClose();
-      // setIsPostDetailPopup(true);
       openPostDetail();
+      // setIsPostDetailPopup(true);
     } else {
       alert("At least discription or image is required.");
     }
   };
-
-  // console.log("===postData===>", postData);
 
   const handlePostDetailPopup = () => {
     setIsPostDetailPopup(false);
@@ -75,7 +69,7 @@ const CreateaPostPopup = ({
   const { user: userDetails, userBuddies } = useSelector((state) => state.auth);
 
   /* store data for post */
-  // const [postData, setPostData] = useState({
+  // const [editPostData, setEditPostData] = useState({
   //   description: "",
   //   location: "",
   //   buddies: [],
@@ -109,12 +103,12 @@ const CreateaPostPopup = ({
   /* handle public and private account choose */
   const handleOption = (option) => {
     if (option === "public") {
-      setPostData((prev) => ({
+      setEditPostData((prev) => ({
         ...prev,
         is_public: true,
       }));
     } else if (option === "private") {
-      setPostData((prev) => ({
+      setEditPostData((prev) => ({
         ...prev,
         is_public: false,
       }));
@@ -140,7 +134,7 @@ const CreateaPostPopup = ({
     const { value } = e.target;
     setWordsCount(value.length);
 
-    setPostData((prev) => ({
+    setEditPostData((prev) => ({
       ...prev,
       description: value,
     }));
@@ -149,15 +143,15 @@ const CreateaPostPopup = ({
   /* handle location set */
   const handleLocationInputChange = async (e) => {
     const { value } = e.target;
-    setPostData((prev) => ({
+    setEditPostData((prev) => ({
       ...prev,
       location: value,
     }));
   };
 
   const handleSuggestionClick = (person) => {
-    // Add selected buddy to postData.buddies
-    setPostData((prevData) => {
+    // Add selected buddy to editPostData.buddies
+    setEditPostData((prevData) => {
       const isAlreadyAdded = prevData.buddies.some(
         (buddy) => buddy.id === person.id
       );
@@ -168,7 +162,7 @@ const CreateaPostPopup = ({
           ...prevData.buddies,
           {
             id: person.id,
-            name: person.full_name,
+            full_name: person.full_name,
             profile_image: person.profile_image,
             followers_count: person.followers_count || 0,
             buddies_count: person.buddies_count || 0,
@@ -186,7 +180,7 @@ const CreateaPostPopup = ({
 
   // Remove buddy from tagged list
   const handleRemoveBuddy = (id) => {
-    setPostData((prevData) => ({
+    setEditPostData((prevData) => ({
       ...prevData,
       buddies: prevData.buddies.filter((buddy) => buddy.id !== id),
       buddies_id: prevData.buddies_id.filter((buddyId) => buddyId !== id),
@@ -195,7 +189,7 @@ const CreateaPostPopup = ({
 
   // Remove tag
   const handleRemoveTag = (tagName) => {
-    setPostData((prevData) => ({
+    setEditPostData((prevData) => ({
       ...prevData,
       tags: prevData.tags.filter((tag) => tag !== tagName),
     }));
@@ -208,7 +202,7 @@ const CreateaPostPopup = ({
 
   /* when user hits enter after writing tag */
   const handleTagEnter = async (e) => {
-    if (postData?.tags.length > 9) {
+    if (editPostData?.tags.length > 9) {
       alert("Only 10 tags are acceptable");
       return;
     }
@@ -218,7 +212,7 @@ const CreateaPostPopup = ({
         console.log("need keyword #");
         return;
       }
-      setPostData((prevData) => {
+      setEditPostData((prevData) => {
         const isAlreadyAdded = prevData.tags.some((tag) => tag === tagInput);
         if (isAlreadyAdded) return prevData; // Avoid duplicates
         return {
@@ -231,8 +225,8 @@ const CreateaPostPopup = ({
   };
 
   const handleTagInputChange = async (e) => {
-    // console.log("===postData?.tags.length====>", postData?.tags.length);
-    if (postData?.tags.length > 9) {
+    // console.log("===editPostData?.tags.length====>", editPostData?.tags.length);
+    if (editPostData?.tags.length > 9) {
       alert("Only 10 tags are acceptable");
       return;
     }
@@ -268,7 +262,7 @@ const CreateaPostPopup = ({
       const filesArray = Array.from(files); // Convert FileList to an array
 
       // Check if total files exceed the limit
-      const currentMediaCount = postData.media_url.length;
+      const currentMediaCount = editPostData.media_url.length;
       if (currentMediaCount + filesArray.length > MAX_FILES) {
         alert(`You can upload maximum 4 files/images at once.`);
         return; // Do not process the files
@@ -306,7 +300,7 @@ const CreateaPostPopup = ({
     }
   };
 
-  // console.log("===postData===>", postData);
+  // console.log("===editPostData===>", editPostData);
 
   /* working on drop of video or image */
   const handleDrop = (e) => {
@@ -317,14 +311,14 @@ const CreateaPostPopup = ({
     }
   };
 
-  /* for setting image in postData */
+  /* for setting image in editPostData */
   const handleFileSelect1 = (files) => {
     const file = files[0];
     const reader = new FileReader();
 
     reader.onloadend = () => {
       const imageUrl = reader.result; // Base64 encoded image
-      setPostData((prevState) => ({
+      setEditPostData((prevState) => ({
         ...prevState,
         media_url: [...prevState.media_url, imageUrl], // Add image URL to media_url array
       }));
@@ -333,7 +327,7 @@ const CreateaPostPopup = ({
     reader.readAsDataURL(file); // Read the file as base64
   };
 
-  /* save image or video in postData state */
+  /* save image or video in editPostData state */
   const handleFileSelect = (files) => {
     for (let img in files) {
       const file = files[img];
@@ -341,7 +335,7 @@ const CreateaPostPopup = ({
 
       reader.onloadend = () => {
         const imageUrl = reader.result; // Base64 encoded image
-        setPostData((prevState) => ({
+        setEditPostData((prevState) => ({
           ...prevState,
           media_url: [...prevState.media_url, imageUrl], // Add image URL to media_url array
         }));
@@ -354,7 +348,7 @@ const CreateaPostPopup = ({
   // Remove image from media_url
   const handleRemoveImage = (index) => {
     // console.log("=====index====>", index);
-    setPostData((prevState) => {
+    setEditPostData((prevState) => {
       const newMediaUrl = prevState.media_url.filter((_, i) => i !== index);
       return {
         ...prevState,
@@ -363,16 +357,16 @@ const CreateaPostPopup = ({
     });
   };
 
-  /* set postData to initial state if popup is closed */
+  /* set editPostData to initial state if popup is closed */
   const handlePopUpClose = () => {
-    setPostData({
+    setEditPostData({
       description: "",
       location: "",
       buddies: [],
       tags: [],
       media_url: [],
       is_public: true,
-      buddies_id: [],
+      post_id: "",
     });
     onClose();
   };
@@ -388,6 +382,8 @@ const CreateaPostPopup = ({
       document.body.classList.remove("no-scroll");
     };
   }, [isOpen]);
+
+  // console.log("=====editpostdata===>", editPostData);
 
   if (!isOpen) return null;
 
@@ -479,7 +475,7 @@ const CreateaPostPopup = ({
                     className="flex items-center justify-center w-[120px] h-[24px] bg-[#FFFFFF] border border-[#D5D5D5] text-[#6D6D6D] font-normal text-[14px] rounded-full focus:outline-none"
                     onClick={() => setDropdownOpen((prev) => !prev)}
                   >
-                    {postData?.is_public ? "Public" : "Private"}
+                    {editPostData?.is_public ? "Public" : "Private"}
                     <img
                       src={chevron_down}
                       alt="Chevron"
@@ -524,7 +520,7 @@ const CreateaPostPopup = ({
                     placeholder="Your Story in few words..."
                     className="font-inter font-medium text-[16px] text-[#212626] w-full p-3 h-[132px] bg-[#F0F7F7] rounded-[8px] border-1 border-[#F5F5F5] placeholder:text-[#869E9D] focus:outline-none focus:ring-1 focus:ring-[#5E6F78] placeholder:font-inter placeholder:font-medium placeholder:text-[16px]"
                     maxLength="300"
-                    value={postData?.description || ""}
+                    value={editPostData?.description || ""}
                     onChange={(e) => handleDescriptionChange(e)}
                   ></textarea>
                 </div>
@@ -543,7 +539,7 @@ const CreateaPostPopup = ({
                     type="text"
                     onChange={(e) => handleLocationInputChange(e)}
                     placeholder="eg: Mysore"
-                    value={postData?.location || ""}
+                    value={editPostData?.location || ""}
                     className="flex-grow font-inter font-medium text-[16px] text-[#212626] w-full p-3 h-[48px] bg-[#F0F7F7] rounded-[8px] border-1 border-[#F5F5F5] placeholder:text-[#869E9D] focus:outline-none focus:ring-1 focus:ring-[#5E6F78] placeholder:font-inter placeholder:font-medium placeholder:text-[16px]"
                   />
                 </div>
@@ -562,7 +558,7 @@ const CreateaPostPopup = ({
                     onChange={(e) => handleBuddyTag(e)}
                   />
 
-                  {postData.buddies.map((buddy) => (
+                  {editPostData.buddies.map((buddy) => (
                     <span
                       key={buddy.id}
                       className="absolute left-2 top-2 inline-flex items-center gap-2 bg-[#E8F5F5] text-[#2DC6BE] px-3 py-1 rounded-full text-sm"
@@ -606,17 +602,17 @@ const CreateaPostPopup = ({
 
                   <div className="relative flex flex-wrap items-center gap-2 p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5]">
                     {/* Tag Show inside input */}
-                    {postData.buddies.map((buddy) => (
+                    {editPostData?.buddies?.map((buddy) => (
                       <span
-                        key={buddy.id}
+                        key={buddy?.id}
                         className="inline-flex items-center justify-center gap-2 bg-[#09857E] text-white w-[90px] h-[24px] rounded-[4px] text-[12px] font-inter font-medium p-2"
                       >
                         {/* {buddy.name} */}
-                        {buddy.name.length > 6
-                          ? `${buddy.name.slice(0, 6)}...`
-                          : buddy.name}
+                        {buddy?.full_name?.length > 6
+                          ? `${buddy?.full_name?.slice(0, 6)}...`
+                          : buddy.full_name}
                         <button
-                          onClick={() => handleRemoveBuddy(buddy.id)}
+                          onClick={() => handleRemoveBuddy(buddy?.id)}
                           className="text-[#2DC6BE] font-bold"
                         >
                           <svg
@@ -642,7 +638,7 @@ const CreateaPostPopup = ({
                     <input
                       type="text"
                       placeholder={
-                        postData.buddies.length === 0 ? "eg: @calvin" : ""
+                        editPostData.buddies.length === 0 ? "eg: @calvin" : ""
                       }
                       className="flex-grow font-inter font-medium text-[16px] text-[#212626] h-[30px] bg-transparent outline-none placeholder:text-[#869E9D] placeholder:font-medium"
                       value={buddyInput}
@@ -676,7 +672,7 @@ const CreateaPostPopup = ({
 
                   <div className="relative flex flex-wrap items-center gap-2 p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5]">
                     {/* Tag Show inside input */}
-                    {postData.tags.map((tag) => (
+                    {editPostData.tags.map((tag) => (
                       <span
                         key={tag}
                         className="inline-flex items-center justify-center gap-2 bg-[#09857E] text-white w-[108px] h-[24px] rounded-[4px] text-[12px] font-inter font-medium "
@@ -710,7 +706,7 @@ const CreateaPostPopup = ({
                       onKeyDown={(e) => handleTagEnter(e)}
                       onChange={(e) => handleTagInputChange(e)}
                       placeholder={
-                        postData.tags.length === 0 ? "eg: #travel" : ""
+                        editPostData.tags.length === 0 ? "eg: #travel" : ""
                       }
                       value={tagInput}
                       className="flex-grow font-inter font-medium text-[16px] text-[#212626] h-[30px] bg-transparent outline-none placeholder:text-[#869E9D] placeholder:font-medium"
@@ -742,7 +738,7 @@ const CreateaPostPopup = ({
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {postData.tags.map((tag) => (
+                  {editPostData.tags.map((tag) => (
                     <span
                       key={tag}
                       className="inline-flex items-center gap-2 bg-[#E8F5F5] text-[#2DC6BE] px-3 py-1 rounded-full text-sm"
@@ -791,29 +787,35 @@ const CreateaPostPopup = ({
                 >
                   <div
                     className={`flex flex-col ${
-                      postData.media_url.length > 0
+                      editPostData.media_url.length > 0
                         ? "items-start"
                         : "items-center"
                     } justify-center gap-2`}
                   >
                     <div className="cursor-pointer flex flex-col items-center">
-                      {postData.media_url.length > 0 ? (
+                      {editPostData.media_url.length > 0 ? (
                         <div className="flex gap-2">
-                          {postData.media_url.map((url, index) => (
+                          {editPostData.media_url.map((url, index) => (
                             <div
                               key={index}
                               className="relative inline-block items-start"
                             >
-                              {url.startsWith("data:image/") ? (
-                                // Render image for image files
+                              {url.includes("image") ||
+                              /\.(jpeg|jpg|png|gif|bmp|webp|svg|ico)$/i.test(
+                                url
+                              ) ? (
+                                // Render image for any image extension or MIME type
                                 <img
                                   key={index}
                                   src={url}
                                   alt={`Uploaded ${index}`}
                                   className="w-[100px] h-[110px] object-cover rounded-[8px]"
                                 />
-                              ) : url.startsWith("data:video/") ? (
-                                // Render video for video files
+                              ) : url.includes("video") ||
+                                /\.(mp4|mkv|mov|avi|flv|wmv|webm|ogg)$/i.test(
+                                  url
+                                ) ? (
+                                // Render video for any video extension or MIME type
                                 <video
                                   key={index}
                                   src={url}
@@ -917,7 +919,7 @@ const CreateaPostPopup = ({
                   <button
                     type="button"
                     className="font-inter font-medium text-[14px] flex items-center justify-center bg-[#2DC6BE] text-white rounded-[7px] w-[82px] h-[36px]"
-                    onClick={() => handlePostUpload()}
+                    onClick={() => goToPostPreview()}
                   >
                     Next
                   </button>
@@ -941,4 +943,4 @@ const CreateaPostPopup = ({
   );
 };
 
-export default CreateaPostPopup;
+export default EditPostPopUpDetail;

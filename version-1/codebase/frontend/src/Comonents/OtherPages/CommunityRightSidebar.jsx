@@ -101,6 +101,9 @@ const CommunityRightSidebar = () => {
       const response = await dispatch(addBuddy(buddyId));
       if(response) {
         await dispatch(getSuggestionList());
+        await dispatch(getUserBuddies());
+        await dispatch(getUserFollowers());
+        await dispatch(toWhomUserIsFollowing());
       }
     } catch (error) {
       console.log("==error in handleAddBuddy==", error);
@@ -114,6 +117,9 @@ const CommunityRightSidebar = () => {
       const response = await dispatch(removeBuddy(buddyId));
       if(response) {
         await dispatch(getSuggestionList());
+        await dispatch(getUserBuddies());
+        await dispatch(getUserFollowers());
+        await dispatch(toWhomUserIsFollowing());
       }
     } catch (error) {
       console.log("==error in handleBuddyRemove ===>", error);

@@ -30,6 +30,7 @@ import {
   deletePost,
   getAllPosts,
   LikeUnlikePost,
+  updatePost,
 } from "../../redux/slices/postSlice";
 import SuccessError from "./SuccessError";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
@@ -46,6 +47,9 @@ import luxuryTravelerBadge from "../../assets/Badges/LT.svg";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import { useNavigate } from "react-router-dom";
 import { getAllTags } from "../../redux/slices/tagSlices";
+import PostLoading from "./AllStoriesPages/PostLoading";
+import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
+import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
 
 const PostCard = () => {
   const dispatch = useDispatch();
@@ -58,12 +62,29 @@ const PostCard = () => {
   const [activePostId, setActivePostId] = useState(null);
   const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
   const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
+  const [isPostLoaderOpen, setIsPostLoaderOpen] = useState(false);
   const [currentIndices, setCurrentIndices] = useState({});
 
   /* for edit and delete post popup */
   const [openPostPopupId, setOpenPostPopupId] = useState(null);
   const [showPostDotsOption, setShowPostDotsOption] = useState(false);
+  const [isEditPostPopup, setIsEditPostPopup] = useState(false);
+  const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
 
+  /* used when we are editing any post */
+  const [editPostData, setEditPostData] = useState({
+    description: "",
+    location: "",
+    buddies: [],
+    tags: [],
+    media_url: [],
+    is_public: true,
+    buddies_id:[],
+    post_id: ""
+  });
+
+
+  /* used when we are uploading a post */
   const [postData, setPostData] = useState({
     description: "",
     location: "",
@@ -123,30 +144,6 @@ const PostCard = () => {
       // handleFlashMessage(errorMessage, 'error')
     }
   };
-
-  // for comment time difference
-  function getHoursFromNow(timestamp) {
-    const givenDate = new Date(timestamp);
-    const currentDate = new Date();
-
-    // Calculate the absolute difference in milliseconds
-    const timeDifference = Math.abs(givenDate - currentDate);
-
-    // Convert the difference to hours
-    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
-    const minutesDifference = Math.floor(timeDifference / (1000 * 60)) % 60;
-
-    if (hoursDifference >= 24) {
-      const days = Math.floor(hoursDifference / 24);
-      return `${days}d`;
-    }
-
-    if (hoursDifference >= 1) {
-      return `${hoursDifference}h`;
-    }
-
-    return `${minutesDifference}m`;
-  }
 
   // Sample data for the popup
   const postDetails = {
@@ -300,12 +297,13 @@ const PostCard = () => {
     // isOpen();
   };
 
+  /* to upload a post */
   const handlePostUpload = async () => {
     try {
-      const commentResult = await dispatch(commitPost(postData)).unwrap();
-      if (commentResult) {
-        // await dispatch(getAllPosts());
+      const uploadResult = await dispatch(commitPost(postData)).unwrap();
+      if (uploadResult) {
         await dispatch(getUserPosts());
+        await dispatch(getAllPosts());
         await dispatch(getAllTags());
         setPostData({
           description: "",
@@ -317,7 +315,8 @@ const PostCard = () => {
           buddies_id: [],
         });
         setIsPostDetailPopup(false);
-        // handleFlashMessage(commentResult.message, 'success');
+        setIsPostLoaderOpen(true);
+        handleFlashMessage("Post Uploaded Successfully", "success");
       }
     } catch (error) {
       console.log("error in handlePostUpload", error);
@@ -397,6 +396,7 @@ const PostCard = () => {
       const deleteResponse = await dispatch(deletePost(post_id)).unwrap();
       // console.log("====deleteResponse===>", deleteResponse);
       if (deleteResponse) {
+        handleFlashMessage("Post Deleted Successfully", "success");
         await dispatch(getUserPosts());
         await dispatch(getAllPosts());
       }
@@ -404,6 +404,69 @@ const PostCard = () => {
       console.log("===error in delete post api===>", error);
     }
   };
+
+  /* to open popup for edit post */
+  const openEditPostPopup = async (postFullData) => {
+    console.log("===postFullData====>", postFullData);
+    await setEditPostData({
+      description: postFullData?.description || "",
+      location: postFullData?.location || "",
+      buddies: postFullData?.buddies_id || [],
+      tags: postFullData?.tag_id || [],
+      media_url: postFullData?.media_url || [],
+      post_id: postFullData?.id || "",
+      buddies_id: postFullData?.buddies_id || [],
+      is_public: postFullData?.is_public
+    });
+    await setIsEditPostPopup(true);
+  };
+
+  const closeEditPostPopup = async () => {
+    setPostData({
+      description: "",
+      location: "",
+      buddies: [],
+      tags: [],
+      media_url: [],
+      is_public: true,
+    });
+    setIsEditPostPopup(false);
+  };
+
+  /* to open editable popup on edit click in edit preview section */
+  const handleEditPostDetailPopup = () => {
+    setIsEditPreviewOpen(false);
+    setIsEditPostPopup(true);
+  };
+
+  /* to update a post */
+  const handlePostUpdate = async() => {
+    try {
+      console.log("==handlePostUpdate called==", editPostData);
+      const updateResult = await dispatch(updatePost(editPostData)).unwrap();
+      if(updateResult) {
+        await dispatch(getAllPosts());
+        await dispatch(getUserPosts());
+        setEditPostData({
+          description: "",
+          location: "",
+          buddies: [],
+          tags: [],
+          media_url: [],
+          is_public: true,
+          buddies_id:[],
+          post_id: ""
+        })
+        setIsEditPreviewOpen(false);
+        setIsPostLoaderOpen(true);
+        handleFlashMessage("Post Updated Successfully", "success");
+      }
+      
+    } catch (error) {
+      console.log("===error in handlePostUpdate===>", error);
+      handleFlashMessage("Something went wrong", "error");
+    }
+  }
 
   // console.log("====openpostpopupid=====", openPostPopupId);
 
@@ -448,6 +511,37 @@ const PostCard = () => {
                 onClose={handlePostDetailPopup}
                 postData={postData}
                 handlePostUpload={handlePostUpload}
+              />
+            </>
+          )}
+
+          {isPostLoaderOpen && (
+            <PostLoading
+              isOpenLoader={isPostLoaderOpen}
+              onCloseLoader={() => setIsPostLoaderOpen(false)}
+            />
+          )}
+
+          {/* open filled popup from backend data */}
+          {isEditPostPopup && (
+            <EditPostPopUpDetail
+              isOpen={isEditPostPopup}
+              onClose={() => setIsEditPostPopup(false)}
+              // onClose={() => closeEditPostPopup()}
+              openPostDetail={() => setIsEditPreviewOpen(true)}
+              editPostData={editPostData}
+              setEditPostData={setEditPostData}
+            />
+          )}
+
+          {/* show edited post preview */}
+          {isEditPreviewOpen && (
+            <>
+              <EditPostPreview
+                isOpen={isEditPreviewOpen}
+                onClose={() => handleEditPostDetailPopup()}
+                editPostData={editPostData}
+                handlePostUpdate={handlePostUpdate}
               />
             </>
           )}
@@ -676,25 +770,38 @@ const PostCard = () => {
                         </div>
                         <ul>
                           {post?.user_id === userDetails?.id && (
-                            <li
-                              className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
-                              // onClick={() =>
-                              onClick={() => {
-                                const isConfirmed = window.confirm(
-                                  "Are you sure you want to delete this post?"
-                                );
-                                if (isConfirmed) {
-                                  deleteThisPost(post?.id);
-                                }
-                              }}
-                            >
-                              <img
-                                src={trash}
-                                alt="alert"
-                                className="w-[20px] h-[20px] cursor-pointer mr-2"
-                              />
-                              Delete Post
-                            </li>
+                            <>
+                              <li
+                                className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                onClick={() => {
+                                  const isConfirmed = window.confirm(
+                                    "Are you sure you want to delete this post?"
+                                  );
+                                  if (isConfirmed) {
+                                    deleteThisPost(post?.id);
+                                  }
+                                }}
+                              >
+                                <img
+                                  src={trash}
+                                  alt="alert"
+                                  className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                />
+                                Delete Post
+                              </li>
+                              {/* Edit Post */}
+                              <li
+                                className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                onClick={() => openEditPostPopup(post)}
+                              >
+                                <img
+                                  src={trash}
+                                  alt="alert"
+                                  className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                />
+                                Edit Post
+                              </li>
+                            </>
                           )}
                         </ul>
                       </div>

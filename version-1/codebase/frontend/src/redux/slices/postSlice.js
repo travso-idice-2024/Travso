@@ -206,10 +206,10 @@ export const commitPost = createAsyncThunk(
       }
 
       const data = await response.json();
-      // console.log("=====data===in commentOnReply===>", data);
+      // console.log("=====data===in commitPost===>", data);
       return data;
     } catch (error) {
-      console.log("error in commentOnReply call thunk", error.message)
+      console.log("error in commitPost call thunk", error.message)
       return rejectWithValue(error.message);
     }
   }
@@ -731,6 +731,37 @@ export const deletePost = createAsyncThunk(
   }
 );
 
+// Thunk for updatePost details
+export const updatePost = createAsyncThunk(
+  'post/updatePost',
+  async (postData,{ rejectWithValue }) => {
+    try {
+  
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/update-post/${postData?.post_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in updatePost===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in updatePost call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 
 const postSlice = createSlice({
   name: 'postSlice',
@@ -1031,6 +1062,18 @@ const postSlice = createSlice({
         state.loading = false;
       })
       .addCase(deletePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle updatePost
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updatePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

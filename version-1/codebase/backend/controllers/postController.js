@@ -112,12 +112,13 @@ async function communityPagePosts(req, res) {
           tag_id: tagId,
           media_url: mediaUrl,
           is_liked: !!post.is_liked,
-          is_blocked: !!post.is_blocked
+          is_blocked: !!post.is_blocked,
+          is_public: !!post.is_public
         };
       })
     );
 
-    console.log('===alldata===>', parsedData);
+    // console.log('===alldata===>', parsedData);
     return res.status(200).json({
       message: 'Data fetched successfully',
       data: parsedData,
@@ -651,7 +652,7 @@ async function getUserPosts1(req , res){
               ...post,
               media_url: post.media_url ? JSON.parse(post.media_url) : [],
               tag_id: post.tag_id ? JSON.parse(post.tag_id) : [],
-              buddies_id: post.buddies_id ? JSON.parse(post.buddies_id) : []
+              buddies_id: post.buddies_id ? JSON.parse(post.buddies_id) : [],
             };
           });
   
@@ -752,6 +753,7 @@ async function getUserPosts1(req , res){
             tag_id: tagId,
             media_url: mediaUrl,
             is_liked: !!post.is_liked,
+            is_public: !!post.is_public
           };
         })
       );
@@ -2558,6 +2560,105 @@ async function deletePost(req, res) {
  }
 }
 
+async function updatePost(req, res) {
+  try {
+    const user_id = req.user.userId; 
+    const { post_id } = req.params; 
+
+    const {
+      is_public,
+      description,
+      buddies_id,
+      tags,
+      location,
+      media_url,
+      status,
+      block_post,
+    } = req.body;
+
+    // Validate required fields
+    if (!post_id) {
+      return res.status(400).json({
+        message: "Missing required fields (post_id).",
+      });
+    }
+
+    // Fetch existing post to validate ownership
+    const [existingPost] = await pool.execute(
+      `SELECT * FROM posts WHERE id = ? AND user_id = ?`,
+      [post_id, user_id]
+    );
+
+    if (existingPost.length === 0) {
+      return res.status(404).json({
+        message: "Post not found or not authorized to update.",
+      });
+    }
+
+    const postMedia = [];
+
+    // Process and validate media_url if provided
+    if (Array.isArray(media_url) && media_url.length > 0) {
+      for (let media of media_url) {
+        try {
+          const base64Data = media.replace(/^data:(.*);base64,/, "");
+          const mimeType = media.match(/^data:(.*);base64,/)[1];
+          const extension = mimeType.split("/")[1];
+
+          const fileName = `post_${Date.now()}.${extension}`;
+          const filePath = path.join(POST_UPLOAD_DIR, fileName);
+          const mediaPath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
+          postMedia.push(mediaPath);
+
+          await fs.promises.writeFile(filePath, base64Data, { encoding: "base64" });
+        } catch (err) {
+          console.error("Failed to save media:", err);
+          return res.status(500).json({ error: "Failed to save media." });
+        }
+      }
+    }
+
+    // Update post in the database
+    await pool.execute(
+      `UPDATE posts 
+       SET 
+         is_public = ?,
+         description = ?,
+         buddies_id = ?,
+         tag_id = ?,
+         location = ?,
+         media_url = ?,
+         status = ?,
+         block_post = ?,
+         updated_at = NOW()
+       WHERE id = ? AND user_id = ?`,
+      [
+        is_public !== undefined ? is_public : existingPost[0].is_public,
+        description || existingPost[0].description,
+        JSON.stringify(buddies_id) || existingPost[0].buddies_id,
+        JSON.stringify(tags) || existingPost[0].tag_id,
+        location || existingPost[0].location,
+        JSON.stringify(postMedia.length > 0 ? postMedia : JSON.parse(existingPost[0].media_url)),
+        status || existingPost[0].status,
+        block_post !== undefined ? block_post : existingPost[0].block_post,
+        post_id,
+        user_id,
+      ]
+    );
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Post updated successfully.",
+      post_id: post_id,
+    });
+  } catch (error) {
+    console.error("Error in updating post:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+   });
+  }
+}
+
 module.exports = {
     allPosts,
     postWithlikes,
@@ -2587,5 +2688,6 @@ module.exports = {
     shareStoryWithFriends,
     editComment,
     editReply,
-    deletePost
+    deletePost,
+    updatePost
 }

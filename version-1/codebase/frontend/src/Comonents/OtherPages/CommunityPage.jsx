@@ -43,6 +43,7 @@ import {
   getAllPosts,
   LikeUnlikePost,
   likeUnlikeStory,
+  updatePost,
 } from "../../redux/slices/postSlice";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
 import SavedPopup from "./AllPopupComponent/SavedPopup";
@@ -59,7 +60,11 @@ import StoryViewPageUser from "./AllStoriesPages/StoryViewPageUser";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import { useNavigate } from "react-router-dom";
 import StoryLoading from "./AllStoriesPages/StoryLoading";
+import PostLoading from "./AllStoriesPages/PostLoading";
 import { getAllTags } from "../../redux/slices/tagSlices";
+import SuccessError from "./SuccessError";
+import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
+import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();
@@ -74,6 +79,9 @@ const CommunityPage = () => {
   const [isFullTextVisible, setIsFullTextVisible] = useState(false);
   const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
   const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
+  const [isPostLoaderOpen, setIsPostLoaderOpen] = useState(false);
+  const [flashMessage, setFlashMessage] = useState("");
+  const [flashMsgType, setFlashMsgType] = useState("");
 
   /* for comment popup and saved popup */
   const [isCommentPopup, setIsCommentPopup] = useState(false);
@@ -102,6 +110,20 @@ const CommunityPage = () => {
   const editPostRef = useRef(null);
   const [openPostPopupId, setOpenPostPopupId] = useState(null);
   const [showPostDotsOption, setShowPostDotsOption] = useState(false);
+  const [isEditPostPopup, setIsEditPostPopup] = useState(false);
+  const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
+
+  /* used when we are editing any post */
+  const [editPostData, setEditPostData] = useState({
+    description: "",
+    location: "",
+    buddies: [],
+    tags: [],
+    media_url: [],
+    is_public: true,
+    buddies_id:[],
+    post_id: "",
+  });
 
   const popupRef = useRef(null);
 
@@ -223,6 +245,7 @@ const CommunityPage = () => {
 
   const images = postDetails.image;
 
+  /* used when we are uploading a post */
   const [postData, setPostData] = useState({
     description: "",
     location: "",
@@ -430,12 +453,22 @@ const CommunityPage = () => {
     // isOpen();
   };
 
+  // handle flash messages show
+  const handleFlashMessage = (errorMessage, msgType) => {
+    setFlashMessage(errorMessage);
+    setFlashMsgType(msgType);
+    setTimeout(() => {
+      setFlashMessage("");
+      setFlashMsgType("");
+    }, 3000); // Hide the message after 3 seconds
+  };
+
   const handlePostUpload = async () => {
     try {
       // console.log("postData", postData)
-      const commentResult = await dispatch(commitPost(postData)).unwrap();
-      if (commentResult) {
-        // console.log("=====commentResult===>", commentResult.message);
+      const uploadResult = await dispatch(commitPost(postData)).unwrap();
+      if (uploadResult) {
+        // console.log("=====uploadResult===>", uploadResult.message);
         await dispatch(getAllPosts());
         await dispatch(getAllTags());
         // await dispatch(getUserPosts());
@@ -449,7 +482,8 @@ const CommunityPage = () => {
           buddies_id: [],
         });
         setIsPostDetailPopup(false);
-        // handleFlashMessage(commentResult.message, 'success');
+        setIsPostLoaderOpen(true);
+        handleFlashMessage("Post uploaded successfully", "success");
       }
     } catch (error) {
       console.log("error in handlePostUpload", error);
@@ -746,16 +780,16 @@ const CommunityPage = () => {
   };
 
   /* open popup on particular post */
-  const showDeleteEdit = async(post_id) => {
+  const showDeleteEdit = async (post_id) => {
     setOpenPostPopupId(post_id);
     setShowPostDotsOption(true);
   };
 
   /* option close post dots option */
-  const closeDeleteEditPopup = async() => {
+  const closeDeleteEditPopup = async () => {
     await setOpenPostPopupId(null);
     await setShowPostDotsOption(false);
-  }
+  };
 
   /* delete the post */
   const deleteThisPost = async (post_id) => {
@@ -765,15 +799,72 @@ const CommunityPage = () => {
       if (deleteResponse) {
         await dispatch(getUserPosts());
         await dispatch(getAllPosts());
+        handleFlashMessage("Post deleted successfully", "success");
       }
     } catch (error) {
+      handleFlashMessage("Something went wrong", "success");
       console.log("===error in delete post api===>", error);
     }
+  };
+
+  /* to open editable popup on edit click in edit preview section */
+  const handleEditPostDetailPopup = () => {
+    setIsEditPreviewOpen(false);
+    setIsEditPostPopup(true);
+  };
+
+  /* to update a post */
+  const handlePostUpdate = async() => {
+      try {
+        console.log("==handlePostUpdate called==", editPostData);
+        const updateResult = await dispatch(updatePost(editPostData)).unwrap();
+        console.log("======updateResult=====>", updateResult);
+        if(updateResult) {
+          await dispatch(getAllPosts());
+          await dispatch(getUserPosts());
+          setEditPostData({
+            description: "",
+            location: "",
+            buddies: [],
+            tags: [],
+            media_url: [],
+            is_public: true,
+            buddies_id:[],
+            post_id: ""
+          })
+          setIsEditPreviewOpen(false);
+          setIsPostLoaderOpen(true);
+          handleFlashMessage("Post Updated Successfully", "success");
+        }
+        
+      } catch (error) {
+        console.log("===error in handlePostUpdate===>", error);
+        handleFlashMessage("Something went wrong", "error");
+      }
+    }
+
+  /* to open popup for edit post */
+  const openEditPostPopup = async (postFullData) => {
+    // console.log("===postFullData====>", postFullData);
+    await setEditPostData({
+      description: postFullData?.description || "",
+      location: postFullData?.location || "",
+      buddies: postFullData?.buddies_id || [],
+      tags: postFullData?.tag_id || [],
+      media_url: postFullData?.media_url || [],
+      post_id: postFullData?.id,
+      buddies_id: postFullData?.buddies_id || [],
+      is_public: postFullData?.is_public
+    });
+    await setIsEditPostPopup(true);
   };
 
   return (
     <>
       <Header />
+      {flashMessage && (
+        <SuccessError message={flashMessage} messageType={flashMsgType} />
+      )}
       <div className="bg-gray-50 py-3 px-3 flex justify-center items-center">
         <div className="container mx-auto flex gap-3">
           {/*-------- Left Section -------*/}
@@ -970,6 +1061,37 @@ const CommunityPage = () => {
                         onClose={handlePostDetailPopup}
                         postData={postData}
                         handlePostUpload={handlePostUpload}
+                      />
+                    </>
+                  )}
+
+                  {isPostLoaderOpen && (
+                    <PostLoading
+                      isOpenLoader={isPostLoaderOpen}
+                      onCloseLoader={() => setIsPostLoaderOpen(false)}
+                    />
+                  )}
+
+                  {/* open filled popup from backend data */}
+                  {isEditPostPopup && (
+                    <EditPostPopUpDetail
+                      isOpen={isEditPostPopup}
+                      onClose={() => setIsEditPostPopup(false)}
+                      // onClose={() => closeEditPostPopup()}
+                      openPostDetail={() => setIsEditPreviewOpen(true)}
+                      editPostData={editPostData}
+                      setEditPostData={setEditPostData}
+                    />
+                  )}
+
+                  {/* show edited post preview */}
+                  {isEditPreviewOpen && (
+                    <>
+                      <EditPostPreview
+                        isOpen={isEditPreviewOpen}
+                        onClose={() => handleEditPostDetailPopup()}
+                        editPostData={editPostData}
+                        handlePostUpdate={handlePostUpdate}
                       />
                     </>
                   )}
@@ -1210,73 +1332,95 @@ const CommunityPage = () => {
                             alt="dotThree"
                             className="h-4 object-cover"
                           />
-                          {openPostPopupId === post?.id && showPostDotsOption && (
-                            <div
-                              className="bg-white border border-[#ddd] rounded-[8px] shadow-md w-[200px] absolute z-10 right-0"
-                              ref={editPostRef}
-                            >
-                              <div className="flex items-center justify-between p-2 px-4 ">
-                                <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
-                                  More Options
-                                </h6>
+                          {openPostPopupId === post?.id &&
+                            showPostDotsOption && (
+                              <div
+                                className="bg-white border border-[#ddd] rounded-[8px] shadow-md w-[200px] absolute z-10 right-0"
+                                ref={editPostRef}
+                              >
+                                <div className="flex items-center justify-between p-2 px-4 ">
+                                  <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                    More Options
+                                  </h6>
 
-                                {/* Close Button (X) */}
-                                <button
-                                  className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
-                                  // onClick={() => setOpenPostPopupId(null)}
-                                  onClick={() => closeDeleteEditPopup()}
-                                  aria-label="Close"
-                                >
-                                  &#x2715;
-                                </button>
+                                  {/* Close Button (X) */}
+                                  <button
+                                    className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                    // onClick={() => setOpenPostPopupId(null)}
+                                    onClick={() => closeDeleteEditPopup()}
+                                    aria-label="Close"
+                                  >
+                                    &#x2715;
+                                  </button>
+                                </div>
+                                <ul>
+                                  {post?.user_id === userDetails?.id && (
+                                    <>
+                                      <li
+                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                        // onClick={() =>
+                                        onClick={() => {
+                                          const isConfirmed = window.confirm(
+                                            "Are you sure you want to delete this post?"
+                                          );
+                                          if (isConfirmed) {
+                                            deleteThisPost(post?.id);
+                                          }
+                                        }}
+                                      >
+                                        <img
+                                          src={trash}
+                                          alt="alert"
+                                          className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                        />
+                                        Delete Post
+                                      </li>
+                                      {/* Edit Post */}
+                                      <li
+                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                        onClick={() => openEditPostPopup(post)}
+                                      >
+                                        <img
+                                          src={trash}
+                                          alt="alert"
+                                          className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                        />
+                                        Edit Post
+                                      </li>
+                                    </>
+                                  )}
+
+                                  {post?.user_id !== userDetails?.id && (
+                                    <li
+                                      className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                      onClick={() => {
+                                        const isConfirmed = window.confirm(
+                                          `Are you sure you want to ${
+                                            post?.is_blocked
+                                              ? "unblock"
+                                              : "block"
+                                          } this user?`
+                                        );
+                                        if (isConfirmed) {
+                                          post?.is_blocked
+                                            ? unBlockTheUser(post?.user_id)
+                                            : blockTheUser(post?.user_id);
+                                        }
+                                      }}
+                                    >
+                                      <img
+                                        src={blockIcon}
+                                        alt="alert"
+                                        className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                      />
+                                      {post?.is_blocked
+                                        ? "Unblock Account"
+                                        : "Block Account"}
+                                    </li>
+                                  )}
+                                </ul>
                               </div>
-                              <ul>
-                                {post?.user_id === userDetails?.id && (
-                                  <li
-                                    className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
-                                    // onClick={() =>
-                                    onClick={() => {
-                                      const isConfirmed = window.confirm(
-                                        "Are you sure you want to delete this post?"
-                                      );
-                                      if (isConfirmed) {
-                                        deleteThisPost(post?.id);
-                                      }
-                                    }}
-                                  >
-                                    <img
-                                      src={trash}
-                                      alt="alert"
-                                      className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                    />
-                                    Delete Post
-                                  </li>
-                                )}
-
-                                {post?.user_id !== userDetails?.id && (
-                                  <li
-                                    className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
-                                    onClick={() => {
-                                      const isConfirmed = window.confirm(
-                                        `Are you sure you want to ${post?.is_blocked ? "unblock" : "block"} this user?`
-                                      );
-                                      if (isConfirmed) {
-                                        post?.is_blocked ? unBlockTheUser(post?.user_id) : blockTheUser(post?.user_id);
-                                      }
-                                    }}
-                                  >
-                                    <img
-                                      src={blockIcon}
-                                      alt="alert"
-                                      className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                    />
-                                    {post?.is_blocked ? "Unblock Account" : "Block Account"}
-                                    
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          )}
+                            )}
                         </div>
                       </div>
                       {/* Top Fixed Section */}
