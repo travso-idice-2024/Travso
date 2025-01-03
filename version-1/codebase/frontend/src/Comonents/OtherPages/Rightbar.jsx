@@ -4,7 +4,7 @@ import Boy1 from "../../assets/headerIcon/boy1.png";
 import Boy2 from "../../assets/headerIcon/boy2.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { addBuddy, getSuggestionList, getUserBuddies, getUserFollowers, removeBuddy, toWhomUserIsFollowing } from "../../redux/slices/authSlice";
 import { followUnfollow, followUnfollowOnFollowing } from "../../redux/slices/postSlice";
 
@@ -313,16 +313,18 @@ const handleBuddyRemove = async(buddyId) => {
                     alt={"Profile"}
                     className="w-[44px] h-[44px] rounded-full object-cover"
                   />
-                  <div>
-                    <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                      {buddy.full_name}
-                    </p>
-                    <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
-                      {buddy.user_name ? buddy.user_name.length > 9
-                        ? `@${buddy.user_name.slice(0, 9)}...`
-                        : `@${buddy.user_name}` : ""}
-                    </p>
-                  </div>
+                  <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
+                    <div>
+                      <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
+                        {buddy.full_name}
+                      </p>
+                      <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
+                        {buddy.user_name ? buddy.user_name.length > 9
+                          ? `${buddy.user_name.slice(0, 9)}...`
+                          : `${buddy.user_name}` : ""}
+                      </p>
+                    </div>
+                  </Link>
                 </div>
 
                 {/* Buttons */}
@@ -392,16 +394,18 @@ const handleBuddyRemove = async(buddyId) => {
                   alt={'Profile'}
                   className="w-[44px] h-[44px] rounded-full object-cover"
                 />
-                <div>
-                  <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                    {follower.full_name}
-                  </p>
-                  <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
-                  {follower.user_name ? follower.user_name.length > 9
-                      ? `@${follower.user_name.slice(0, 9)}...`
-                      : `@${follower.user_name}` : ""}
-                  </p>
-                </div>
+                <Link to={`/profile/${follower?.user_name}/${follower?.id}`} >
+                  <div>
+                    <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
+                      {follower.full_name}
+                    </p>
+                    <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
+                    {follower.user_name ? follower.user_name.length > 9
+                        ? `${follower.user_name.slice(0, 9)}...`
+                        : `${follower.user_name}` : ""}
+                    </p>
+                  </div>
+                </Link>
               </div>
 
               {/* Buttons */}
@@ -501,16 +505,18 @@ const handleBuddyRemove = async(buddyId) => {
                   alt={'Profile'}
                   className="w-[44px] h-[44px] rounded-full object-cover"
                 />
-                <div>
-                  <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                    {userFollowing.full_name}
-                  </p>
-                  <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
-                  {userFollowing.user_name ? userFollowing.user_name.length > 9
-                      ? `@${userFollowing.user_name.slice(0, 9)}...`
-                      : `@${userFollowing.user_name}` : ""}
-                  </p>
-                </div>
+                <Link to={`/profile/${userFollowing?.user_name}/${userFollowing?.id}`} >
+                  <div>
+                    <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
+                      {userFollowing.full_name}
+                    </p>
+                    <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
+                    {userFollowing.user_name ? userFollowing.user_name.length > 9
+                        ? `${userFollowing.user_name.slice(0, 9)}...`
+                        : `${userFollowing.user_name}` : ""}
+                    </p>
+                  </div>
+                </Link>
               </div>
 
               {/* Buttons */}

@@ -14,6 +14,7 @@ import {
   followUnfollowOnFollowing,
 } from "../../redux/slices/postSlice";
 import ShowBadgeIcon from "./ShowBadgeIcons";
+import { Link } from "react-router-dom";
 
 const BuddiesPostCard = () => {
   const dispatch = useDispatch();
@@ -145,36 +146,39 @@ const BuddiesPostCard = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex items-center gap-[8px]">
-                <h5 className="font-poppins text-left text-[20px] font-semibold mt-1 text-[#212626]">
-                  {profile.full_name}
-                </h5>
+                
+                <Link to={`/profile/${profile?.user_name}/${profile?.id}`} >
+                  <div className="flex items-center gap-[8px]">
+                  <h5 className="font-poppins text-left text-[20px] font-semibold mt-1 text-[#212626]">
+                    {profile.full_name}
+                  </h5>
 
-                {/* badge icon section  */}
-                {profile?.badge?.split("-")[0]?.trim() == "Solo Traveler" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {/* badge icon section  */}
+                  {profile?.badge?.split("-")[0]?.trim() == "Solo Traveler" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Luxury Traveler" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Luxury Traveler" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Adventurer" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Adventurer" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Explorer" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Explorer" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Foodie" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
-                </div>
+                  {profile?.badge?.split("-")[0]?.trim() == "Foodie" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
+                  </div>
 
-                <p className="font-inter text-left text-[16px] text-[#667877] font-medium -mt-1">
-                  {`@${profile.user_name}`}
-                </p>
+                  <p className="font-inter text-left text-[16px] text-[#667877] font-medium -mt-1">
+                    {`${profile.user_name}`}
+                  </p>
+                </Link>
                 {profile.is_influencer === 0 && (
                   <p className="bg-[#E5FFFE] w-[174px] h-[32px] font-inter font-medium text-left text-[12px] text-[#212626] my-2 rounded-full flex items-center justify-center">
                     {/* {profile.role} • {profile.trips} Trips */}

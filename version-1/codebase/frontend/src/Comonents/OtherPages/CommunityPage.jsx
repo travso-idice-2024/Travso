@@ -58,7 +58,7 @@ import StoryPage from "./AllStoriesPages/StoryPage";
 import StoryViewPage from "./AllStoriesPages/StoryViewPage";
 import StoryViewPageUser from "./AllStoriesPages/StoryViewPageUser";
 import ShowBadgeIcon from "./ShowBadgeIcons";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import StoryLoading from "./AllStoriesPages/StoryLoading";
 import PostLoading from "./AllStoriesPages/PostLoading";
 import { getAllTags } from "../../redux/slices/tagSlices";
@@ -1147,6 +1147,7 @@ const CommunityPage = () => {
                                                   className="flex flex-col"
                                                   key={buddy?.id}
                                                 >
+                                                  <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
                                                   <div className="flex items-center space-x-3">
                                                     <div>
                                                       <img
@@ -1164,27 +1165,10 @@ const CommunityPage = () => {
                                                           {buddy?.full_name}
                                                         </h5>
                                                         <div className="relative group">
-                                                          {/* <img
-                                                            src={
-                                                              badges[
-                                                                buddy?.badge?.split(
-                                                                  "-"
-                                                                )[0]
-                                                              ] ||
-                                                              BadgesIconFirst
-                                                            }
-                                                            alt="BadgesIconFirst"
-                                                            className="w-[24px] h-[24px]"
-                                                          /> */}
                                                           {buddy?.badge
                                                             ?.split("-")[0]
                                                             ?.trim() ==
                                                             "Solo Traveler" && (
-                                                            // <img
-                                                            //   src={badges["Solo Traveler"]?.trim()}
-                                                            //   alt="BadgesIconFirst"
-                                                            //   className="w-[24px] h-[24px]"
-                                                            // />
                                                             <ShowBadgeIcon
                                                               badge={
                                                                 buddy?.badge
@@ -1244,6 +1228,7 @@ const CommunityPage = () => {
                                                       </div>
                                                     </div>
                                                   </div>
+                                                  </Link>
                                                   <div className="md:w-[338px] md:h-[32px] flex items-center justify-center rounded-full bg-[#E5FFFE] mt-3">
                                                     <p className="font-inter font-medium items-center text-center text-[12px] text-[#212626]">
                                                       {

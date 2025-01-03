@@ -70,7 +70,7 @@ const OtherUserPageHeader = () => {
 
   /* handle add buddy */
   const handleAddBuddy = async (buddyId) => {
-    console.log("===handleAddBuddy===");
+    // console.log("===handleAddBuddy===");
     try {
       const response = await dispatch(addBuddy(buddyId)).unwrap();
       if (response) {
@@ -86,7 +86,7 @@ const OtherUserPageHeader = () => {
 
   /* handle remove buddy */
   const handleBuddyRemove = async (buddyId) => {
-    console.log("===handleBuddyRemove===");
+    // console.log("===handleBuddyRemove===");
     try {
       const response = await dispatch(removeBuddy(buddyId));
       if (response) {
@@ -102,7 +102,7 @@ const OtherUserPageHeader = () => {
 
   /* to follow unfollow user */
   const handleFollowUnfollowForFollowing = async (followeeID) => {
-    console.log("===handleFollowUnfollowForFollowing===");
+    // console.log("===handleFollowUnfollowForFollowing===");
     try {
       const followUnfollowResponse = await dispatch(
         followUnfollowOnFollowing(followeeID)

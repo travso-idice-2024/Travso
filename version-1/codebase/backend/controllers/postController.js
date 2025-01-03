@@ -83,6 +83,7 @@ async function communityPagePosts(req, res) {
                 full_name, 
                 profile_image, 
                 badge,
+                user_name,
                 (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
                 (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count
               FROM users
@@ -718,7 +719,8 @@ async function getUserPosts(req, res) {
               `SELECT 
                   id, 
                   full_name, 
-                  profile_image, 
+                  profile_image,
+                  user_name, 
                   badge,
                   (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
                   (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count

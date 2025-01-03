@@ -421,6 +421,7 @@ const Header = () => {
                             key={suggestion.id}
                             className="flex items-center justify-between py-2"
                           >
+                            <Link to={`/profile/${suggestion?.user_name}/${suggestion?.id}`} >
                             <div
                               className="flex items-center gap-3 cursor-pointer"
                               onClick={() => sendToSearch(suggestion.id)}
@@ -439,11 +440,13 @@ const Header = () => {
                                     {suggestion.user_name || "Test"}
                                   </p>
                                   <p className="text-sm text-gray-400">
-                                    {suggestion.total_followers}
+                                    {suggestion.total_followers} &nbsp;
+                                    {suggestion.total_followers > 1 ? 'Followers' : 'Follower'}
                                   </p>
                                 </div>
                               </div>
                             </div>
+                            </Link>
                             <button
                               className="text-[#000000] font-medium"
                               onClick={() => removeFromSeacrh(suggestion.id)}
@@ -463,28 +466,30 @@ const Header = () => {
                               key={index}
                               className="flex items-center justify-between py-2"
                             >
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={
-                                    suggestion.profile_image || dummyUserImage
-                                  }
-                                  alt={suggestion.user_name}
-                                  className="w-10 h-10 rounded-full"
-                                />
-                                <div>
-                                  <p className="font-medium text-left text-[#415365]">
-                                    {suggestion.full_name}
-                                  </p>
-                                  <div className="flex justify-between text-left gap-5">
-                                    <p className="text-sm text-gray-500">
-                                      {suggestion.user_name}
+                              <Link to={`/profile/${suggestion?.user_name}/${suggestion?.id}`} >
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={
+                                      suggestion.profile_image || dummyUserImage
+                                    }
+                                    alt={suggestion.user_name}
+                                    className="w-10 h-10 rounded-full"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-left text-[#415365]">
+                                      {suggestion.full_name}
                                     </p>
-                                    {/* <p className="text-sm text-gray-400">
-                                  {suggestion.total_followers} Followers
-                                </p> */}
+                                    <div className="flex justify-between text-left gap-5">
+                                      <p className="text-sm text-gray-500">
+                                        {suggestion.user_name}
+                                      </p>
+                                      {/* <p className="text-sm text-gray-400">
+                                    {suggestion.total_followers} Followers
+                                  </p> */}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
+                              </Link>
                               <button
                                 className="text-[#000000] font-medium"
                                 onClick={() => removeFromSeacrh(suggestion.id)}

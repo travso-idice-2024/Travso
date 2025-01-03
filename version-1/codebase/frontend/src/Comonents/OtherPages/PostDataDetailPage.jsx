@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserDetails, getUserPosts } from "../../redux/slices/authSlice";
 // import ProfilePageHeaderData from "./ProfilePageHeaderData";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import dotThree from "../../assets/dotThree.png";
 import morePostIcon from "../../assets/moreposticon.svg";
@@ -289,7 +289,7 @@ const PostDataDetailPage = () => {
                           />
                           <div className="ml-3 w-full">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-poppins text-[20px] text-[#212626] font-semibold flex items-center gap-[5px]">
+                              <h4 className="relative font-poppins text-[20px] text-[#212626] font-semibold flex items-center gap-[5px]">
                                 {post.full_name}{" "}
                                 {post?.buddies_id.length > 0 && (
                                   <>
@@ -299,12 +299,14 @@ const PostDataDetailPage = () => {
                                       onClick={() => togglePopup(post.id)}
                                     >
                                       {post?.buddies_id?.length} others{" "}
-                                      {/* 2 others Section start */}
-                                      {isotherDataVisible &&
+                                      
+                                    </span>
+                                    {/* 2 others Section start */}
+                                    {isotherDataVisible &&
                                         showTaggedBuddiesPostId == post?.id && (
                                           <div
                                             ref={popupRef}
-                                            className="absolute mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px]"
+                                            className="absolute top-[45px] md:ml-48 mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px] cursor-pointer"
                                           >
                                             {post?.buddies_id?.map((buddy) => {
                                               // console.log("===buddybadge", buddy?.badge?.split("-")[0])
@@ -313,103 +315,105 @@ const PostDataDetailPage = () => {
                                                   className="flex flex-col"
                                                   key={buddy?.id}
                                                 >
-                                                  <div className="flex items-center space-x-3">
-                                                    <div>
-                                                      <img
+                                                  <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
+                                                    <div className="flex items-center space-x-3">
+                                                      <div>
+                                                        <img
+                                                          src={
+                                                            buddy?.profile_image ||
+                                                            dummyUserImage
+                                                          }
+                                                          alt="Image"
+                                                          className="w-[44px] h-[44px] rounded-full"
+                                                        />
+                                                      </div>
+                                                      <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                          <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
+                                                            {buddy?.full_name}
+                                                          </h5>
+                                                          <div className="relative group">
+                                                            {/* <img
                                                         src={
-                                                          buddy?.profile_image ||
-                                                          dummyUserImage
+                                                          badges[
+                                                            buddy?.badge?.split(
+                                                              "-"
+                                                            )[0]
+                                                          ]?.trim() ||
+                                                          BadgesIconFirst
                                                         }
-                                                        alt="Image"
-                                                        className="w-[44px] h-[44px] rounded-full"
-                                                      />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                      <div className="flex items-center gap-2">
-                                                        <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
-                                                          {buddy?.full_name}
-                                                        </h5>
-                                                        <div className="relative group">
-                                                          {/* <img
-                                                      src={
-                                                        badges[
-                                                          buddy?.badge?.split(
-                                                            "-"
-                                                          )[0]
-                                                        ]?.trim() ||
-                                                        BadgesIconFirst
-                                                      }
-                                                      alt="BadgesIconFirst"
-                                                      className="w-[24px] h-[24px]"
-                                                    /> */}
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Solo Traveler" && (
-                                                            // <img
-                                                            //   src={badges["Solo Traveler"]?.trim()}
-                                                            //   alt="BadgesIconFirst"
-                                                            //   className="w-[24px] h-[24px]"
-                                                            // />
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                        alt="BadgesIconFirst"
+                                                        className="w-[24px] h-[24px]"
+                                                      /> */}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Solo Traveler" && (
+                                                              // <img
+                                                              //   src={badges["Solo Traveler"]?.trim()}
+                                                              //   alt="BadgesIconFirst"
+                                                              //   className="w-[24px] h-[24px]"
+                                                              // />
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Luxury Traveler" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Luxury Traveler" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Adventurer" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Adventurer" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Explorer" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Explorer" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Foodie" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Foodie" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                        <div>
+                                                          <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
+                                                            {buddy?.user_name}
+                                                          </p>
                                                         </div>
                                                       </div>
-                                                      <div>
-                                                        <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
-                                                          {buddy?.user_name}
-                                                        </p>
-                                                      </div>
                                                     </div>
-                                                  </div>
+                                                  </Link>
                                                   <div className="md:w-[338px] md:h-[32px] flex items-center justify-center rounded-full bg-[#E5FFFE] mt-3">
                                                     <p className="font-inter font-medium items-center text-center text-[12px] text-[#212626]">
                                                       {
@@ -433,7 +437,6 @@ const PostDataDetailPage = () => {
                                           </div>
                                         )}
                                       {/* 2 others Section end */}
-                                    </span>
                                   </>
                                 )}
                                 {/* Images beside h3 */}
