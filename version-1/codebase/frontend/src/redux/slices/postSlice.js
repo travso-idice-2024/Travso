@@ -322,10 +322,10 @@ export const commitPost = createAsyncThunk(
       }
 
       const data = await response.json();
-      // console.log("=====data===in commentOnReply===>", data);
+      // console.log("=====data===in commitPost===>", data);
       return data;
     } catch (error) {
-      console.log("error in commentOnReply call thunk", error.message)
+      console.log("error in commitPost call thunk", error.message)
       return rejectWithValue(error.message);
     }
   }
@@ -755,12 +755,12 @@ export const addCountOnStoryView = createAsyncThunk(
   }
 );
 
-// Thunk for deleteStory details(user can delete comment on it's post)
+// Thunk for deleteStory details
 export const deleteStory = createAsyncThunk(
   'post/deleteStory',
   async (storyID,{ rejectWithValue }) => {
     try {
-      console.log("======storyID======",storyID);
+      // console.log("======storyID======",storyID);
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiUrl}/post/delete-story/${storyID}`, {
         method: 'POST',
@@ -789,7 +789,7 @@ export const deleteStory = createAsyncThunk(
 export const editComment = createAsyncThunk(
   'post/editComment',
   async (commentData,{ rejectWithValue }) => {
-    console.log("=====commentData====>", commentData);
+    // console.log("=====commentData====>", commentData);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiUrl}/post/edit-comment`, {
@@ -811,6 +811,99 @@ export const editComment = createAsyncThunk(
       return data;
     } catch (error) {
       console.log("error in editComment call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+// Thunk for editReply details
+export const editReply = createAsyncThunk(
+  'post/editReply',
+  async (replyData,{ rejectWithValue }) => {
+    // console.log("=====replyData====>", replyData);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/edit-reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(replyData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in editReply=>", data);
+      return data;
+    } catch (error) {
+      console.log("error in editReply call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for deletePost 
+export const deletePost = createAsyncThunk(
+  'post/deletePost',
+  async (postID,{ rejectWithValue }) => {
+    try {
+      // console.log("======postID======", postID);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/delete-post/${postID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in deletePost===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in deletePost call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for updatePost details
+export const updatePost = createAsyncThunk(
+  'post/updatePost',
+  async (postData,{ rejectWithValue }) => {
+    try {
+  
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/update-post/${postData?.post_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in updatePost===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in updatePost call thunk", error.message)
       return rejectWithValue(error.message);
     }
   }
@@ -1168,6 +1261,42 @@ const postSlice = createSlice({
         state.loading = false;
       })
       .addCase(editComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle editReply
+      .addCase(editReply.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editReply.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(editReply.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle deletePost
+      .addCase(deletePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deletePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle updatePost
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updatePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

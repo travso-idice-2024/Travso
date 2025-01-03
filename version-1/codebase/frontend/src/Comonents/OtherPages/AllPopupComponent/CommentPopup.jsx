@@ -24,6 +24,7 @@ import Girl from "../../../assets/headerIcon/girl.jpg";
 import "../Header.css";
 import leftIcon from "../../../assets/lefticon.png";
 import dotThree from "../../../assets/dotThree.png";
+import blockIcon from "../../../assets/block-icon.png";
 import chevron_down from "../../../assets/chevron-down.png";
 import dots_vertical from "../../../assets/dots-vertical.png";
 import noto_fire from "../../../assets/noto_fire.png";
@@ -37,6 +38,7 @@ import {
   getUserBuddies,
   getUserDetails,
   getUserPosts,
+  unBlockAccount,
 } from "../../../redux/slices/authSlice";
 import {
   commentOnPost,
@@ -44,6 +46,7 @@ import {
   deleteCommentByPostOwner,
   deleteReplyByPostOwner,
   editComment,
+  editReply,
   getAllPosts,
   getCommentOnPost,
   likeAnyComment,
@@ -84,6 +87,11 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   const [openDropdownEditId, setOpenDropdownEditId] = useState(null);
   const [EditInputVal, setEditInputVal] = useState("");
   const [showEmojiPickerForEdit, setShowEmojiPickerForEdit] = useState(false);
+
+  /* for editing reply */
+  const [EditReplyInputVal, setEditReplyInputVal] = useState("");
+  const [openDropdownReplyEditId, setOpenDropdownReplyEditId] = useState(null);
+  const [showEmojiPickerForReplyEdit, setShowEmojiPickerForReplyEdit] = useState(false);
 
   // to show share popup
   const [activePostId, setActivePostId] = useState(null);
@@ -226,14 +234,14 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   // to handle like and unlike
   const handleLikeUnlike = async (postId) => {
-    console.log("===postId===>", postId);
+    // console.log("===postId===>", postId);
     try {
       const likeUnlikeResult = await dispatch(
         LikeUnlikePost({ post_id: postId })
       ).unwrap();
       if (likeUnlikeResult) {
         await dispatch(getAllPosts());
-        // await dispatch(getUserPosts());
+        await dispatch(getUserPosts());
         // handleFlashMessage(likeUnlikeResult.message, 'success');
       }
     } catch (error) {
@@ -271,7 +279,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           // handleFlashMessage(commentResult.message, 'success');
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
-          // await dispatch(getUserPosts());   // will be using getAllPosts later
+          await dispatch(getUserPosts());   // will be using getAllPosts later
           setCommentInputVal("");
           setTaggedUsers([]);
         }
@@ -298,7 +306,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         // await dispatch(getAllPosts());
         // handleFlashMessage(commentResult.message, 'success');
         await dispatch(getCommentOnPost(postId));
-        // await dispatch(getUserPosts());  // will be using getAllPosts later
+        await dispatch(getUserPosts());  // will be using getAllPosts later
         await dispatch(getAllPosts());
       }
     } catch (error) {
@@ -348,6 +356,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     return `${minutesDifference}m`;
   }
 
+  /* for validating edit time in comment */
+  function isTimeDifferenceWithinFiveMinutes(timestamp) {
+    const givenDate = new Date(timestamp);
+    const currentDate = new Date();
+  
+    // Calculate the absolute difference in milliseconds
+    const timeDifference = Math.abs(givenDate - currentDate);
+  
+    // Convert the difference to minutes
+    const minutesDifference = Math.floor(timeDifference / (1000 * 60));
+    // console.log("=====minutesDifference====>", minutesDifference)
+    // Check if the difference is within 5 minutes
+    return minutesDifference <= 5;
+  }
+  
+
   // Sample data for the popup
   const postDetails = {
     title: "Pankaj Reet Tech",
@@ -389,7 +413,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       if (deleteResponse) {
         setOpenDropdownId(null);
         await dispatch(getCommentOnPost(postId));
-        // await dispatch(getUserPosts());
+        await dispatch(getUserPosts());
         await dispatch(getAllPosts());
         handleFlashMessage(deleteResponse.message, "success");
       }
@@ -422,6 +446,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const response = await dispatch(likeAnyComment(commentId)).unwrap();
       if (response) {
         await dispatch(getCommentOnPost(postId));
+        await dispatch(getUserPosts());
       }
       // console.log("=====response=====>", response);
     } catch (error) {
@@ -434,6 +459,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const response = await dispatch(likeUnlikeAnyReply(replyId)).unwrap();
       if (response) {
         await dispatch(getCommentOnPost(postId));
+        await dispatch(getUserPosts());
       }
       // console.log("=====response=====>", response);
     } catch (error) {
@@ -555,7 +581,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           content: commentReplyInputVal[commentId],
         })
       ).unwrap();
-      console.log("====replyResponse===>", replyResponse);
+      // console.log("====replyResponse===>", replyResponse);
       if (replyResponse) {
         await dispatch(getCommentOnPost(postId));
         await dispatch(getUserPosts());
@@ -582,7 +608,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
             (prevComment) =>
               prevComment + `<img src="${reader.result}" alt="comment-image" />`
           );
-          console.log("Image uploaded successfully");
+          // console.log("Image uploaded successfully");
         } catch (error) {
           console.error("Image upload failed handleCommentImageUpload:", error);
         } finally {
@@ -611,18 +637,39 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     dispatch(getUserPosts());
   };
 
+  /* to block a user */
   const blockTheUser = async (blockId) => {
     try {
       // console.log("=====blockId===>", blockId);
       const response = await dispatch(blockAccount(blockId)).unwrap();
-      console.log("===response===>", response);
+      // console.log("===response===>", response);
       if (response) {
         setOpenDropdownId(null);
+        setOpenDropdownReplyId(null);
+        await dispatch(getCommentOnPost(postId));
+        await dispatch(getAllPosts());
       }
     } catch (error) {
       console.log("===error in blocktheuser===>", error);
     }
   };
+
+  /* to unblock an account */
+    const unBlockTheUser = async (unBlockId) => {
+      // console.log("=====unBlockId===>", unBlockId);
+      try {
+        const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+        // console.log("===response===>", response);
+        if (response) {
+          setOpenDropdownId(null);
+          setOpenDropdownReplyId(null);
+          await dispatch(getCommentOnPost(postId));
+          await dispatch(getAllPosts());
+        }
+      } catch (error) {
+        console.log("===error in unBlockTheUser===>", error);
+      }
+    };
 
   // console.log("===allposts===", allPosts)
 
@@ -631,12 +678,6 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     setOpenDropdownId(null);
     setOpenDropdownEditId(commentId);
     setEditInputVal(content);
-
-    // console.table({
-    //   commentId,
-    //   userId,
-    //   content
-    // })
   };
 
   /* to edit comment */
@@ -645,7 +686,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       const editResponse = await dispatch(
         editComment({ comment_id: commentId, content: EditInputVal })
       ).unwrap();
-      console.log("===editResponse===>", editResponse);
+      // console.log("===editResponse===>", editResponse);
       if (editResponse) {
         setEditInputVal("");
         setOpenDropdownEditId(null);
@@ -665,12 +706,13 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         const editResponse = await dispatch(
           editComment({ comment_id: commentId, content: EditInputVal })
         ).unwrap();
-        console.log("===editResponse==through enter button=>", editResponse);
+        // console.log("===editResponse==through enter button=>", editResponse);
         if (editResponse) {
           setEditInputVal("");
           setOpenDropdownEditId(null);
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
+          await dispatch(getUserPosts());
         }
       } catch (error) {
         console.log("error in edit api", error);
@@ -705,6 +747,78 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     // }
   };
 
+  /* open edit reply popup */
+  const editReplyPopUpOpen = async (replyId, userId, content) => {
+    setOpenDropdownReplyId(null);
+    setOpenDropdownReplyEditId(replyId);
+    setEditReplyInputVal(content);
+  };
+
+  /* to edit reply through send button */
+  const handleEditReply = async (replyId, userId) => {
+    try {
+      const editReplyResponse = await dispatch(
+        editReply({ reply_id: replyId, content: EditReplyInputVal })
+      ).unwrap();
+      // console.log("===editResponse==through send button=>", editReplyResponse);
+      if (editReplyResponse) {
+        setEditReplyInputVal("");
+        setOpenDropdownReplyEditId(null);
+        await dispatch(getCommentOnPost(postId));
+        await dispatch(getAllPosts());
+      }
+    } catch (error) {
+      console.log("==error in edit comment====>", error);
+    }
+  };
+
+  /* handle input change on reply edit input */
+  const handleEditReplyInputChange = (e) => {
+    const { value } = e.target;
+    setEditReplyInputVal(value);
+    // setEditInputVal((prevComment) => prevComment + value);
+    const match = value.match(/@(\w*)$/); // Match word after @
+    // if (match) {
+    //   const query = match[1].toLowerCase();
+    //   const filtered = userBuddies.filter((person) =>
+    //     person.full_name.toLowerCase().includes(query)
+    //   );
+    //   setFilteredSuggestions(filtered);
+    //   setShowTagSuggestions(filtered.length > 0);
+    // } else {
+    //   setShowTagSuggestions(false);
+    // }
+  };
+
+  /* to edit comment when done through enter button*/
+  const handleEditReplyEnter = async (e, replyId) => {
+    // console.log("=====commentInputVal====>", commentInputVal);
+    if (e.key === "Enter" && !e.shiftKey) {
+      try {
+        const editReplyResponse = await dispatch(
+          editReply({ reply_id: replyId, content: EditReplyInputVal })
+        ).unwrap();
+        // console.log("===editResponse==through enter button=>", editReplyResponse);
+        if (editReplyResponse) {
+          setEditReplyInputVal("");
+          setOpenDropdownReplyEditId(null);
+          await dispatch(getCommentOnPost(postId));
+          await dispatch(getAllPosts());
+        }
+      } catch (error) {
+        console.log("error in edit reply api", error);
+        const errorMessage = error.error || "Unexpected Error Occured";
+        // handleFlashMessage(errorMessage, 'error')
+      }
+    }
+  };
+
+  /* select emoji for edit reply section */
+  const handleEmojiClickForReplyEdit = (emojiObject) => {
+    setEditReplyInputVal((prevComment) => prevComment + emojiObject.emoji);
+    setShowEmojiPickerForReplyEdit(false);
+  };
+
   // Disable body scroll when popup is open
   useEffect(() => {
     if (isOpen) {
@@ -716,6 +830,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       document.body.classList.remove("no-scroll");
     };
   }, [isOpen]);
+
+  // console.log("====activePostId===>", activePostId);
 
   if (!isOpen) return null;
 
@@ -913,7 +1029,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
                 {/* Hashtags */}
                 <p className="text-left text-[#1DB2AA] mb-2">
-                  {allPosts && allPosts[0]?.tag_id}
+                  {allPosts && allPosts[0]?.tag_id?.join(" ")}
                 </p>
               </div>
               {/*---------- Scrollable Part ---------*/}
@@ -922,12 +1038,12 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
               <div className="flex items-center justify-between">
                 <ul className="flex gap-2">
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_likes) || ""} Love &nbsp;
+                    {(allPosts && allPosts[0]?.total_likes) || 0} {allPosts && allPosts[0]?.total_likes > 1 ? "Likes" : "Like"} &nbsp;
                     &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_comments) || ""} comments
+                    {(allPosts && allPosts[0]?.total_comments) || 0} {allPosts && allPosts[0]?.total_comments > 1 ? "comments" : "comment" }
                     &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
@@ -937,7 +1053,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_shared) || ""} Shared
+                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared
                     &nbsp; &nbsp;
                   </li>
                 </ul>
@@ -1045,7 +1161,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                   isOpen={isSharePopup}
                   onClose={() => handleSharePopupClose()}
                   postId={activePostId}
-                  // userName={allPosts[0]?.user_name}
+                  userName={allPosts[0]?.user_name}
                 />
               )}
 
@@ -1142,7 +1258,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                     </li> */}
 
                                           {userPosts?.user_id ===
-                                            userDetails?.id && (
+                                            userDetails?.id && isTimeDifferenceWithinFiveMinutes(userPosts?.created_at) && (
                                             <li
                                               className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
                                               onClick={() =>
@@ -1188,16 +1304,25 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                             userDetails?.id && (
                                             <li
                                               className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                              onClick={() =>
-                                                blockTheUser(userPosts?.user_id)
-                                              }
+                                              // onClick={() =>
+                                              //   blockTheUser(userPosts?.user_id)
+                                              // }
+                                              onClick={() => {
+                                                const isConfirmed = window.confirm(
+                                                  `Are you sure you want to ${userPosts?.is_blocked ? "unblock" : "block"} this user?`
+                                                );
+                                                if (isConfirmed) {
+                                                  userPosts?.is_blocked ? unBlockTheUser(userPosts?.user_id) : blockTheUser(userPosts?.user_id);
+                                                }
+                                              }}
                                             >
                                               <img
-                                                src={trash}
+                                                src={blockIcon}
                                                 alt="alert"
                                                 className="w-[20px] h-[20px] cursor-pointer mr-2"
                                               />{" "}
-                                              Block Account
+                                              {/* Block Account */}
+                                              {userPosts?.is_blocked ? "Unblock Account" : "Block Account"}
                                             </li>
                                           )}
                                         </ul>
@@ -1208,22 +1333,24 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   {openDropdownEditId === userPosts?.id && (
                                     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                                       <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
-                                        <div className="flex items-center justify-between p-2 px-4 ">
-                                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
-                                            Edit Comment
-                                          </h6>
+                                        
+                                          <div className="flex items-center justify-between p-2 px-4 ">
+                                            <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                              Edit Comment
+                                            </h6>
 
-                                          {/* Close Button (X) */}
-                                          <button
-                                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
-                                            onClick={() =>
-                                              setOpenDropdownEditId(null)
-                                            }
-                                            aria-label="Close"
-                                          >
-                                            &#x2715;
-                                          </button>
-                                        </div>
+                                            {/* Close Button (X) */}
+                                            <button
+                                              className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                              onClick={() =>
+                                                setOpenDropdownEditId(null)
+                                              }
+                                              aria-label="Close"
+                                            >
+                                              &#x2715;
+                                            </button>
+                                          </div>
+                                       
                                         <ul>
                                           {userPosts?.user_id ===
                                             userDetails?.id && (
@@ -1237,7 +1364,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                               // }
                                             >
                                               {/* Edit comment */}
-                                              
+
                                               <div className="relative">
                                                 {showEmojiPickerForEdit && (
                                                   <div className="absolute -top-[380px] left-0 z-50">
@@ -1463,6 +1590,27 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                       Delete comment
                                                     </li> */}
 
+                                                    {userReply?.user_id ===
+                                                      userDetails?.id && isTimeDifferenceWithinFiveMinutes(userReply?.reply_created_at) && (
+                                                      <li
+                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                        onClick={() =>
+                                                          editReplyPopUpOpen(
+                                                            userReply?.reply_id,
+                                                            userReply?.user_id,
+                                                            userReply?.reply_content
+                                                          )
+                                                        }
+                                                      >
+                                                        <img
+                                                          src={trash}
+                                                          alt="alert"
+                                                          className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                                        />
+                                                        Edit Reply
+                                                      </li>
+                                                    )}
+
                                                     {(userReply?.post_owner_id ===
                                                       userDetails?.id ||
                                                       userReply?.user_id ===
@@ -1488,18 +1636,129 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                       userDetails?.id && (
                                                       <li
                                                         className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                        onClick={() =>
-                                                          blockTheUser(
-                                                            userReply?.user_id
-                                                          )
-                                                        }
+                                                        // onClick={() =>
+                                                        //   blockTheUser(
+                                                        //     userReply?.user_id
+                                                        //   )
+                                                        // }
+                                                        onClick={() => {
+                                                          const isConfirmed = window.confirm(
+                                                            `Are you sure you want to ${userReply?.is_blocked ? "unblock" : "block"} this user?`
+                                                          );
+                                                          if (isConfirmed) {
+                                                            userReply?.is_blocked ? unBlockTheUser(userReply?.user_id) : blockTheUser(userReply?.user_id);
+                                                          }
+                                                        }}
                                                       >
                                                         <img
-                                                          src={trash}
+                                                          src={blockIcon}
                                                           alt="alert"
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />{" "}
-                                                        Block Account
+                                                        {/* Block Account */}
+                                                        {userReply?.is_blocked ? "Unblock Account" : "Block Account"}
+                                                      </li>
+                                                    )}
+                                                  </ul>
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* for editing reply */}
+                                            {openDropdownReplyEditId ===
+                                              userReply?.reply_id && (
+                                              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                                <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                                                  <div className="flex items-center justify-between p-2 px-4 ">
+                                                    <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                                      Edit Reply
+                                                    </h6>
+
+                                                    {/* Close Button (X) */}
+                                                    <button
+                                                      className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                                      onClick={() =>
+                                                        setOpenDropdownReplyEditId(
+                                                          null
+                                                        )
+                                                      }
+                                                      aria-label="Close"
+                                                    >
+                                                      &#x2715;
+                                                    </button>
+                                                  </div>
+                                                  <ul>
+                                                    {userReply?.user_id ===
+                                                      userDetails?.id && (
+                                                      <li
+                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                      >
+                                                        {/* Edit comment */}
+
+                                                        <div className="relative">
+                                                          {showEmojiPickerForReplyEdit && (
+                                                            <div className="absolute -top-[380px] left-0 z-50">
+                                                              <EmojiPicker
+                                                                onEmojiClick={
+                                                                  handleEmojiClickForReplyEdit
+                                                                }
+                                                                className="w-[250px] h-[300px] shadow-lg rounded-lg"
+                                                              />
+                                                            </div>
+                                                          )}
+                                                        </div>
+                                                        <div className="flex items-center bg-gray-200 py-2 pl-2 rounded-full w-[100%]">
+                                                          <img
+                                                            src={face_smile}
+                                                            alt="smile"
+                                                            className="cursor-pointer"
+                                                            onClick={() =>
+                                                              setShowEmojiPickerForReplyEdit(
+                                                                !showEmojiPickerForReplyEdit
+                                                              )
+                                                            }
+                                                          />
+
+                                                          {/* Input Field */}
+                                                          {/* <div> */}
+                                                          <input
+                                                            type="text"
+                                                            placeholder="Add a comment"
+                                                            onKeyDown={(e) =>
+                                                              handleEditReplyEnter(
+                                                                e,
+                                                                userReply?.reply_id
+                                                              )
+                                                            }
+                                                            value={
+                                                              EditReplyInputVal || ""
+                                                            }
+                                                            // onChange={(e) => setCommentInputVal(e.target.value)}
+                                                            onChange={(e) =>
+                                                              handleEditReplyInputChange(
+                                                                e
+                                                              )
+                                                            }
+                                                            className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500 ml-2 text-sm"
+                                                          />
+
+                                                          {/* </div> */}
+
+                                                          {/* Icons */}
+                                                          <div className="flex items-center justify-center space-x-3 text-gray-400">
+                                                            <button className="">
+                                                              <img
+                                                                src={Send}
+                                                                onClick={() =>
+                                                                  handleEditReply(
+                                                                    userReply?.reply_id
+                                                                  )
+                                                                }
+                                                                className="w-[44px] h-[44px] -my-5"
+                                                              />
+                                                            </button>
+                                                          </div>
+                                                        </div>
                                                       </li>
                                                     )}
                                                   </ul>

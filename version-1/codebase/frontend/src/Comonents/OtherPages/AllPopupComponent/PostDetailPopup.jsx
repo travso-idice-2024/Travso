@@ -422,7 +422,7 @@ const PostDetailPopup = ({ isOpen, onClose, postData, handlePostUpload }) => {
             {/* Hashtags */}
             {postData.tags.length > 0 && (
               <>
-                <p className="text-left text-[#1DB2AA] mb-2">{postData.tags}</p>
+                <p className="text-left text-[#1DB2AA] mb-2">{postData.tags?.join(" ")}</p>
               </>
             )}
           </div>

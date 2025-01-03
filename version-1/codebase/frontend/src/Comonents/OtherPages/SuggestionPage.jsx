@@ -10,7 +10,7 @@ import starBadges from "../../assets/starBadges.png";
 import SuccessError from "./SuccessError";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { updateSelectFollow } from "../../redux/slices/authSlice";
+import { getUserDetails, updateSelectFollow } from "../../redux/slices/authSlice";
 
 const SuggestionPage = () => {
   const dispatch = useDispatch();
@@ -222,6 +222,7 @@ const SuggestionPage = () => {
       ).unwrap();
       // console.log("======updateSelectFollowResult====>", updateSelectFollowResult);
       if (updateSelectFollowResult) {
+        await dispatch(getUserDetails());
         navigate("/community");
       }
     } catch (error) {

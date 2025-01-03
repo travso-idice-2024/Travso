@@ -177,6 +177,7 @@ async function communityPagePosts(req, res) {
         p.is_public,
         p.description,
         p.buddies_id,
+        p.buddies_id AS my_buddies_id,
         p.tag_id,
         p.location,
         p.media_url,
@@ -192,7 +193,8 @@ async function communityPagePosts(req, res) {
         (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS total_comments,
         (SELECT COUNT(*) FROM shared_post sp WHERE sp.post_id = p.id) AS total_shared,
         (SELECT COUNT(*) FROM bucket_list bl WHERE bl.post_id = p.id) AS total_buckets,
-        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked
+        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked,
+        EXISTS (SELECT 1 FROM block_user bu WHERE bu.blocked_id = p.user_id ) AS is_blocked
       FROM 
         posts p
       JOIN users u ON p.user_id = u.id
@@ -222,6 +224,7 @@ async function communityPagePosts(req, res) {
                 full_name, 
                 profile_image, 
                 badge,
+                user_name,
                 (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
                 (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count
               FROM users
@@ -237,8 +240,10 @@ async function communityPagePosts(req, res) {
         // Parse other JSON fields safely
         let tagId = [];
         let mediaUrl = [];
+        let myBuddiesId = [];
         try {
           tagId = post.tag_id ? JSON.parse(post.tag_id) : [];
+          myBuddiesId = post.my_buddies_id ? JSON.parse(post.my_buddies_id) : [];
           mediaUrl = post.media_url ? JSON.parse(post.media_url) : [];
         } catch (parseError) {
           console.error("Error parsing tag_id or media_url:", parseError);
@@ -248,13 +253,16 @@ async function communityPagePosts(req, res) {
           ...post,
           buddies_id: taggedBuddies, // Enriched buddies data
           tag_id: tagId,
+          my_buddies_id: myBuddiesId,
           media_url: mediaUrl,
           is_liked: !!post.is_liked,
+          is_blocked: !!post.is_blocked,
+          is_public: !!post.is_public,
         };
       })
     );
 
-    //console.log("===alldata===>", parsedData);
+    // console.log('===alldata===>', parsedData);
     return res.status(200).json({
       message: "Data fetched successfully",
       data: parsedData,
@@ -812,6 +820,7 @@ async function getUserPosts(req, res) {
           p.is_public,
           p.description,
           p.buddies_id,
+          p.buddies_id AS my_buddies_id,
           p.tag_id,
           p.location,
           p.media_url,
@@ -853,7 +862,8 @@ async function getUserPosts(req, res) {
               `SELECT 
                   id, 
                   full_name, 
-                  profile_image, 
+                  profile_image,
+                  user_name, 
                   badge,
                   (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
                   (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count
@@ -870,24 +880,28 @@ async function getUserPosts(req, res) {
         // Parse other JSON fields safely
         let tagId = [];
         let mediaUrl = [];
+        let myBuddiesId = [];
         try {
           tagId = post.tag_id ? JSON.parse(post.tag_id) : [];
+          myBuddiesId = post.my_buddies_id ? JSON.parse(post.my_buddies_id) : [];
           mediaUrl = post.media_url ? JSON.parse(post.media_url) : [];
         } catch (parseError) {
-          console.error("Error parsing tag_id or media_url:", parseError);
+          console.error("Error parsing tag_id or media_url or my_buddies_id:", parseError);
         }
 
         return {
           ...post,
           buddies_id: taggedBuddies, // Enriched buddies data
           tag_id: tagId,
+          my_buddies_id: myBuddiesId,
           media_url: mediaUrl,
           is_liked: !!post.is_liked,
+          is_public: !!post.is_public,
         };
       })
     );
 
-    //console.log("===AllPosts Data===>", parsedData);
+    // console.log("===AllPosts Data===>", parsedData);
     return res.status(200).json({
       message: "Posts fetched successfully",
       data: parsedData,
@@ -1425,7 +1439,8 @@ async function getPostComments(req, res) {
                 -- Count total likes for each comment
                 (SELECT COUNT(*) FROM comments_like cl WHERE cl.comment_id = c.id) AS total_likes_on_comment,
                 -- Count total replies for each comment
-                (SELECT COUNT(*) FROM comment_reply cr WHERE cr.comment_id = c.id) AS total_reply_on_comment
+                (SELECT COUNT(*) FROM comment_reply cr WHERE cr.comment_id = c.id) AS total_reply_on_comment,
+                EXISTS (SELECT 1 FROM block_user bu WHERE bu.blocked_id = c.user_id ) AS is_blocked
             FROM 
                 comments c
             JOIN
@@ -1452,7 +1467,8 @@ async function getPostComments(req, res) {
                 u.profile_image AS reply_user_profile_image,
                 cr.created_at AS reply_created_at,
                  (SELECT COUNT(*) FROM reply_like crl WHERE crl.reply_id = cr.id) AS total_likes_on_reply,
-                 (SELECT COUNT(*) FROM reply_comment rc WHERE rc.reply_id = cr.id) AS total_comment_on_reply
+                 (SELECT COUNT(*) FROM reply_comment rc WHERE rc.reply_id = cr.id) AS total_comment_on_reply,
+                 EXISTS (SELECT 1 FROM block_user bu WHERE bu.blocked_id = cr.user_id ) AS is_blocked
             FROM 
                 comment_reply cr
             JOIN
@@ -1492,7 +1508,7 @@ async function getPostComments(req, res) {
       [postId]
     );
 
-    //console.log("=========replies=============>", replies);
+    // console.log("=========replies=============>", replies);
 
     // Group replies by comment ID
     const groupedReplies = replies.reduce((acc, reply) => {
@@ -1508,6 +1524,7 @@ async function getPostComments(req, res) {
         reply_created_at: reply.reply_created_at,
         total_likes_on_reply: reply.total_likes_on_reply,
         total_comment_on_reply: reply.total_comment_on_reply,
+        is_blocked: !!reply.is_blocked,
         user_id: reply?.user_id,
         post_owner_id: postOwnerId, // Add post owner ID to each reply
         // Nested replies (reply to reply)
@@ -1548,6 +1565,7 @@ async function getPostComments(req, res) {
     // Attach replies (with nested replies) to their respective comments
     const finalComments = getComments.map((comment) => ({
       ...comment,
+      is_blocked: !!comment.is_blocked,
       post_owner_id: postOwnerId, // Add post owner ID to each comment
       replies: groupedReplies[comment.id] || [],
     }));
@@ -1565,6 +1583,7 @@ async function getPostComments(req, res) {
   }
 }
 
+/* like a comment */
 async function likeAnyComment(req, res) {
   try {
     // const {comment_id, user_id} = req.body;
@@ -1638,155 +1657,6 @@ async function replyOnComment(req, res) {
   }
 }
 
-// async function storePost(req, res) {
-//     try {
-//   const user_id = req.user.userId; // extrcting from token
-
-//       const {
-//         is_public,
-//         description,
-//         buddies_id,
-//         tags,
-//         location,
-//         media_url,
-//         status,
-//         block_post,
-//       } = req.body;
-
-//       // Validate required fields
-//       if (!user_id || !description) {
-//         return res.status(400).json({
-//           message: "Missing required fields (user_id, description).",
-//         });
-//       }
-
-//       // Insert the post into the database
-//       const [result] = await pool.execute(
-//         `INSERT INTO posts (
-//           user_id,
-//           is_public,
-//           description,
-//           buddies_id,
-//           tag_id,
-//           location,
-//           media_url,
-//           status,
-//           block_post,
-//           created_at,
-//           updated_at
-//         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-//         [
-//           user_id,
-//           is_public !== undefined ? is_public : 1, // Default to 1 (true) if not provided
-//           description || null, // Allow null for optional fields
-//           JSON.stringify(buddies_id) || [],
-//           JSON.stringify(tags) || [],
-//           location || null,
-//           JSON.stringify(media_url) || [], // Default to empty JSON array
-//           status || "active", // Default to 'active'
-//           block_post !== undefined ? block_post : 0, // Default to 0 (false)
-//         ]
-//       );
-
-//       // Respond with success message
-//       return res.status(200).json({
-//         message: "Post created successfully.",
-//         post_id: result.insertId, // Return the ID of the newly created post
-//       });
-//     } catch (error) {
-//       console.error("Error in storing post:", error);
-//       return res.status(500).json({
-//         error: "Internal Server Error",
-//       });
-//     }
-// }
-
-// async function storePost(req, res) {
-//   try {
-//     // POST_UPLOAD_DIR
-//     const user_id = req.user.userId; // extrcting from token
-
-//     const {
-//       is_public,
-//       description,
-//       buddies_id,
-//       tags,
-//       location,
-//       media_url,
-//       status,
-//       block_post,
-//     } = req.body;
-
-//     // Validate required fields
-//     if (!user_id ) {
-//       return res.status(400).json({
-//         message: "Missing required fields (user_id).",
-//       });
-//     }
-
-//     const postImages = [];
-
-//     if(media_url.length > 0) {
-//       for(let image of media_url) {
-//         // Extract Base64 part of the image
-//         const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-//         const extension = image.substring("data:image/".length, image.indexOf(";base64"));
-//         const fileName = `post_${Date.now()}.${extension}`;
-//         const filePath = path.join(POST_UPLOAD_DIR, fileName);
-//         const imagePath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
-//         postImages.push(imagePath);
-
-//         fs.writeFile(filePath, base64Data, { encoding: "base64" }, async(err) => {
-//           if (err) {
-//             return res.status(500).json({ error: "Failed to save image" });
-//           }
-//         });
-//         console.log("=====imagePath====>", imagePath);
-//       }
-//     }
-
-//     // Insert the post into the database
-//     const [result] = await pool.execute(
-//       `INSERT INTO posts (
-//         user_id,
-//         is_public,
-//         description,
-//         buddies_id,
-//         tag_id,
-//         location,
-//         media_url,
-//         status,
-//         block_post,
-//         created_at,
-//         updated_at
-//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-//       [
-//         user_id,
-//         is_public !== undefined ? is_public : 1, // Default to 1 (true) if not provided
-//         description || null, // Allow null for optional fields
-//         JSON.stringify(buddies_id) || [],
-//         JSON.stringify(tags) || [],
-//         location || null,
-//         JSON.stringify(postImages) || [], // Default to empty JSON array
-//         status || "active", // Default to 'active'
-//         block_post !== undefined ? block_post : 0, // Default to 0 (false)
-//       ]
-//     );
-
-//     // Respond with success message
-//     return res.status(200).json({
-//       message: "Post created successfully.",
-//       post_id: result.insertId, // Return the ID of the newly created post
-//     });
-//   } catch (error) {
-//     console.error("Error in storing post:", error);
-//     return res.status(500).json({
-//       error: "Internal Server Error",
-//     });
-//   }
-// }
-
-
 async function storeBucketPost(req, res) {
   try {
     const user_id = req.user.userId; // Extracting user ID from the token
@@ -1841,7 +1711,7 @@ async function storeBucketPost(req, res) {
   }
 }
 
-async function storePost(req, res) {
+async function storePost1(req, res) {
   try {
     const user_id = req.user.userId; // Extracting user ID from the token
 
@@ -1932,6 +1802,120 @@ async function storePost(req, res) {
   }
 }
 
+// to store the post
+async function storePost(req, res) {
+  try {
+    const user_id = req.user.userId; // Extracting user ID from the token
+
+    const {
+      is_public,
+      description,
+      buddies_id,
+      tags,
+      location,
+      media_url,
+      status,
+      block_post,
+    } = req.body;
+
+    // Validate required fields
+    if (!user_id) {
+      return res.status(400).json({
+        message: "Missing required fields (user_id).",
+      });
+    }
+
+    console.log("=====tags===>", tags);
+
+    // return res.status(404).json({error: 'not found'})
+
+    const postMedia = []; // Array to store media paths
+
+    // Validate and process media_url
+    if (Array.isArray(media_url) && media_url.length > 0) {
+      for (let media of media_url) {
+        try {
+          // Extract Base64 part of the media
+          const base64Data = media.replace(/^data:(.*);base64,/, "");
+          const mimeType = media.match(/^data:(.*);base64,/)[1]; // Extract MIME type
+          const extension = mimeType.split("/")[1]; // Extract file extension
+
+          // Generate file name and path
+          const fileName = `post_${Date.now()}.${extension}`;
+          const filePath = path.join(POST_UPLOAD_DIR, fileName);
+          const mediaPath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
+          postMedia.push(mediaPath);
+
+          // Write media to the server
+          await fs.promises.writeFile(filePath, base64Data, {
+            encoding: "base64",
+          });
+        } catch (err) {
+          console.error("Failed to save media:", err);
+          return res.status(500).json({ error: "Failed to save media." });
+        }
+      }
+    }
+
+    // Insert the post into the database
+    const [result] = await pool.execute(
+      `INSERT INTO posts (
+        user_id,
+        is_public,
+        description,
+        buddies_id,
+        tag_id,
+        location,
+        media_url,
+        status,
+        block_post,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        user_id,
+        is_public !== undefined ? is_public : 1, // Default to 1 (true) if not provided
+        description || null, // Allow null for optional fields
+        JSON.stringify(buddies_id) || [], // Serialize buddies_id as JSON
+        JSON.stringify(tags) || [], // Serialize tags as JSON
+        location || null, // Allow null for optional fields
+        JSON.stringify(postMedia) || [], // Serialize media paths as JSON
+        status || "active", // Default to 'active'
+        block_post !== undefined ? block_post : 0, // Default to 0 (false)
+      ]
+    );
+
+    const postId = result.insertId; // Get the newly created post ID
+
+    // Insert tags into the tags table
+    if (Array.isArray(tags) && tags.length > 0) {
+      for (const tag of tags) {
+        console.log("==tag==", tag);
+        try {
+          await pool.execute(`INSERT INTO tags (post_id, name) VALUES (?, ?)`, [
+            postId,
+            tag,
+          ]);
+        } catch (err) {
+          console.error("Failed to save tag:", err);
+          return res.status(500).json({ error: "Failed to save tags." });
+        }
+      }
+    }
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Post created successfully.",
+      post_id: result.insertId, // Return the ID of the newly created post
+    });
+  } catch (error) {
+    console.error("Error in storing post:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
 // delete comment
 async function deleteComments(req, res) {
   try {
@@ -1980,13 +1964,13 @@ async function deleteComments(req, res) {
 async function deleteReply(req, res) {
   try {
     const { replyId } = req.params;
-    //console.log("====output===>", replyId);
+    console.log("====output===>", replyId);
     const [existingComment] = await pool.execute(
       `SELECT * FROM comment_reply WHERE id = ?`,
       [replyId]
     );
 
-    //console.log("reply not found", existingComment);
+    console.log("reply not found", existingComment);
 
     if (existingComment.length === 0) {
       return res.status(409).json({
@@ -1999,7 +1983,7 @@ async function deleteReply(req, res) {
       [replyId]
     );
 
-    //console.log("===comment=deleted====>", data);
+    console.log("===comment=deleted====>", data);
     return res.status(200).json({
       message: "comment Deleted successfully",
     });
@@ -2117,8 +2101,6 @@ async function followAndUnfollowFollowing(req, res) {
 async function likeToReply(req, res) {
   const user_id = req.user.userId; // extracting from token
   const { reply_id } = req.params;
-  //console.log("===reply_id==>", reply_id);
-  //console.log("===user_id==>", user_id);
   try {
     //check reply exist or not.
     // const [
@@ -2168,6 +2150,7 @@ async function likeToReply(req, res) {
   }
 }
 
+/* share the post with friends */
 async function sharePostWithFriends(req, res) {
   try {
     const UserId = req.user.userId;
@@ -2329,7 +2312,7 @@ async function storeStory1(req, res) {
       story_text = "",
     } = req.body;
 
-    //console.log("===media_url===>", media_url.length);
+    console.log("===media_url===>", media_url.length);
     // Validate required fields
     if (!user_id) {
       return res.status(400).json({
@@ -2782,6 +2765,224 @@ async function editComment(req, res) {
   }
 }
 
+// function to edit reply
+async function editReply(req, res) {
+  try {
+    const user_id = req.user.userId;
+    const { reply_id, content } = req.body;
+
+    // Validate the input
+    if (!reply_id || !user_id || !content) {
+      return res.status(400).json({
+        error: "All fields are required.",
+      });
+    }
+
+    // Check if the reply exists and belongs to the user
+    const [exist] = await pool.execute(
+      `SELECT * FROM comment_reply WHERE id = ? AND user_id = ?`,
+      [reply_id, user_id]
+    );
+
+    if (!exist.length) {
+      return res.status(404).json({
+        error: "Reply not found or you do not have permission to edit it.",
+      });
+    }
+
+    // Update the reply content
+    const [update] = await pool.execute(
+      `UPDATE comment_reply SET content = ? WHERE id = ? AND user_id = ?`,
+      [content, reply_id, user_id]
+    );
+
+    // Check if the update was successful
+    if (update.affectedRows === 0) {
+      return res.status(400).json({
+        error: "Failed to update reply. Please try again.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Reply updated successfully.",
+      data: {
+        reply_id,
+        content,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating reply:", error);
+    return res.status(500).json({
+      error: "Internal server error.",
+    });
+  }
+}
+
+// to delete post
+async function deletePost(req, res) {
+  const userId = req.user.userId;
+  // const { userId } = req.params;
+  const { post_id } = req.params;
+
+  try {
+    if (!post_id) {
+      return res.status(400).json({
+        error: "Post id is required.",
+      });
+    }
+
+    //check post's exist.
+
+    const [post] = await pool.execute(
+      `SELECT * FROM posts WHERE id = ? AND user_id = ?`,
+      [post_id, userId]
+    );
+    if (post.length === 0) {
+      return res.status(400).json({
+        error: "Posts Not Found",
+      });
+    }
+
+    const [existpost] = await pool.execute(
+      `SELECT * FROM posts WHERE id = ? AND user_id = ?`,
+      [post_id, userId]
+    );
+
+    console.log("======existpost===>", existpost);
+    if (existpost.length > 0) {
+      await pool.execute(`DELETE FROM posts WHERE id = ? AND user_id = ?`, [
+        post_id,
+        userId,
+      ]);
+      return res.status(200).json({
+        error: "Post Deleted Successfully",
+        data: {
+          post_id,
+          userId,
+        },
+      });
+    }
+  } catch (error) {
+    console.log("===Error==>", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
+async function updatePost(req, res) {
+  try {
+    const user_id = req.user.userId;
+    const { post_id } = req.params;
+
+    const {
+      is_public,
+      description,
+      buddies_id,
+      tags,
+      location,
+      media_url,
+      status,
+      block_post,
+    } = req.body;
+
+    // Validate required fields
+    if (!post_id) {
+      return res.status(400).json({
+        message: "Missing required fields (post_id).",
+      });
+    }
+
+    // Fetch existing post to validate ownership
+    const [existingPost] = await pool.execute(
+      `SELECT * FROM posts WHERE id = ? AND user_id = ?`,
+      [post_id, user_id]
+    );
+
+    if (existingPost.length === 0) {
+      return res.status(404).json({
+        message: "Post not found or not authorized to update.",
+      });
+    }
+
+    const postMedia = [];
+
+    // Process and validate media_url if provided
+    if (Array.isArray(media_url) && media_url.length > 0) {
+      for (let media of media_url) {
+        try {
+          // console.log("=====media======>", media);
+
+          // Check if media is already a URL
+          if (media.startsWith("http://") || media.startsWith("https://")) {
+            postMedia.push(media); // Push the URL directly into the postMedia array
+            continue; // Skip to the next iteration
+          }
+
+          const base64Data = media.replace(/^data:(.*);base64,/, "");
+          const mimeType = media.match(/^data:(.*);base64,/)[1];
+          const extension = mimeType.split("/")[1];
+
+          const fileName = `post_${Date.now()}.${extension}`;
+          const filePath = path.join(POST_UPLOAD_DIR, fileName);
+          const mediaPath = `${process.env.APP_SERVER_URL}/uploads/post_img/${fileName}`;
+          postMedia.push(mediaPath);
+
+          await fs.promises.writeFile(filePath, base64Data, {
+            encoding: "base64",
+          });
+        } catch (err) {
+          console.error("Failed to save media:", err);
+          return res.status(500).json({ error: "Failed to save media." });
+        }
+      }
+    }
+
+    // Update post in the database
+    await pool.execute(
+      `UPDATE posts 
+       SET 
+         is_public = ?,
+         description = ?,
+         buddies_id = ?,
+         tag_id = ?,
+         location = ?,
+         media_url = ?,
+         status = ?,
+         block_post = ?,
+         updated_at = NOW()
+       WHERE id = ? AND user_id = ?`,
+      [
+        is_public !== undefined ? is_public : existingPost[0].is_public,
+        description || existingPost[0].description,
+        JSON.stringify(buddies_id) || existingPost[0].buddies_id,
+        JSON.stringify(tags) || existingPost[0].tag_id,
+        location || existingPost[0].location,
+        JSON.stringify(
+          postMedia.length > 0
+            ? postMedia
+            : JSON.parse(existingPost[0].media_url)
+        ),
+        status || existingPost[0].status,
+        block_post !== undefined ? block_post : existingPost[0].block_post,
+        post_id,
+        user_id,
+      ]
+    );
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Post updated successfully.",
+      post_id: post_id,
+    });
+  } catch (error) {
+    console.error("Error in updating post:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
 
 async function removeBucketCollection(req, res) {
   try {
@@ -3027,6 +3228,8 @@ module.exports = {
   removeBucketCollection,
   getArchivePosts,
   getArchiveStory,
-  unArchivePost
-
+  unArchivePost,
+  editReply,
+  deletePost,
+  updatePost,
 };

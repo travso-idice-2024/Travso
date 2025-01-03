@@ -6,13 +6,18 @@ import Select from "react-select";
 import stateData from "../../../statedata/statedata.json";
 import { Link, useNavigate } from "react-router-dom";
 import OTPInput from "react-otp-input";
-import { generateOtp, registerUser, resendOTP, verifyOtp } from "../../../redux/slices/authSlice";
+import {
+  generateOtp,
+  registerUser,
+  resendOTP,
+  verifyOtp,
+} from "../../../redux/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStates } from "../../../redux/slices/stateCitySlice";
-import DatePicker from 'react-datepicker';
+import DatePicker from "react-datepicker";
 // import Datepicker from "react-tailwindcss-datepicker";
-import 'react-datepicker/dist/react-datepicker.css';
-import '../SignupModule.css';
+import "react-datepicker/dist/react-datepicker.css";
+import "../SignupModule.css";
 
 const SignupStep1 = ({
   formData,
@@ -22,7 +27,7 @@ const SignupStep1 = ({
   handleNext,
   validate,
   handleDOBChange,
-  handleFlashMessage
+  handleFlashMessage,
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -31,9 +36,9 @@ const SignupStep1 = ({
   const [otpError, setOtpError] = useState("");
   const [showOTP, setShowOTP] = useState(false);
   const [genderData, setGenderData] = useState({
-    'male': 'Male',
-    'female': 'Female',
-    'other': 'Other'
+    male: "Male",
+    female: "Female",
+    other: "Other",
   });
 
   // useEffect(() => {
@@ -51,7 +56,7 @@ const SignupStep1 = ({
   //       if (!response.ok) {
   //         throw new Error('Network response was not ok');
   //       }
-  
+
   //       const { data } = await response.json();
   //       setIndStates(data.states);
 
@@ -59,13 +64,12 @@ const SignupStep1 = ({
   //       console.error("Failed to fetch cities:", error);
   //     }
   //   };
-  
+
   //   fetchCities();
   // }, []);
-  
 
   useEffect(() => {
-    dispatch(fetchStates('India'));
+    dispatch(fetchStates("India"));
   }, [dispatch]);
 
   const { loading, error } = useSelector((state) => state.auth);
@@ -89,7 +93,7 @@ const SignupStep1 = ({
   //   value: stateName,
   //   label: stateName,
   // }));
-//  console.log("=====indStates====>", indStates);
+  //  console.log("=====indStates====>", indStates);
   // const stateOptions = Object.keys(indStates).map((stateName) => ({
   //   value: indStates[stateName].name,
   //   label: indStates[stateName].name,
@@ -105,8 +109,7 @@ const SignupStep1 = ({
 
   // console.log("=====stateOptions====>", stateOptions);
 
-
- // old one it may need to be implemented if data comes from backend
+  // old one it may need to be implemented if data comes from backend
   // const cityOptions = formData?.state
   //   ? stateCityData[formData?.state]
   //       .map((cityName) => ({
@@ -127,7 +130,7 @@ const SignupStep1 = ({
 
   const genderOption = Object.keys(genderData).map((genderName) => ({
     value: genderName,
-    label: genderName.charAt(0).toUpperCase() + genderName.slice(1)
+    label: genderName.charAt(0).toUpperCase() + genderName.slice(1),
   }));
 
   // redirect to landing page if clicked on logo
@@ -175,7 +178,7 @@ const SignupStep1 = ({
   //             } catch (error) {
   //               console.log("error in generate otp api", error);
   //             }
-              
+
   //           }
   //         } catch (error) {
   //           console.log("error in register api", error);
@@ -184,7 +187,7 @@ const SignupStep1 = ({
   //       } else {
   //         console.log("all data needed");
   //       }
-  //       return; 
+  //       return;
   //   } else {
   //       // const isVerified = true;
   //     console.log("====otpVal====>", otpVal.length);
@@ -220,21 +223,24 @@ const SignupStep1 = ({
   //   }
   // };
 
-
   // for resending OTP
-  const handleResendOTP = async() => {
+  const handleResendOTP = async () => {
     // alert("working")
     try {
-      const otpResult = await dispatch(resendOTP({ email: formData.email, mobileNumber: formData.mobileNumber })).unwrap();
-      handleFlashMessage("OTP sent successfully", 'success');
+      const otpResult = await dispatch(
+        resendOTP({
+          email: formData.email,
+          mobileNumber: formData.mobileNumber,
+        })
+      ).unwrap();
+      handleFlashMessage("OTP sent successfully", "success");
     } catch (error) {
       console.log("Error during resend OTP generation:", error);
       const errorMessage = error.error || "An unexpected error occurred.";
       // console.log("=======errorMessage====>", errorMessage);
-      handleFlashMessage(errorMessage, 'error');   // update flash message
+      handleFlashMessage(errorMessage, "error"); // update flash message
     }
-  }
-
+  };
 
   // when need to have access to next step for development
   // const handleNextStep1 = async() => {
@@ -246,44 +252,46 @@ const SignupStep1 = ({
   // }
 
   // when user clicks on Next button
-  const handleNextStep1 = async() => {
- 
-    if(!showOTP) {
-        const isValid = await validate();
-        // if(isValid) setShowOTP(true);
-        if(isValid) {
-          try {
-            const registerResult = await dispatch(registerUser(formData)).unwrap();
+  const handleNextStep1 = async () => {
+    if (!showOTP) {
+      const isValid = await validate();
+      // if(isValid) setShowOTP(true);
+      if (isValid) {
+        try {
+          const registerResult = await dispatch(
+            registerUser(formData)
+          ).unwrap();
 
           // if user is registered successfully call generate otp
           if (registerResult) {
             try {
-              const otpResult = await dispatch(generateOtp({ mobileNumber: formData.mobileNumber })).unwrap();
-              handleFlashMessage("OTP Sent Successfully", 'success');
+              const otpResult = await dispatch(
+                generateOtp({ mobileNumber: formData.mobileNumber })
+              ).unwrap();
+              handleFlashMessage("OTP Sent Successfully", "success");
               setShowOTP(true); // Show OTP input field
             } catch (error) {
               console.log("Error during OTP generation:", error);
-              const errorMessage = error.error || "An unexpected error occurred.";
-              handleFlashMessage(errorMessage, 'error');   // update flash message
+              const errorMessage =
+                error.error || "An unexpected error occurred.";
+              handleFlashMessage(errorMessage, "error"); // update flash message
             }
-            
           } else {
             console.log("Something went wrong during register otp");
-            handleFlashMessage("Something went wrong", 'error');   // update flash message
+            handleFlashMessage("Something went wrong", "error"); // update flash message
           }
-
-          } catch (error) {
-            console.log("Error during registration or OTP generation:", error);
-            const errorMessage = error.error || "An unexpected error occurred.";
-            // console.log("=======errorMessage====>", errorMessage);
-            handleFlashMessage(errorMessage, 'error');   // update flash message
-          }
-        } else {
-          console.log("all data needed");
+        } catch (error) {
+          console.log("Error during registration or OTP generation:", error);
+          const errorMessage = error.error || "An unexpected error occurred.";
+          // console.log("=======errorMessage====>", errorMessage);
+          handleFlashMessage(errorMessage, "error"); // update flash message
         }
-        return; 
+      } else {
+        console.log("all data needed");
+      }
+      return;
     } else {
-        // const isVerified = true;
+      // const isVerified = true;
       console.log("====otpVal====>", otpVal.length);
       if (otpVal.length !== 4) {
         setOtpError("*Enter all values");
@@ -291,29 +299,28 @@ const SignupStep1 = ({
       }
 
       try {
-        const verifyResult = await dispatch(verifyOtp({ mobileNumber: formData.mobileNumber, otp: otpVal })).unwrap();
+        const verifyResult = await dispatch(
+          verifyOtp({ mobileNumber: formData.mobileNumber, otp: otpVal })
+        ).unwrap();
 
-       // if success clear otp value and move to next process
+        // if success clear otp value and move to next process
         if (verifyResult) {
           setOtpVal("");
-          handleFlashMessage(verifyResult.message, 'success');   // update flash message
+          handleFlashMessage(verifyResult.message, "success"); // update flash message
           handleNext(); // go to influencer page
         } else {
           console.log("OTP verification failed");
-          handleFlashMessage("OTP verification failed", 'error');
+          handleFlashMessage("OTP verification failed", "error");
         }
-
-
       } catch (error) {
         console.log("OTP verification failed i am in catch block");
         const errorMessage = error.error || "An unexpected error occurred.";
         // console.log("error message in catch block", errorMessage);
-        handleFlashMessage(errorMessage, 'error');   // update flash message
+        handleFlashMessage(errorMessage, "error"); // update flash message
       }
       return;
     }
   };
-
 
   const handleOtpChange = (otp) => {
     setOtpError("");
@@ -322,16 +329,14 @@ const SignupStep1 = ({
   };
 
   return (
-    <div
-       className="flex flex-col md:flex-row bg-gradient-to-b from-teal-50 to-teal-200 min-h-screen"
-    >
+    <div className="flex flex-col md:flex-row bg-gradient-to-b from-teal-50 to-teal-200 min-h-screen">
       {/* Left Section */}
 
       <div
         className="md:flex-[1.5] bg-cover bg-center relative md:rounded-r-[50px] overflow-hidden h-[50vh] md:h-auto"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="absolute top-8 left-8 md:top-12 md:left-12 md:ml-10">
+        <div className="absolute top-8 left-8 md:top-10 md:left-12 md:ml-10">
           <img
             src={logo}
             alt="Travso Logo"
@@ -340,20 +345,25 @@ const SignupStep1 = ({
           />{" "}
           {/* Logo size and responsiveness */}
         </div>
-        <div className=" absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-white text-left md:ml-10">
-          <h1 className="text-3xl md:text-5xl font-bold">
-          Where Travelers and Tourism  <br /> Come Together
+        <div className=" absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-white text-left md:ml-10 md:pb-[35px]">
+          <h1 className="font-poppins font-semibold text-[#FFFFFF] md:text-[40px] leading-10">
+            Where Travelers and Tourism <br /> Come Together
           </h1>
-          <p className="mt-4 text-sm md:text-base hidden md:flex">
-          TravSo is a dynamic platform  that brings together the entire travel and 
-            <br /> tourism community, where explorers, travelers, and industry experts connect,
+          <p className="font-poppins font-normal mt-4 text-[16px] text-[#FFFFFF] hidden md:flex">
+            TravSo is a dynamic platform that brings together the entire travel
+            and
+            <br /> tourism community, where explorers, travelers, and industry
+            experts connect,
             <br />
             share experiences, and celebrates the power of travel stories.
           </p>
-          <p className="mt-4 text-sm md:text-base flex md:hidden">
-          TravSo is a dynamic platform  that brings together the entire travel and tourism community, where explorers, travelers, and industry experts connect, share experiences, and celebrates the power of travel stories.
+          <p className="font-poppins font-normal mt-4 text-[16px] text-[#FFFFFF] flex md:hidden">
+            TravSo is a dynamic platform that brings together the entire travel
+            and tourism community, where explorers, travelers, and industry
+            experts connect, share experiences, and celebrates the power of
+            travel stories.
           </p>
-          <div className="flex items-center mt-8 space-x-4 w-[50%] gap-[30px]">
+          <div className="flex items-center mt-4 space-x-4 w-[50%] gap-[30px]">
             <div className="flex-1 relative">
               <div className="w-full h-0.5 bg-gray-300"></div>{" "}
               {/* Full horizontal line */}
@@ -373,7 +383,7 @@ const SignupStep1 = ({
         <div className="rounded-lg w-11/12 md:w-3/4 lg:w-3/5 mb-10 mt-10 md:mt-0 md:mb-0">
           <div>
             {/* show flash message */}
-           
+
             <h2 className="text-[36px] font-semibold mb-4 mt-2 text-center font-poppins text-customBlack">
               Sign Up
             </h2>
@@ -388,27 +398,30 @@ const SignupStep1 = ({
                   className="w-full p-2 border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"
                 />
                 {formDataError.fullName && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.fullName}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.fullName}
+                  </p>
                 )}
               </div>
               <div className="relative w-full">
-
-                  <Select
-                    id="gender"
-                    name="gender"
-                    options={genderOption}
-                    placeholder="Select Gender"
-                    value={genderOption.find(
-                      (option) => option.value === formData.gender
-                    )}
-                    onChange={(option) => handleSelectChange(option, "gender")}
-                    // className="appearance-none bg-white text-[#364045] w-full p-2 border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    className="appearance-none bg-white text-[#364045] w-full p-[2px] border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"                   
-                    isSearchable
-                  />
+                <Select
+                  id="gender"
+                  name="gender"
+                  options={genderOption}
+                  placeholder="Select Gender"
+                  value={genderOption.find(
+                    (option) => option.value === formData.gender
+                  )}
+                  onChange={(option) => handleSelectChange(option, "gender")}
+                  // className="appearance-none bg-white text-[#364045] w-full p-2 border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  className="appearance-none bg-white text-[#364045] w-full p-[2px] border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"
+                  isSearchable
+                />
 
                 {formDataError.gender && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.gender}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.gender}
+                  </p>
                 )}
               </div>
 
@@ -426,7 +439,9 @@ const SignupStep1 = ({
                   isSearchable
                 />
                 {formDataError.state && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.state}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.state}
+                  </p>
                 )}
               </div>
 
@@ -448,7 +463,9 @@ const SignupStep1 = ({
                 />
 
                 {formDataError.city && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.city}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.city}
+                  </p>
                 )}
               </div>
 
@@ -462,9 +479,8 @@ const SignupStep1 = ({
                   className="text-[#364045] w-full p-2 bg-white border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"
                 />
 
-                  
-                  {/* it is of react-date-picker */}
-                  {/* <DatePicker
+                {/* it is of react-date-picker */}
+                {/* <DatePicker
                       selected={formData.dob || ''}
                       onChange={handleDOBChange}
                       placeholderText="DOB"
@@ -473,7 +489,9 @@ const SignupStep1 = ({
                   /> */}
 
                 {formDataError.dob && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.dob}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.dob}
+                  </p>
                 )}
               </div>
               <div>
@@ -486,7 +504,9 @@ const SignupStep1 = ({
                   className="text-[#364045] w-full p-2 border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"
                 />
                 {formDataError.email && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.email}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.email}
+                  </p>
                 )}
               </div>
               <div>
@@ -499,14 +519,18 @@ const SignupStep1 = ({
                   className="text-[#364045] w-full p-2 border border-[#2DC6BE] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:font-poppins placeholder:text-customBlack"
                 />
                 {formDataError.mobileNumber && (
-                  <p className="error text-left text-[#ff0000] text-sm">{formDataError.mobileNumber}</p>
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.mobileNumber}
+                  </p>
                 )}
               </div>
 
               <div>
-                  {formDataError.allError && (
-                    <p className="error text-left text-[#ff0000] text-sm">{formDataError.allError}</p>
-                  )}
+                {formDataError.allError && (
+                  <p className="error text-left text-[#ff0000] text-sm">
+                    {formDataError.allError}
+                  </p>
+                )}
               </div>
 
               {showOTP && (
@@ -530,8 +554,12 @@ const SignupStep1 = ({
                       />
                     )}
                   />
-                  {otpError && <p className="error text-left text-[#ff0000] text-sm">{otpError}</p>}
-                  <p onClick={handleResendOTP} style={{cursor:'pointer'}}>
+                  {otpError && (
+                    <p className="error text-left text-[#ff0000] text-sm">
+                      {otpError}
+                    </p>
+                  )}
+                  <p onClick={handleResendOTP} style={{ cursor: "pointer" }}>
                     Didn&apos;t receive a code?{" "}
                     <span className="text-teal-600 hover:underline text-base underline">
                       Resend
@@ -539,7 +567,7 @@ const SignupStep1 = ({
                   </p>
                 </div>
               )}
-          
+
               <button
                 type="button"
                 className="mt-5 w-full py-2 bg-teal-400 text-[white] font-semibold rounded-md hover:bg-teal-500 transition"

@@ -44,7 +44,7 @@ const StoryViewPage = ({
   const handleStoryStart = (index) => {
     setActiveStory(index); // Update active story index
     // setShowViewersPopup(false); // Reset the viewers popup when switching stories
-    console.log("Active Story Index: ", index);
+    // console.log("Active Story Index: ", index);
   };
 
   const handleSetting = (storyId) => {

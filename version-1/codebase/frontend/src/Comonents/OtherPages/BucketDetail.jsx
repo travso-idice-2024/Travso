@@ -153,9 +153,9 @@ const BucketDetail = () => {
               <path
                 d="M10.5 20L1.5 11L10.5 2"
                 stroke="black"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
 

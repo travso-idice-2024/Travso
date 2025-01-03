@@ -11,6 +11,7 @@ import {
   toWhomUserIsFollowing,
 } from "../../redux/slices/authSlice";
 import ShowBadgeIcon from "./ShowBadgeIcons";
+import { Link } from "react-router-dom";
 
 const FollowingPostCard = () => {
   const dispatch = useDispatch();
@@ -226,35 +227,37 @@ const FollowingPostCard = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-[8px]">
-                <h5 className="font-poppins text-left text-[20px] font-semibold mt-1 text-[#212626]">
-                  {profile.full_name}
-                </h5>
+                <Link to={`/profile/${profile?.user_name}/${profile?.id}`} >
+                  <div className="flex items-center gap-[8px]">
+                  <h5 className="font-poppins text-left text-[20px] font-semibold mt-1 text-[#212626]">
+                    {profile.full_name}
+                  </h5>
 
-                {/* badge icon section  */}
-                {profile?.badge?.split("-")[0]?.trim() == "Solo Traveler" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {/* badge icon section  */}
+                  {profile?.badge?.split("-")[0]?.trim() == "Solo Traveler" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Luxury Traveler" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Luxury Traveler" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Adventurer" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Adventurer" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Explorer" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
+                  {profile?.badge?.split("-")[0]?.trim() == "Explorer" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
 
-                {profile?.badge?.split("-")[0]?.trim() == "Foodie" && (
-                  <ShowBadgeIcon badge={profile?.badge} />
-                )}
-                </div>
-                <p className="font-inter text-left text-[16px] text-[#667877] font-medium -mt-1">
-                  {`@${profile.user_name}`}
-                </p>
+                  {profile?.badge?.split("-")[0]?.trim() == "Foodie" && (
+                    <ShowBadgeIcon badge={profile?.badge} />
+                  )}
+                  </div>
+                  <p className="font-inter text-left text-[16px] text-[#667877] font-medium -mt-1">
+                    {`@${profile.user_name}`}
+                  </p>
+                </Link>
 
                 {profile.is_influencer === 0 && (
                   <p className="bg-[#E5FFFE] w-[174px] h-[32px] font-inter font-medium text-left text-[12px] text-[#212626] my-2 rounded-full flex items-center justify-center">
@@ -305,11 +308,26 @@ const FollowingPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
+                      // onClick={
+                      //   profile?.is_buddies === 1
+                      //     ? () => handleBuddyRemove(profile?.id)
+                      //     : () => handleAddBuddy(profile?.id)
+                      // }
                       onClick={
                         profile?.is_buddies === 1
-                          ? () => handleBuddyRemove(profile?.id)
-                          : () => handleAddBuddy(profile?.id)
-                      }
+                          ? () => {
+                              const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                              if (confirmRemove) {
+                                handleBuddyRemove(profile?.id);
+                              }
+                            }
+                          : () => {
+                              const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                              if (confirmAdd) {
+                                handleAddBuddy(profile?.id);
+                              }
+                            }
+                      }                      
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>
@@ -320,9 +338,22 @@ const FollowingPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
-                      onClick={() =>
-                        handleFollowUnfollowForFollowing(profile.id)
-                      }
+                      // onClick={() =>
+                      //   handleFollowUnfollowForFollowing(profile.id)
+                      // }
+                      onClick={() => {
+                        if (profile?.is_mutual === 1) {
+                          const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                          if (confirmUnfollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle unfollow action
+                          }
+                        } else {
+                          const confirmFollow = window.confirm("Do you want to follow this user?");
+                          if (confirmFollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle follow action
+                          }
+                        }
+                      }}                      
                     >
                       {profile?.is_mutual === 1 ? "Following" : "Follow"}
                     </button>
@@ -338,21 +369,49 @@ const FollowingPostCard = () => {
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
                       }`}
+                      // onClick={
+                      //   profile?.is_buddies === 1
+                      //     ? () => handleBuddyRemove(profile?.id)
+                      //     : () => handleAddBuddy(profile?.id)
+                      // }
                       onClick={
                         profile?.is_buddies === 1
-                          ? () => handleBuddyRemove(profile?.id)
-                          : () => handleAddBuddy(profile?.id)
-                      }
+                          ? () => {
+                              const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                              if (confirmRemove) {
+                                handleBuddyRemove(profile?.id); // Call the function to remove the buddy
+                              }
+                            }
+                          : () => {
+                              const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                              if (confirmAdd) {
+                                handleAddBuddy(profile?.id); // Call the function to add the buddy
+                              }
+                            }
+                      }                      
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>
                     <button
-                      onClick={() => handleIsInfluencerFollowBuddyClick(index)}
+                      // onClick={() => handleIsInfluencerFollowBuddyClick(index)}
                       className={`w-full font-inter font-medium text-[14px] h-[36px] rounded-[4px] ${
                         profile?.is_mutual === 0
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
                       }`}
+                      onClick={() => {
+                        if (profile?.is_mutual === 1) {
+                          const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                          if (confirmUnfollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle unfollow action
+                          }
+                        } else {
+                          const confirmFollow = window.confirm("Do you want to follow this user?");
+                          if (confirmFollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle follow action
+                          }
+                        }
+                      }} 
                     >
                       {profile?.is_mutual === 1 ? "Following" : "Follow"}
                     </button>

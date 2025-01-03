@@ -26,11 +26,12 @@ const CreateaPostPopup = ({
   postData,
   setPostData,
 }) => {
+
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Select View");
   const [wordsCount, setWordsCount] = useState(
-    postData?.description.length || 0
+    postData?.description?.length || 0
   );
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showTagBuddySuggestions, setShowBuddyTagSuggestions] = useState(false);
@@ -44,18 +45,6 @@ const CreateaPostPopup = ({
   const validateFields = () => {
     const { description, location, buddies, tags, media_url, buddies_id } =
       postData;
-
-    // Check if all fields are empty
-    // if (
-    //   !description.trim() &&
-    //   !location.trim() &&
-    //   buddies.length === 0 &&
-    //   tags.length === 0 &&
-    //   media_url.length === 0 &&
-    //   buddies_id.length === 0
-    // ) {
-    //   return false;
-    // }
 
     if (!description.trim() && media_url.length === 0) {
       return false;
@@ -74,6 +63,8 @@ const CreateaPostPopup = ({
       alert("At least discription or image is required.");
     }
   };
+
+  // console.log("===postData===>", postData);
 
   const handlePostDetailPopup = () => {
     setIsPostDetailPopup(false);

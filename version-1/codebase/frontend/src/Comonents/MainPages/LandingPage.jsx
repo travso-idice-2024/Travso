@@ -70,7 +70,7 @@ const navigate = useNavigate();
             exploring collaboration across hospitality, food, and tourism!
           </p>
           
-          <button className="w-[140px] h-[48px] rounded-[4px] flex items-center justify-center font-poppins font-semibold text-[#EEEEEE] bg-[#2DC6BE]" onClick={() => navigate('/login')}>
+          <button className="w-[140px] h-[48px] rounded-[4px] flex items-center justify-center font-poppins font-semibold text-[#EEEEEE] bg-[#2DC6BE]" onClick={() => navigate('/signup')}>
             Join Today
           </button>
         </div>

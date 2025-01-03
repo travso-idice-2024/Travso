@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createStory, getActiveStories } from "../../../redux/slices/postSlice";
 import ShowBadgeIcon from "../ShowBadgeIcons";
 
-const StoryPage = ({ isOpen, onClose }) => {
+const StoryPage = ({ isOpen, onClose, closeThroughCancel }) => {
   const dispatch = useDispatch();
   const StoryData = [
     BucketImageSecond,
@@ -351,7 +351,7 @@ const StoryPage = ({ isOpen, onClose }) => {
       media_url: [],
       view: "Public",
     });
-    onClose();
+    closeThroughCancel();
   };
 
   // Disable body scroll when popup is open

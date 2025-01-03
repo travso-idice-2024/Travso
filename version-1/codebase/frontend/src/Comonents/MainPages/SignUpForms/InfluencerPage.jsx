@@ -52,7 +52,7 @@ const InfluencerPage = ({
         className="md:flex-[1.5] bg-cover bg-center relative md:rounded-r-[50px] overflow-hidden min-h-[50vh] md:min-h-full"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="absolute top-8 left-8 md:top-12 md:left-12 md:ml-10">
+        <div className="absolute top-8 left-8 md:top-10 md:left-12 md:ml-10">
           <img
             src={logo}
             alt="Travso Logo"
@@ -61,21 +61,21 @@ const InfluencerPage = ({
           />{" "}
           {/* Logo size and responsiveness */}
         </div>
-        <div className=" absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-white text-left md:ml-10">
-          <h1 className="text-3xl md:text-5xl font-bold">
+        <div className=" absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-white text-left md:ml-10 md:pb-[35px]">
+          <h1 className="font-poppins font-semibold text-[#FFFFFF] md:text-[40px] leading-10">
             Connect with Travel <br /> Buddies
           </h1>
-          <p className="mt-4 text-sm md:text-base hidden md:flex">
-          Join a global community of travel enthusiasts to share your travel
-            story, exchange insider tips, discover hidden gems, and celebrate
+          <p className="font-poppins font-normal mt-4 text-[16px] text-[#FFFFFF] hidden md:flex">
+          Join a global community of travel enthusiasts to share your<br/> travel
+            story, exchange insider tips, discover hidden gems, and <br/>celebrate
             the beauty of diverse destinations.
           </p>
-          <p className="mt-4 text-sm md:text-base flex md:hidden">
+          <p className="font-poppins font-normal mt-4 text-[16px] text-[#FFFFFF] flex md:hidden">
             Join a global community of travel enthusiasts to share your travel
             story, exchange insider tips, discover hidden gems, and celebrate
             the beauty of diverse destinations.
           </p>
-          <div className="flex items-center mt-8 space-x-4 w-[50%] gap-[30px]">
+          <div className="flex items-center mt-4 space-x-4 w-[50%] gap-[30px]">
             <div className="flex-1 relative">
               <div className="w-full h-0.5 bg-gray-300"></div>{" "}
               {/* Full horizontal line */}

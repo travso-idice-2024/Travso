@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
 import { followUnfollow, followUnfollowOnFollowing } from "../../redux/slices/postSlice";
 import { addBuddy, getAllUsers, getOnlineFriends, getSuggestionList, getUserBuddies, getUserFollowers, removeBuddy, toWhomUserIsFollowing } from "../../redux/slices/authSlice";
+import { Link } from "react-router-dom";
 
 const CommunityRightSidebar = () => {
   const dispatch = useDispatch();
@@ -101,6 +102,9 @@ const CommunityRightSidebar = () => {
       const response = await dispatch(addBuddy(buddyId));
       if(response) {
         await dispatch(getSuggestionList());
+        await dispatch(getUserBuddies());
+        await dispatch(getUserFollowers());
+        await dispatch(toWhomUserIsFollowing());
       }
     } catch (error) {
       console.log("==error in handleAddBuddy==", error);
@@ -114,6 +118,9 @@ const CommunityRightSidebar = () => {
       const response = await dispatch(removeBuddy(buddyId));
       if(response) {
         await dispatch(getSuggestionList());
+        await dispatch(getUserBuddies());
+        await dispatch(getUserFollowers());
+        await dispatch(toWhomUserIsFollowing());
       }
     } catch (error) {
       console.log("==error in handleBuddyRemove ===>", error);
@@ -192,16 +199,18 @@ const CommunityRightSidebar = () => {
                 alt={user.full_name}
                 className="w-10 h-10 rounded-full"
               />
-              <div>
-                <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                  {/* {user.full_name} */}
-                  {user.full_name.length > 7 ? user.full_name.slice(0, 7) + '...' : user.full_name}
-                </p>
-                <p className="font-inter font-medium text-[12px] text-[#667877] text-left">
-                  {/* {user.user_name} */}
-                  {user.user_name && user.user_name.length > 7 ? user.user_name.slice(0, 7) + '...' : user.user_name}
-                </p>
-              </div>
+              <Link to={`/profile/${user?.user_name}/${user?.id}`} >
+                <div>
+                  <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
+                    {/* {user.full_name} */}
+                    {user.full_name.length > 7 ? user.full_name.slice(0, 7) + '...' : user.full_name}
+                  </p>
+                  <p className="font-inter font-medium text-[12px] text-[#667877] text-left">
+                    {/* {user.user_name} */}
+                    {user.user_name && user.user_name.length > 7 ? user.user_name.slice(0, 7) + '...' : user.user_name}
+                  </p>
+                </div>
+              </Link>
             </div>
             <div className="flex items-center space-x-2">
               <button

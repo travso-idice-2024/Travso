@@ -269,6 +269,7 @@ const ProfilePageHeaderData = () => {
                   <StoryPage
                     isOpen={isCreateSocialPopup}
                     onClose={() => handleStoryPageClose()}
+                    closeThroughCancel = {() => setIsCreateSocialPopup(false)}
                   />
                   )
                 }

@@ -894,6 +894,7 @@ async function getUserBuddies(req, res) {
       `
       SELECT DISTINCT
         u.id,
+        u.badge,
         u.profile_image,
         u.full_name,
         u.user_name,
@@ -1040,6 +1041,7 @@ async function getUserFollower(req, res) {
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
+        u.badge,
         u.user_name,
         u.full_name,
         u.profile_image,
@@ -1124,6 +1126,8 @@ async function toWhomUserFollows(req, res) {
     const [followers] = await pool.execute(
       ` SELECT 
         u.id,
+        u.badge,
+        u.description,
         u.user_name,
         u.full_name,
         u.profile_image,
@@ -1176,7 +1180,7 @@ const getUserDetails = async (req, res) => {
 
     // Query to fetch user details
     const [rows] = await pool.query(
-      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge FROM users WHERE id = ?",
+      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge, is_follow_selected FROM users WHERE id = ?",
       [userId]
     );
 
@@ -1464,13 +1468,9 @@ async function updateFollowSelect(req, res) {
       `UPDATE users 
              SET is_follow_selected = ?
              WHERE id = ?`,
-      [true, userId]
+      [1, userId]
     );
 
-    console.log(
-      "=======in updateCommunitySelect====>",
-      updateResult.affectedRows
-    );
     // Check if any rows were updated
     if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -1661,6 +1661,7 @@ async function removeBuddy(req, res) {
   }
 }
 
+// to block the an account
 async function blockAccount(req, res) {
   try {
     const userId = req.user.userId; // Extract user ID from token
@@ -1697,6 +1698,35 @@ async function blockAccount(req, res) {
     return res.status(500).json({
       error: "Error Blocking Account",
     });
+  }
+}
+
+// to unblock an account
+async function unBlockUser(req ,res){
+  try {
+    // const {userId} = req.params;
+    const userId = req.user.userId; // Extract user ID from token
+    const { blockId } = req.params;
+
+    console.table({
+      userId,
+      blockId
+    })
+
+    const unblock = await pool.execute(
+      `DELETE FROM block_user WHERE user_id = ? AND blocked_id = ?`, [userId, blockId]
+    );
+
+    console.log("22222222")
+    return res.status(200).json({
+      message:"Unblocked Successfully",
+      // data:[unblock]
+    });
+  } catch (error) {
+    console.log("===error==in unblock==>", error)
+    return res.status(500).json({
+      error:"Error"
+   });
   }
 }
 
@@ -1846,7 +1876,6 @@ async function validateToken(req, res) {
   }
 }
 
-
 //getblock users list
 async function getBlockedUser(req, res) {
   try {
@@ -1910,6 +1939,64 @@ async function unblockUser(req ,res){
     return res.status(500).json({
       error:"Error"
     });
+}
+}
+// to get the details of other user
+
+async function getOtherUserDetail(req, res) {
+  try {
+    const userId = req.user.userId; // Logged-in user ID 
+    const { otherUser_id } = req.params; // Other user's ID
+
+    // Query to fetch user details and relationship information
+    const [rows] = await pool.execute(
+      `SELECT 
+        u.full_name,
+        u.user_name,
+        u.description,
+        u.badge,
+        u.profile_image,
+        u.cover_image,
+        (SELECT COUNT(*) FROM followers f WHERE f.followee_id = ?) AS total_followers,
+        (SELECT COUNT(*) FROM buddies b WHERE b.user_id = ? AND b.buddies_id = ?) AS total_buddies,
+        EXISTS (
+          SELECT 1 
+          FROM buddies 
+          WHERE user_id = ? AND buddies_id = ?
+        ) AS is_buddies,
+        EXISTS (
+          SELECT 1
+          FROM followers
+          WHERE follower_id = ? AND followee_id = ?
+        ) AS is_follow
+      FROM 
+        users u 
+      WHERE id = ?`,
+      [
+        otherUser_id, // For total_followers
+        userId, otherUser_id, // For total_buddies
+        userId, otherUser_id, // For is_buddies
+        userId, otherUser_id, // For is_follow
+        otherUser_id // For user details
+      ]
+    );
+
+    const parsedData = rows.map((user) => ({
+      ...user,
+      is_buddies: !!user.is_buddies, // Convert to boolean
+      is_follow: !!user.is_follow,   // Convert to boolean
+    }));
+
+    // Respond with the fetched data
+    return res.status(200).json({
+      message: "Data Fetched",
+      data: parsedData[0], // Fetch the first row
+    });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    return res.status(500).json({
+      message: "Internal server Error",
+   });
   }
 }
 
@@ -1946,5 +2033,8 @@ module.exports = {
   blockAccount,
   suggestions,
   validateToken,
-  checkPassword
+  checkPassword,
+  unBlockUser,
+  getOtherUserDetail
+
 };

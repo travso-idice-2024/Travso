@@ -931,8 +931,65 @@ export const blockAccount = createAsyncThunk(
   }
 );
 
+// Thunk for unBlockAccount 
+export const unBlockAccount = createAsyncThunk(
+  'auth/unBlockAccount',
+  async (unBlockId,{ rejectWithValue }) => {
+    try {
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/auth/unblock-account/${unBlockId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
 
+      const data = await response.json();
+      // console.log("=====data===in unBlockAccount===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in unBlockAccount call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for getOtherUserDetails
+export const getOtherUserDetails = createAsyncThunk(
+  'auth/getOtherUserDetails',
+  async (otherUserId,{ rejectWithValue }) => {
+    try {
+      // console.log("===otherUserId==>", otherUserId)
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/auth/other-user-detail/${otherUserId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in getOtherUserDetails=>", data)
+      return data;
+    } catch (error) {
+      console.log("error in getOtherUserDetails call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -954,6 +1011,7 @@ const authSlice = createSlice({
     onlineFriends: null,
     suggestionList: null,
     blockUsers:null,
+    otherUserData: null
   },
   reducers: {
     resetAuthState: (state) => {
@@ -969,6 +1027,7 @@ const authSlice = createSlice({
       state.onlineFriends = null;
       state.blockUsers = null;
       state.checkPass = null;
+      state.otherUserData = null;
     },
   },
   extraReducers: (builder) => {
@@ -1350,6 +1409,31 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(blockAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle unBlockAccount
+      .addCase(unBlockAccount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unBlockAccount.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(unBlockAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle getOtherUserDetails
+      .addCase(getOtherUserDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getOtherUserDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.otherUserData = action.payload.data;
+      })
+      .addCase(getOtherUserDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
