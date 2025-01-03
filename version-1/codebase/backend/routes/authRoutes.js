@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {getBlockedUser, unblockUser, registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken } = require('../controllers/authController');
+const {getBlockedUser, unblockUser,checkPassword, registerUser, sendOTP, verifyOTP, finalSignUp, resendOTP, getFollowersCount, loginUser, sendEmailOTP, sendOTPForgotPassword, forgotPassVerify, updatePassword, getUserBuddies, getUserFollower, getUserDetails, updateUser, toWhomUserFollows, insertProfileImage, removeProfileImage, getallUsers, removeCoverImage, uploadCoverImage, logOut, addSearch, updateFollowSelect, onlineFriends, addBuddies, removeBuddy, blockAccount, suggestions, validateToken } = require('../controllers/authController');
 const verifyToken = require("../utils/verifyToken");
 
 
@@ -17,7 +17,8 @@ router.post('/login', loginUser);
 router.post('/email-otp', sendEmailOTP);    // for forgot password email otp
 router.post('/mobile-otp', sendOTPForgotPassword);    // for forgot password mobile otp
 router.post('/fp-otp-verify', forgotPassVerify);    // for forgot password verify otp
-router.post('/update-password', updatePassword);    // for forgot password
+router.post('/update-password', updatePassword); 
+router.post('/check-password',verifyToken,checkPassword);   // for forgot password
 router.get("/get-buddies",verifyToken, getUserBuddies);
 router.get("/get-followers",verifyToken, getUserFollower);
 router.get("/user-following",verifyToken, toWhomUserFollows);

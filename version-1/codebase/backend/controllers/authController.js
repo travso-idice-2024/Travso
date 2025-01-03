@@ -770,6 +770,42 @@ async function forgotPassVerify(req, res) {
   }
 }
 
+
+async function checkPassword(req, res){
+  try {
+    const userID = req.user.userId; 
+    const {password} = req.body;
+  
+  
+    const [data] = await pool.execute(
+      "SELECT password FROM users WHERE id = ?",
+      [userID]
+    );
+    
+    if(data.length ===0){
+      return res.status(404).json({
+         message:"User Not found",
+         data:{}
+      });
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, data[0].password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ status:false, message: "Password Does not Matched", data:{}});
+    }
+  
+    return res.status(200).json({
+      status:true,
+      message:"Password Matched",
+      data:data[0]
+    });
+  } catch (error) {
+    console.log("===error====>",error);
+    return res.status(500).json({
+      error:"Internal Server Error"
+    })
+  }
+  }
 async function updatePassword(req, res) {
   try {
     const { mobileNumber, email, userName, password } = req.body;
@@ -790,7 +826,7 @@ async function updatePassword(req, res) {
 
     // return if no user is found
     if (user.length === 0) {
-      res.status(404).json({ error: "No User Found" });
+      res.status(404).json({ status:true ,message: "No User Found" });
       return;
     }
 
@@ -807,17 +843,17 @@ async function updatePassword(req, res) {
 
     // Check if any rows were updated
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(400).json({ status:false , message: "Password Not Updated" });
     }
 
-    return res.status(200).json({ message: "Password Updated Successfully" });
+    return res.status(200).json({ status:true , message: "Password Updated Successfully" });
   } catch (error) {
     console.log("Error in catch part updatePassword api", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
-async function getUserBuddies1(req, res) {
+async function getUserBuddies1(req, res) {  
   try {
     // const { id } = req.params;
     const userId = req.user.userId; // Assuming `id` is part of the token payload
@@ -1910,4 +1946,5 @@ module.exports = {
   blockAccount,
   suggestions,
   validateToken,
+  checkPassword
 };

@@ -315,6 +315,36 @@ export const verifyForgotPassOTP = createAsyncThunk(
   }
 )
 
+
+
+export const checkPassword = createAsyncThunk(
+  'auth/checkPassword',
+  async ({password=null}, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/auth/check-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({password}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return errorData;
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("error in verify password", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 // Thunk for forgot password update password
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
@@ -331,7 +361,7 @@ export const updatePassword = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData);
+        return errorData;
       }
 
       const data = await response.json();
@@ -915,6 +945,7 @@ const authSlice = createSlice({
     setInfluencer: null,
     token: null,
     updatePass: null,
+    checkPass: null,
     userBuddies: null,
     userPosts: null,
     userFollowers: null,
@@ -937,6 +968,7 @@ const authSlice = createSlice({
       state.toWhomUserFollows = null;
       state.onlineFriends = null;
       state.blockUsers = null;
+      state.checkPass = null;
     },
   },
   extraReducers: (builder) => {
@@ -1082,6 +1114,19 @@ const authSlice = createSlice({
         state.updatePass = action.payload;
       })
       .addCase(updatePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(checkPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.checkPass = action.payload;
+      })
+      .addCase(checkPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
