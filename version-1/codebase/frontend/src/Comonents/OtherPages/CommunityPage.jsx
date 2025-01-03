@@ -721,6 +721,7 @@ const CommunityPage = () => {
     setIsCreateSocialPopup(false);
     setIsStoryLoaderOpen(true);
   }
+  
   return (
     <>
       <Header />

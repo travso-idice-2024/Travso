@@ -30,29 +30,21 @@ const StoryViewPageUser = ({
   handleEmojiClickStory,
   handleLikeUnlikeStory,
   increaseViewersCount,
-  showEmojiPicker,
-  handleCloseEmojiPicker
 }) => {
   const dispatch = useDispatch();
   const [viewedStoryId, setViewedStoryId] = useState("");
-  const [dropdownSetting, setDropdownSetting] = useState(false);
   // console.log("====storyData===>", storyData);
   // console.log("====storyReply===>", storyReply);
   // console.log("====currentBuddiesReelIndex===>", currentBuddiesReelIndex);
 
-  // const handleStoryViewed = async () => {
-  //   console.log("====viewedStoryId===>", story?.id);
-  //   await increaseViewersCount(viewedStoryId);
-  // };
+  const handleStoryViewed = async () => {
+    console.log("====viewedStoryId===>", viewedStoryId);
+    await increaseViewersCount(viewedStoryId);
+  };
 
   // useEffect(() => {
   //   handleStoryViewed();
   // }, []);
-
-  const handleSetting = (storyId) => {
-    // console.log("sdsddadafafafafafaf",storyId)
-    setDropdownSetting(true);
-  };
 
   // Verify and preprocess the stories data to ensure correct formatting
   const processedStoriesData = storyData?.map((story) => ({
@@ -97,7 +89,6 @@ const StoryViewPageUser = ({
               </p>
             </div>
           </div>
-         
           <div className="flex items-center gap-[5px]">
             <div>
               <svg
@@ -169,7 +160,7 @@ const StoryViewPageUser = ({
         </div>
 
         <div className="flex items-center justify-between absolute -bottom-[585px] z-10 w-[396px] px-4">
-          {/* <div className="relative flex items-center">
+          <div className="relative flex items-center">
             <input
               type="text"
               placeholder="Add a comment"
@@ -215,73 +206,7 @@ const StoryViewPageUser = ({
                 />
               </div>
             )}
-          </div> */}
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              placeholder="Add a comment"
-              onKeyDown={(e) =>
-                handleStoryCommentEnter(
-                  e,
-                  story?.id,
-                  story?.user_id,
-                  story?.url,
-                  story?.full_name
-                )
-              }
-              className="flex-1 bg-[#FFFFFFBF] focus:outline-none text-gray-600 rounded-[24px] md:w-[256px] h-[44px] placeholder:font-inter placeholder:font-medium placeholder:text-[14px] placeholder:text-[#212626] pl-9"
-              value={storyReply[story?.id] || ""}
-              onChange={(e) => handleStoryReplyInputChange(e, story?.id)}
-            />
-
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-2 cursor-pointer"
-              onClick={() => handleEmojiSelectUserID(story?.id)}
-            >
-              <g clipPath="url(#clip0_40000261_30967)">
-                <path
-                  d="M6.66602 11.6665C6.66602 11.6665 7.91602 13.3332 9.99935 13.3332C12.0827 13.3332 13.3327 11.6665 13.3327 11.6665M12.4993 7.49984H12.5077M7.49935 7.49984H7.50768M18.3327 9.99984C18.3327 14.6022 14.6017 18.3332 9.99935 18.3332C5.39698 18.3332 1.66602 14.6022 1.66602 9.99984C1.66602 5.39746 5.39698 1.6665 9.99935 1.6665C14.6017 1.6665 18.3327 5.39746 18.3327 9.99984ZM12.916 7.49984C12.916 7.72996 12.7295 7.9165 12.4993 7.9165C12.2692 7.9165 12.0827 7.72996 12.0827 7.49984C12.0827 7.26972 12.2692 7.08317 12.4993 7.08317C12.7295 7.08317 12.916 7.26972 12.916 7.49984ZM7.91602 7.49984C7.91602 7.72996 7.72947 7.9165 7.49935 7.9165C7.26923 7.9165 7.08268 7.72996 7.08268 7.49984C7.08268 7.26972 7.26923 7.08317 7.49935 7.08317C7.72947 7.08317 7.91602 7.26972 7.91602 7.49984Z"
-                  stroke="#212626"
-                  strokeWidth="1.66667"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0_40000261_30967">
-                  <rect width="20" height="20" fill="white" />
-                </clipPath>
-              </defs>
-            </svg>
-
-            {/* {activeEmojiStoryId === story.id && showEmojiPickerStory && ( */}
-            {/* Cancel Button to Close Emoji Picker */}
-            {showEmojiPicker && (
-              <button
-                className="absolute top-0 right-0 z-60 p-2 bg-gray-300 rounded-full"
-                onClick={handleCloseEmojiPicker}
-              >
-               X
-              </button>
-            )}
-            {showEmojiPicker && (
-              <div className="absolute -top-[380px] left-0 z-50">
-                <EmojiPicker
-                  onEmojiClick={(emojiObject) =>
-                    handleEmojiClickStory(emojiObject, story.id)
-                  }
-                  className="w-[250px] h-[300px] shadow-lg rounded-lg"
-                />
-              </div>
-            )}
-            
           </div>
-
           <div>
             <svg
               width="44"
