@@ -335,15 +335,33 @@ const handleBuddyRemove = async(buddyId) => {
                         ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                         : "text-[#2DC6BE] border-[#2DC6BE]"
                     }`}
-                    // onClick={() => handleFollowUnfollowForFollowing(buddy?.id)}  
-                    // onClick={() => handleFollowUnfollow(buddy?.id)} 
-                    onClick={buddy.is_followers === 1 ? () => handleFollowUnfollowForFollowing(buddy?.id) : () =>handleFollowUnfollow(buddy?.id) } 
+                    // onClick={buddy.is_followers === 1 ? () => handleFollowUnfollowForFollowing(buddy?.id) : () =>handleFollowUnfollow(buddy?.id) }
+                    onClick={() => {
+                      if (buddy.is_followers === 1) {
+                        const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                        if (confirmUnfollow) {
+                          handleFollowUnfollowForFollowing(buddy?.id); // Call the function to unfollow
+                        }
+                      } else {
+                        const confirmFollow = window.confirm("Do you want to follow this user?");
+                        if (confirmFollow) {
+                          handleFollowUnfollow(buddy?.id); // Call the function to follow
+                        }
+                      }
+                    }}                     
                   >
                   {buddy.is_followers === 0 ? "Follow" : "Following"}
                   </button>
                   <button 
                     className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center"
-                    onClick={() => handleBuddyRemove(buddy?.id)}
+                    // onClick={() => handleBuddyRemove(buddy?.id)}
+                    onClick={() => {
+                      const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                      if (confirmRemove) {
+                        handleBuddyRemove(buddy?.id); // Call the function to remove the buddy
+                      }
+                    }}
+                    
                   >
                     <svg
                       width="10"
@@ -417,7 +435,20 @@ const handleBuddyRemove = async(buddyId) => {
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
                 // onClick={() => handleFollowUnfollow(follower?.id)}
-                onClick={follower.is_mutual === 1 ? () => handleFollowUnfollow(follower?.id) : () =>handleFollowUnfollowForFollowing(follower?.id) }
+                  // onClick={follower.is_mutual === 1 ? () => handleFollowUnfollow(follower?.id) : () =>handleFollowUnfollowForFollowing(follower?.id) }
+                  onClick={() => {
+                    if (follower.is_mutual === 1) {
+                      const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                      if (confirmUnfollow) {
+                        handleFollowUnfollow(follower?.id); // Call the function to unfollow
+                      }
+                    } else {
+                      const confirmFollow = window.confirm("Do you want to follow this user?");
+                      if (confirmFollow) {
+                        handleFollowUnfollowForFollowing(follower?.id); // Call the function to follow
+                      }
+                    }
+                  }}                  
                 >
                   {follower.is_mutual !== 0 ? "Remove" : "Follow"}
                 </button>
@@ -429,7 +460,13 @@ const handleBuddyRemove = async(buddyId) => {
                       ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
-                  onClick={() => handleAddBuddy(follower?.id)}
+                  // onClick={() => handleAddBuddy(follower?.id)}
+                  onClick={() => {
+                    const confirmAddBuddy = window.confirm("Do you want to add this user as a buddy?");
+                    if (confirmAddBuddy) {
+                      handleAddBuddy(follower?.id); // Call the function to add the buddy
+                    }
+                  }}                  
                 >
                   <svg
                     width="14"
@@ -450,7 +487,13 @@ const handleBuddyRemove = async(buddyId) => {
                   </>) : (<>
                     <button 
                     className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center"
-                    onClick={() => handleBuddyRemove(follower?.id)}
+                    // onClick={() => handleBuddyRemove(follower?.id)}
+                    onClick={() => {
+                      const confirmRemoveBuddy = window.confirm("Are you sure you want to remove this buddy?");
+                      if (confirmRemoveBuddy) {
+                        handleBuddyRemove(follower?.id); // Call the function to remove the buddy
+                      }
+                    }}
                   >
                     <svg
                       width="10"
@@ -469,8 +512,7 @@ const handleBuddyRemove = async(buddyId) => {
                     </svg>
                   </button>
                   </>)
-                }
-                
+                }    
               </div>
             </div>
           ))}
@@ -527,7 +569,21 @@ const handleBuddyRemove = async(buddyId) => {
                       ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
-                  onClick={() => handleFollowUnfollowForFollowing(userFollowing.id)}
+                  // onClick={() => handleFollowUnfollowForFollowing(userFollowing.id)}
+                  onClick={() => {
+                    if (userFollowing.is_mutual === 0) {
+                      const confirmFollow = window.confirm("Do you want to follow this user?");
+                      if (confirmFollow) {
+                        handleFollowUnfollowForFollowing(userFollowing.id); // Call the function to follow
+                      }
+                    } else {
+                      const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                      if (confirmUnfollow) {
+                        handleFollowUnfollowForFollowing(userFollowing.id); // Call the function to unfollow
+                      }
+                    }
+                  }}
+                  
                 >
                   {userFollowing.is_mutual === 0 ? "Follow" : "Following"}
                 </button>
@@ -539,7 +595,13 @@ const handleBuddyRemove = async(buddyId) => {
                       ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
-                  onClick={() => handleAddBuddy(userFollowing.id)}
+                  // onClick={() => handleAddBuddy(userFollowing.id)}
+                  onClick={() => {
+                    const confirmAddBuddy = window.confirm("Do you want to add this user as a buddy?");
+                    if (confirmAddBuddy) {
+                      handleAddBuddy(userFollowing.id); // Call the function to add the buddy
+                    }
+                  }}                  
                 >
                   <svg
                     width="14"
@@ -560,7 +622,13 @@ const handleBuddyRemove = async(buddyId) => {
                   </>) : (<>
                     <button 
                     className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center"
-                    onClick={() => handleBuddyRemove(userFollowing?.id)}
+                    // onClick={() => handleBuddyRemove(userFollowing?.id)}
+                    onClick={() => {
+                      const confirmRemoveBuddy = window.confirm("Are you sure you want to remove this buddy?");
+                      if (confirmRemoveBuddy) {
+                        handleBuddyRemove(userFollowing?.id); // Call the function to remove the buddy
+                      }
+                    }}                    
                   >
                     <svg
                       width="10"

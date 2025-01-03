@@ -308,11 +308,26 @@ const FollowingPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
+                      // onClick={
+                      //   profile?.is_buddies === 1
+                      //     ? () => handleBuddyRemove(profile?.id)
+                      //     : () => handleAddBuddy(profile?.id)
+                      // }
                       onClick={
                         profile?.is_buddies === 1
-                          ? () => handleBuddyRemove(profile?.id)
-                          : () => handleAddBuddy(profile?.id)
-                      }
+                          ? () => {
+                              const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                              if (confirmRemove) {
+                                handleBuddyRemove(profile?.id);
+                              }
+                            }
+                          : () => {
+                              const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                              if (confirmAdd) {
+                                handleAddBuddy(profile?.id);
+                              }
+                            }
+                      }                      
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>
@@ -323,9 +338,22 @@ const FollowingPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
-                      onClick={() =>
-                        handleFollowUnfollowForFollowing(profile.id)
-                      }
+                      // onClick={() =>
+                      //   handleFollowUnfollowForFollowing(profile.id)
+                      // }
+                      onClick={() => {
+                        if (profile?.is_mutual === 1) {
+                          const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                          if (confirmUnfollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle unfollow action
+                          }
+                        } else {
+                          const confirmFollow = window.confirm("Do you want to follow this user?");
+                          if (confirmFollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle follow action
+                          }
+                        }
+                      }}                      
                     >
                       {profile?.is_mutual === 1 ? "Following" : "Follow"}
                     </button>
@@ -341,21 +369,49 @@ const FollowingPostCard = () => {
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
                       }`}
+                      // onClick={
+                      //   profile?.is_buddies === 1
+                      //     ? () => handleBuddyRemove(profile?.id)
+                      //     : () => handleAddBuddy(profile?.id)
+                      // }
                       onClick={
                         profile?.is_buddies === 1
-                          ? () => handleBuddyRemove(profile?.id)
-                          : () => handleAddBuddy(profile?.id)
-                      }
+                          ? () => {
+                              const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                              if (confirmRemove) {
+                                handleBuddyRemove(profile?.id); // Call the function to remove the buddy
+                              }
+                            }
+                          : () => {
+                              const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                              if (confirmAdd) {
+                                handleAddBuddy(profile?.id); // Call the function to add the buddy
+                              }
+                            }
+                      }                      
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>
                     <button
-                      onClick={() => handleIsInfluencerFollowBuddyClick(index)}
+                      // onClick={() => handleIsInfluencerFollowBuddyClick(index)}
                       className={`w-full font-inter font-medium text-[14px] h-[36px] rounded-[4px] ${
                         profile?.is_mutual === 0
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
                       }`}
+                      onClick={() => {
+                        if (profile?.is_mutual === 1) {
+                          const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                          if (confirmUnfollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle unfollow action
+                          }
+                        } else {
+                          const confirmFollow = window.confirm("Do you want to follow this user?");
+                          if (confirmFollow) {
+                            handleFollowUnfollowForFollowing(profile?.id); // Handle follow action
+                          }
+                        }
+                      }} 
                     >
                       {profile?.is_mutual === 1 ? "Following" : "Follow"}
                     </button>

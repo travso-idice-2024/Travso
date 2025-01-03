@@ -226,11 +226,24 @@ const BuddiesPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
-                      onClick={
-                        profile?.is_buddies === 1
-                          ? () => handleBuddyRemove(profile?.id)
-                          : () => handleAddBuddy(profile?.id)
-                      }
+                      // onClick={
+                      //   profile?.is_buddies === 1
+                      //     ? () => handleBuddyRemove(profile?.id)
+                      //     : () => handleAddBuddy(profile?.id)
+                      // }
+                      onClick={() => {
+                        if (profile?.is_buddies === 1) {
+                          const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                          if (confirmRemove) {
+                            handleBuddyRemove(profile?.id);
+                          }
+                        } else {
+                          const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                          if (confirmAdd) {
+                            handleAddBuddy(profile?.id);
+                          }
+                        }
+                      }}
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>
@@ -241,7 +254,20 @@ const BuddiesPostCard = () => {
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
                       }`}
-                      onClick={() => handleFollowUnfollow(profile?.id)}
+                      // onClick={() => handleFollowUnfollow(profile?.id)}
+                      onClick={() => {
+                        if (profile?.is_followers === 1) {
+                          const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                          if (confirmUnfollow) {
+                            handleFollowUnfollow(profile?.id); // Call the function for unfollowing
+                          }
+                        } else {
+                          const confirmFollow = window.confirm("Do you want to follow this user?");
+                          if (confirmFollow) {
+                            handleFollowUnfollow(profile?.id); // Call the function for following
+                          }
+                        }
+                      }}
                     >
                       {profile?.is_followers === 1 ? "Following" : "Follow"}
                     </button>
@@ -251,12 +277,25 @@ const BuddiesPostCard = () => {
                 {profile.is_influencer === 1 && (
                   <div className="flex justify-center space-x-3 mt-4">
                     <button
-                      onClick={() => handleIsInfluencerAddBuddyClick(index)}
+                      // onClick={() => handleIsInfluencerAddBuddyClick(index)}
                       className={`w-full font-inter font-medium text-[14px] h-[36px] rounded-[4px] ${
                         profile?.is_buddies === 0
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
                       }`}
+                      onClick={() => {
+                        if (profile?.is_buddies === 1) {
+                          const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                          if (confirmRemove) {
+                            handleBuddyRemove(profile?.id);
+                          }
+                        } else {
+                          const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                          if (confirmAdd) {
+                            handleAddBuddy(profile?.id);
+                          }
+                        }
+                      }}
                     >
                       {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                     </button>

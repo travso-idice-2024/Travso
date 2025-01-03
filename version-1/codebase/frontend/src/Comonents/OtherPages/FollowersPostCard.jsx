@@ -228,8 +228,23 @@ const handleBuddyRemove = async(buddyId) => {
                         ? "bg-[#1DB2AA] text-white"
                         : "bg-[#F0F7F7] text-[#667877]"
                     }`}
-                    onClick={profile?.is_buddies === 1 ? () => handleBuddyRemove(profile?.id) : () => handleAddBuddy(profile?.id)}
-  
+                    // onClick={profile?.is_buddies === 1 ? () => handleBuddyRemove(profile?.id) : () => handleAddBuddy(profile?.id)}
+                    onClick={
+                      profile?.is_buddies === 1
+                        ? () => {
+                            const confirmRemove = window.confirm("Are you sure you want to remove this buddy?");
+                            if (confirmRemove) {
+                              handleBuddyRemove(profile?.id);
+                            }
+                          }
+                        : () => {
+                            const confirmAdd = window.confirm("Do you want to add this user as a buddy?");
+                            if (confirmAdd) {
+                              handleAddBuddy(profile?.id);
+                            }
+                          }
+                    }
+                    
                   >
                     {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
                   </button>
@@ -240,8 +255,22 @@ const handleBuddyRemove = async(buddyId) => {
                         ? "bg-[#1DB2AA] text-white"
                         : "bg-[#F0F7F7] text-[#667877]"
                     }`}
-                  onClick={profile.is_mutual === 1 ? () => handleFollowUnfollow(profile?.id) : () =>handleFollowUnfollowForFollowing(profile?.id) }
-  
+                    // onClick={profile.is_mutual === 1 ? () => handleFollowUnfollow(profile?.id) : () =>handleFollowUnfollowForFollowing(profile?.id) }
+                    onClick={
+                      profile.is_mutual === 1
+                        ? () => {
+                            const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
+                            if (confirmUnfollow) {
+                              handleFollowUnfollow(profile?.id);
+                            }
+                          }
+                        : () => {
+                            const confirmFollow = window.confirm("Do you want to follow this user?");
+                            if (confirmFollow) {
+                              handleFollowUnfollowForFollowing(profile?.id);
+                            }
+                          }
+                    }                    
                   >
                     {profile?.is_mutual === 1 ? "Following" : "Follow"}
                   </button>
