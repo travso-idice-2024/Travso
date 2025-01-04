@@ -2,7 +2,7 @@ const pool = require("../utils/db");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
-const host = "http://localhost:5000";
+const host = "http://127.0.0.1";
 
 const POST_UPLOAD_DIR = path.join(__dirname, "../uploads/post_img");
 const STORY_UPLOAD_DIR = path.join(__dirname, "../uploads/story_img");

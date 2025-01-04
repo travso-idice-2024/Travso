@@ -19,7 +19,7 @@ import Boy1 from "../../assets/headerIcon/boy1.png";
 import p1 from "../../assets/headerIcon/p1.png";
 import p2 from "../../assets/headerIcon/p2.png";
 import p3 from "../../assets/headerIcon/p3.png";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 import trash from "../../assets/trash.png";
 import entypo_bucket from "../../assets/entypo_bucket.png";
 import noto_fire from "../../assets/noto_fire.png";

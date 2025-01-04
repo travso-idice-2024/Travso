@@ -10,7 +10,7 @@ const sendMobileOTP = require("../utils/sendMobileOTP");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
-const host = "http://localhost:5000";
+const host = "http://127.0.0.1";
 // const UPLOAD_DIR = require('../server/UPLOAD_DIR');
 
 const PROFILE_UPLOAD_DIR = path.join(__dirname, "../uploads/profile_img");

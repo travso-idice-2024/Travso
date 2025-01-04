@@ -8,7 +8,7 @@ import story from "../../assets/story.png";
 import Travel from "../../assets/travel.png";
 import First from "../../assets/1.png";
 import BucketImageSecond from "../../assets/bucketimageSecond.png";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 import trash from "../../assets/trash.png";
 import leftIcon from "../../assets/lefticon.png";
 import like from "../../assets/like.png";

@@ -4,7 +4,7 @@ import Travel from "../../assets/travel.png";
 import First from "../../assets/1.png";
 import BucketImageSecond from "../../assets/bucketimageSecond.png";
 import Boy1 from "../../assets/headerIcon/boy1.png";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 import p1 from "../../assets/headerIcon/p1.png";
 import p2 from "../../assets/headerIcon/p2.png";
 import p3 from "../../assets/headerIcon/p3.png";

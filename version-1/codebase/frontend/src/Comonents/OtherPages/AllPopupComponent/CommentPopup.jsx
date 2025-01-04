@@ -23,7 +23,7 @@ import send from "../../../assets/headerIcon/send.png";
 import Girl from "../../../assets/headerIcon/girl.jpg";
 import "../Header.css";
 import leftIcon from "../../../assets/lefticon.png";
-import dotThree from "../../../assets/dotThree.png";
+import dotThree from "../../../assets/dotthree.png";
 import blockIcon from "../../../assets/block-icon.png";
 import chevron_down from "../../../assets/chevron-down.png";
 import dots_vertical from "../../../assets/dots-vertical.png";

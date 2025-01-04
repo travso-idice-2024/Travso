@@ -12,7 +12,7 @@ import Goa from "../../assets/LandingSVG/goa.svg";
 import Calcutta from "../../assets/LandingSVG/calcutta.svg";
 import China from "../../assets/LandingSVG/china.svg";
 import Himachal from "../../assets/LandingSVG/himachal.svg";
-import Korea from "../../assets/LandingSVG/korea.svg";
+import Korea from "../../assets/LandingSVG/Korea.svg";
 import Norway from "../../assets/LandingSVG/norway.svg";
 import Romania from "../../assets/LandingSVG/romania.svg";
 import Russia1 from "../../assets/LandingSVG/Russia1.svg";

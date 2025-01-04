@@ -7,7 +7,7 @@ import ProfilePageHeaderData from "./ProfilePageHeaderData";
 import { getAllBucketLists } from "../../redux/slices/postSlice";
 import { useNavigate } from "react-router-dom";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const bucketListData = [

@@ -86,7 +86,8 @@ const EditProfile = () => {
     city: "",
     userName: "",
     description: "",
-    badge: ""
+    badge: "",
+    dob: ""
   });
   const [formDataError, setFormDataError] = useState({});
   const [flashMessage, setFlashMessage] = useState("");
@@ -115,7 +116,8 @@ const EditProfile = () => {
         city: userDetails?.city,
         userName: userDetails?.user_name,
         description: userDetails?.description || "",
-        badge: userDetails?.badge || ""
+        badge: userDetails?.badge || "",
+        dob: userDetails?.dob || ""
       });
       console.log("yes working");
     }
@@ -681,12 +683,13 @@ const handleCoverUpload = async (e) => {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                </div>
                   {formDataError.badge && (
-                      <p className="error text-left text-[#ff0000] text-sm">
+                      <p className="absolute top-[70px] error text-left text-[#ff0000] text-sm">
                         {formDataError.badge}
                       </p>
                   )}
+                </div>
+                  
               </div>
             </div>
 
