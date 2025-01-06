@@ -669,7 +669,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       } catch (error) {
         console.log("===error in unBlockTheUser===>", error);
       }
-    };
+  };
 
   // console.log("===allposts===", allPosts)
 
@@ -1632,7 +1632,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                           alt="alert"
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />
-                                                        Delete comment
+                                                        Delete Reply
                                                       </li>
                                                     )}
 

@@ -549,7 +549,7 @@ async function loginUser(req, res) {
         .status(400)
         .json({ message: "username and password are required" });
     }
-
+  
     const [user] = await pool.execute(
       "SELECT * FROM users WHERE user_name = ?",
       [username]
@@ -1941,16 +1941,19 @@ async function unblockUser(req ,res){
     });
 }
 }
+
 // to get the details of other user
 
 async function getOtherUserDetail(req, res) {
   try {
-    const userId = req.user.userId; // Logged-in user ID 
-    const { otherUser_id } = req.params; // Other user's ID
+    const userId = req.user.userId;
+    // const { userId } = req.params;
+    const { otherUser_id } = req.params;
 
-    // Query to fetch user details and relationship information
-    const [rows] = await pool.execute(
+    // Query for user details, including followers, buddies, and post counts
+    const [userDetails] = await pool.execute(
       `SELECT 
+      u.id,
         u.full_name,
         u.user_name,
         u.description,
@@ -1973,30 +1976,161 @@ async function getOtherUserDetail(req, res) {
         users u 
       WHERE id = ?`,
       [
-        otherUser_id, // For total_followers
-        userId, otherUser_id, // For total_buddies
-        userId, otherUser_id, // For is_buddies
-        userId, otherUser_id, // For is_follow
-        otherUser_id // For user details
+        otherUser_id,
+        userId, otherUser_id, 
+        userId, otherUser_id, 
+        userId, otherUser_id, 
+        otherUser_id
       ]
     );
 
-    const parsedData = rows.map((user) => ({
-      ...user,
-      is_buddies: !!user.is_buddies, // Convert to boolean
-      is_follow: !!user.is_follow,   // Convert to boolean
-    }));
+    if (!userDetails || userDetails.length === 0) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-    // Respond with the fetched data
+    const user = userDetails[0];
+
+    // Check if the necessary fields are present
+    if (user === undefined || user.is_buddies === undefined || user.is_follow === undefined) {
+      return res.status(500).json({
+        message: "Error fetching user data",
+      });
+    }
+
+    // Get Followers List
+    const [followers] = await pool.execute(
+      `SELECT 
+        f.follower_id, u.full_name, u.user_name, u.profile_image,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = f.follower_id) AS is_followed,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = f.follower_id AND followee_id = ?) AS is_following
+      FROM followers f
+      JOIN users u ON f.follower_id = u.id
+      WHERE f.followee_id = ?`,
+      [userId, userId, otherUser_id]
+    );
+
+    
+    // Get Buddies List
+    const [buddies] = await pool.execute(
+      `SELECT 
+        b.buddies_id, u.full_name, u.user_name, u.profile_image,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = b.buddies_id) AS is_buddies
+      FROM buddies b
+      JOIN users u ON b.buddies_id = u.id
+      WHERE b.user_id = ?`,
+      [userId, otherUser_id]
+    );
+
+    // Get Posts by the other user
+    const [posts] = await pool.execute(
+      `SELECT DISTINCT
+        p.id,
+        p.user_id,
+        p.is_public,
+        p.description,
+        p.buddies_id,
+        p.tag_id,
+        p.location,
+        p.media_url,
+        p.status,
+        p.block_post,
+        u.full_name ,
+        u.user_name ,
+        u.profile_image ,
+        u.badge ,
+        p.created_at AS post_created_at,
+        p.updated_at AS post_updated_at,
+        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS total_likes,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS total_comments,
+        (SELECT COUNT(*) FROM shared_post sp WHERE sp.post_id = p.id) AS total_shared,
+        (SELECT COUNT(*) FROM bucket_list bl WHERE bl.post_id = p.id) AS total_buckets,
+        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked
+      FROM 
+        posts p
+      JOIN users u ON p.user_id = u.id
+      LEFT JOIN buddies b ON b.buddies_id = p.user_id
+      LEFT JOIN followers f ON f.followee_id = p.user_id
+      WHERE 
+        p.status = 'active' 
+        AND  p.user_id = ?
+      ORDER BY 
+        p.created_at DESC;`,
+      [userId, otherUser_id]
+    );
+    
+    // Get Stories by the other user
+    const [stories] = await pool.execute(
+      `SELECT 
+         stories.*, 
+         users.profile_image, 
+         users.full_name, 
+         users.user_name,
+         users.badge,
+         (
+           SELECT CONCAT(
+             '[', 
+             GROUP_CONCAT(
+               CONCAT(
+                 '{"user_id":', sv.user_id, 
+                 ',"profile_image":"', vu.profile_image, '"',
+                 ',"user_name":"', vu.user_name, '"',
+                 ',"full_name":"', vu.full_name, '"}'
+               )
+             ), 
+             ']'
+           )
+           FROM story_views sv
+           INNER JOIN users vu ON sv.user_id = vu.id
+           WHERE sv.story_id = stories.id
+         ) AS viewers
+       FROM stories 
+       INNER JOIN users ON stories.user_id = users.id 
+       WHERE stories.user_id = ? AND stories.expires_at > NOW()`,
+      [otherUser_id]
+    );
+
+    // Combine data into a final response object
+     // Combine data into a final response object
+    const parsedData = {
+      ...user,
+      is_buddies: !!user.is_buddies,
+      is_follow: !!user.is_follow,
+      followers: followers.map((follower) => ({
+        ...follower,
+        is_followed: !!follower.is_followed,
+        is_following: !!follower.is_following,
+      })),
+      buddies: buddies.map((buddy) => ({
+        ...buddy,
+      })),
+      posts: posts.map(post => ({
+        ...post,
+        buddies_id: JSON.parse(post.buddies_id) || [],  // Parse buddies_id as an array
+        media_url:  JSON.parse(post.media_url) || [], // Parse media_url as an array
+        tag_id: JSON.parse(post?.tag_id) || [],
+        is_liked: !!post?.is_liked
+        // tag_details: {
+        //   profile_image: post.profile_image,
+        //   badge: post.badge,
+        //   user_name: post.user_name,
+        //   full_name: post.full_name
+        // }
+      })),
+      stories,
+    };
+    
+
     return res.status(200).json({
       message: "Data Fetched",
-      data: parsedData[0], // Fetch the first row
+      data: parsedData,
     });
   } catch (error) {
     console.error("Error fetching user details:", error);
     return res.status(500).json({
       message: "Internal server Error",
-   });
+    });
   }
 }
 

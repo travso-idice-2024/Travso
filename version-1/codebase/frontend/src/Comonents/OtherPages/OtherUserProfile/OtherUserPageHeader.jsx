@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
@@ -9,21 +10,27 @@ import soloTraveller from "../../../assets/Badges/soloTraveler.svg";
 import explorerBadge from "../../../assets/Badges/Explorer.svg";
 import foodieBadge from "../../../assets/Badges/Foddie.svg";
 import luxuryTravelerBadge from "../../../assets/Badges/Foddie.svg";
+import dotThree from "../../../assets/dotThree.png";
+import blockIcon from "../../../assets/block-icon.png";
+import reportIcon from "../../../assets/report-icon.svg";
 // import StoryLoading from "./AllStoriesPages/StoryLoading";
 import {
   addBuddy,
+  blockAccount,
   getOtherUserDetails,
   getSuggestionList,
   getUserBuddies,
   getUserFollowers,
   removeBuddy,
   toWhomUserIsFollowing,
+  unBlockAccount,
 } from "../../../redux/slices/authSlice";
 import { followUnfollowOnFollowing } from "../../../redux/slices/postSlice";
+import OtherUserPostCard from "./OtherUserPostCard";
 
-const OtherUserPageHeader = () => {
+const OtherUserPageHeader = ({userName, userId}) => {
   const dispatch = useDispatch();
-  const { userName, userId } = useParams();
+  // const { userName, userId } = useParams();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const maxWordLimit = 100;
@@ -39,7 +46,7 @@ const OtherUserPageHeader = () => {
     useState(false);
   const [openDropdownIdUser, setOpenDropdownIdUser] = useState(null);
   const [isStoryLoaderOpen, setIsStoryLoaderOpen] = useState(false);
-
+  const [isOpenPopup, setIsOpenPopup] = useState(false);
   // console.log("====isCreateSocialPopup===>", isCreateSocialPopup);
 
   const hadleShowViewStory = (storyId) => {
@@ -54,9 +61,8 @@ const OtherUserPageHeader = () => {
     setOpenDropdownIdUser(storyId);
   };
 
+  /* get other user details */
   const { otherUserData } = useSelector((state) => state.auth);
-  //   const { allPosts, activeStories } = useSelector((state) => state.postSlice);
-
 
   useEffect(() => {
     dispatch(getOtherUserDetails(userId));
@@ -96,7 +102,10 @@ const OtherUserPageHeader = () => {
         await dispatch(toWhomUserIsFollowing());
       }
     } catch (error) {
-      console.log("==error in handleBuddyRemove in otheruserpageheader====>", error);
+      console.log(
+        "==error in handleBuddyRemove in otheruserpageheader====>",
+        error
+      );
     }
   };
 
@@ -115,7 +124,45 @@ const OtherUserPageHeader = () => {
         await dispatch(getSuggestionList());
       }
     } catch (error) {
-      console.log("==error in handleFollowUnfollowForFollowing====in otheruserpageheader=", error);
+      console.log(
+        "==error in handleFollowUnfollowForFollowing====in otheruserpageheader=",
+        error
+      );
+    }
+  };
+
+  /* to open more option popup */
+  const openOptionPopup = () => {
+    setIsOpenPopup(true);
+  };
+
+  /* to block a user */
+  const blockTheUser = async (blockId) => {
+    try {
+      // console.log("=====blockId===>", blockId);
+      const response = await dispatch(blockAccount(blockId)).unwrap();
+      // console.log("===response===>", response);
+      if (response) {
+        await dispatch(getOtherUserDetails(userId));
+        setIsOpenPopup(false);
+      }
+    } catch (error) {
+      console.log("===error in blocktheuser===>", error);
+    }
+  };
+
+  /* to unblock an account */
+  const unBlockTheUser = async (unBlockId) => {
+    // console.log("=====unBlockId===>", unBlockId);
+    try {
+      const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+      // console.log("===response===>", response);
+      if (response) {
+        await dispatch(getOtherUserDetails(userId));
+        setIsOpenPopup(false);
+      }
+    } catch (error) {
+      console.log("===error in unBlockTheUser===>", error);
     }
   };
 
@@ -298,6 +345,73 @@ const OtherUserPageHeader = () => {
                     >
                       <span className="text-md font-normal">Message</span>
                     </button>
+                  </div>
+
+                  <div>
+                    <img
+                      src={dotThree}
+                      alt="dotThree"
+                      className="h-4 object-cover cursor-pointer"
+                      onClick={() => openOptionPopup()}
+                    />
+
+                    {isOpenPopup && (
+                      <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                          <div className="flex items-center justify-between p-2 px-4 ">
+                            <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                              More Options
+                            </h6>
+
+                            {/* Close Button (X) */}
+                            <button
+                              className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                              onClick={() => setIsOpenPopup(false)}
+                              aria-label="Close"
+                            >
+                              &#x2715;
+                            </button>
+                          </div>
+                          <ul>
+                            <li className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]">
+                              <img
+                                src={reportIcon}
+                                alt="reportIcon"
+                                className="w-[20px] h-[20px] cursor-pointer mr-2 "
+                              />{" "}
+                              Report Account
+                            </li>
+
+                            <li
+                              className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                              onClick={() => {
+                                const isConfirmed = window.confirm(
+                                  `Are you sure you want to ${
+                                    otherUserData?.is_blocked
+                                      ? "unblock"
+                                      : "block"
+                                  } this user?`
+                                );
+                                if (isConfirmed) {
+                                  otherUserData?.is_blocked
+                                    ? unBlockTheUser(otherUserData?.id)
+                                    : blockTheUser(otherUserData?.id);
+                                }
+                              }}
+                            >
+                              <img
+                                src={blockIcon}
+                                alt="alert"
+                                className="w-[20px] h-[20px] cursor-pointer mr-2"
+                              />{" "}
+                              {otherUserData?.is_blocked
+                                ? "Unblock Account"
+                                : "Block Account"}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1604,7 +1604,7 @@ const CommunityPage = () => {
                             onClick={toggleFullText}
                             className="text-[#2DC6BE] cursor-pointer"
                           >
-                            {post?.description?.length < 250
+                            {post?.description?.length < 170
                               ? ""
                               : isFullTextVisible
                               ? " See less"
