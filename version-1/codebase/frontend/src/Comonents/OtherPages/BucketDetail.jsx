@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getBucketListByName } from "../../redux/slices/postSlice";
 import { useNavigate } from "react-router-dom";
 import CommentPopup from "./AllPopupComponent/CommentPopup";
+import morePostIcon from "../../assets/moreposticon.svg";
 
 const BucketDetail = () => {
   const { bucketTitle } = useParams();
@@ -18,29 +19,28 @@ const BucketDetail = () => {
   const [bucketdata, setBucketdata] = useState([]);
 
   /* for comment popup and saved popup */
-    const [isCommentPopup, setIsCommentPopup] = useState(false);
-    const [activePostId, setActivePostId] = useState(null);
-    const [isCommentWithSavedPopup, setIsCommentWithSavedPopup] = useState(false);
-    const [isSharePopup, setIsSharePopup] = useState(false);
+  const [isCommentPopup, setIsCommentPopup] = useState(false);
+  const [activePostId, setActivePostId] = useState(null);
+  const [isCommentWithSavedPopup, setIsCommentWithSavedPopup] = useState(false);
+  const [isSharePopup, setIsSharePopup] = useState(false);
 
-    useEffect(() => {
-      if (!allBucketListByName) {
-        dispatch(getBucketListByName(decodedTitle)); // Fetch data if not already fetched
-      } else {
-        // Process data only once after fetching
-        const processedData = allBucketListByName.map((bucket) => ({
-          ...bucket,
-          images: bucket.media_url ? JSON.parse(bucket.media_url) : [], // Parse images if media_url exists
-        }));
-    
-        setBucketdata(processedData); // Set the processed data
-      }
-    }, [allBucketListByName, dispatch]); // Trigger effect when decodedTitle or allBucketListByName changes
+  useEffect(() => {
+    if (!allBucketListByName) {
+      dispatch(getBucketListByName(decodedTitle)); // Fetch data if not already fetched
+    } else {
+      // Process data only once after fetching
+      const processedData = allBucketListByName.map((bucket) => ({
+        ...bucket,
+        images: bucket.media_url ? JSON.parse(bucket.media_url) : [], // Parse images if media_url exists
+      }));
 
-    useEffect(()=>{
-      dispatch(getBucketListByName(decodedTitle));
-    },[decodedTitle]);
-    
+      setBucketdata(processedData); // Set the processed data
+    }
+  }, [allBucketListByName, dispatch]); // Trigger effect when decodedTitle or allBucketListByName changes
+
+  useEffect(() => {
+    dispatch(getBucketListByName(decodedTitle));
+  }, [decodedTitle]);
 
   //console.log("category", bucketdata);
 
@@ -141,7 +141,10 @@ const BucketDetail = () => {
       <Header />
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="container mx-auto flex-col gap-6">
-          <p className="font-poppins font-semibold text-[#212626] flex items-center text-[28px] mb-8 text-left">
+          <p 
+           className="font-poppins font-semibold text-[#212626] flex items-center text-[28px] mb-8 text-left cursor-pointer"
+           onClick={() => navigate('/bucketlist')} 
+          >
             <svg
               width="20"
               height="20"
@@ -159,42 +162,82 @@ const BucketDetail = () => {
               />
             </svg>
 
-            {decodedTitle}
+            {/* {decodedTitle} */}
+            {decodedTitle && (
+              decodedTitle.charAt(0).toUpperCase() + decodedTitle.slice(1)
+            )}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {bucketdata.map((item, index) => (
               <>
-              <div>
-              {activePostId === item.post_id && isCommentPopup && (
-                <CommentPopup
-                  isOpen={isCommentPopup}
-                  onClose={() => handleCloseCommentPopup()}
-                  postId={item.post_id}
-                />
-              )}
-              </div>
-               
-              <div
-                key={index}
-                className="relative w-full h-[340px] rounded-[8px] overflow-hidden shadow-lg mx-auto bg-gray-200 cursor-pointer"
-                onClick={() => handleOpenCommentPopup(item.post_id)}
-              >
-                
-                {/* Display the first image for src array or the single src */}
-                <img
-                  src={
-                    Array.isArray(item.images) ? item.images[0] : item.images
-                  }
-                  alt={`Media ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
+                {activePostId === item.post_id && isCommentPopup && (
+                  <CommentPopup
+                    isOpen={isCommentPopup}
+                    onClose={() => handleCloseCommentPopup()}
+                    postId={item.post_id}
+                  />
+                )}
 
-                {/* Icon for items with src as an array */}
-                {Array.isArray(item.images) && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
-                      {/* <svg
+                <div
+                  key={index}
+                  className="relative w-full h-[340px] rounded-[8px] overflow-hidden shadow-lg mx-auto bg-gray-200 cursor-pointer"
+                  onClick={() => handleOpenCommentPopup(item.post_id)}
+                >
+                  {/* Display the first image for src array or the single src */}
+                  {/* <img
+                    src={
+                      Array.isArray(item.images) ? item.images[0] : item.images
+                    }
+                    alt={`Media ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  /> */}
+
+                  {Array.isArray(item.images) ? (
+                    item.images[0].match(
+                      /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|3gp|mpeg|mpg)$/i
+                    ) ? (
+                      <video
+                        src={item.images[0]}
+                        controls
+                        className="w-full h-full object-cover"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <img
+                        src={item.images[0]}
+                        alt={`Media ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )
+                  ) : item.images.match(
+                      /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|3gp|mpeg|mpg)$/i
+                    ) ? (
+                    <video
+                      src={item.images}
+                      controls
+                      className="w-full h-full object-cover"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={item.images}
+                      alt={`Media ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+
+                  {/* Icon for items with src as an array */}
+                  {Array.isArray(item.images) && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+                        {item.images.length > 1 && (
+                          <img src={morePostIcon} alt="More Posts" />
+                        )}
+
+                        {/* <svg
                         width="25"
                         height="25"
                         viewBox="0 0 32 32"
@@ -220,24 +263,24 @@ const BucketDetail = () => {
                         <path
                           d="M2.6665 4.00033C2.6665 3.26395 3.26346 2.66699 3.99984 2.66699H11.9998C12.7362 2.66699 13.3332 3.26395 13.3332 4.00033V12.0003C13.3332 12.7367 12.7362 13.3337 11.9998 13.3337H3.99984C3.26346 13.3337 2.6665 12.7367 2.6665 12.0003V4.00033Z"
                           stroke="white"
-                          stroke-width="2.66667"
+                          strokeWidth="2.66667"
                         />
                         <path
                           d="M18.6665 4.00033C18.6665 3.26395 19.2635 2.66699 19.9998 2.66699H27.9998C28.7362 2.66699 29.3332 3.26395 29.3332 4.00033V12.0003C29.3332 12.7367 28.7362 13.3337 27.9998 13.3337H19.9998C19.2635 13.3337 18.6665 12.7367 18.6665 12.0003V4.00033Z"
                           stroke="white"
-                          stroke-width="2.66667"
+                          strokeWidth="2.66667"
                         />
                         <path
                           d="M18.6665 20.0003C18.6665 19.2639 19.2635 18.667 19.9998 18.667H27.9998C28.7362 18.667 29.3332 19.2639 29.3332 20.0003V28.0003C29.3332 28.7367 28.7362 29.3337 27.9998 29.3337H19.9998C19.2635 29.3337 18.6665 28.7367 18.6665 28.0003V20.0003Z"
                           stroke="white"
-                          stroke-width="2.66667"
+                          strokeWidth="2.66667"
                         />
                         <path
                           d="M2.6665 20.0003C2.6665 19.2639 3.26346 18.667 3.99984 18.667H11.9998C12.7362 18.667 13.3332 19.2639 13.3332 20.0003V28.0003C13.3332 28.7367 12.7362 29.3337 11.9998 29.3337H3.99984C3.26346 29.3337 2.6665 28.7367 2.6665 28.0003V20.0003Z"
                           stroke="white"
-                          stroke-width="2.66667"
+                          strokeWidth="2.66667"
                         />
-                      </svg> */}
+                      </svg>
                       {Array.isArray(item.images) && item.images.length > 0 ? (
                         item.images.map((media, index) => {
                           if (
@@ -273,49 +316,11 @@ const BucketDetail = () => {
                         })
                       ) : (
                         null
-                      )}
+                      )} */}
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Video Play Icon */}
-                {/* {item.type === "video" && ( */}
-                {/* <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
-                    <svg
-                        width="32"
-                        height="32"
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="cursor-pointer"
-                      >
-                        <path
-                          d="M7 6.65236C7 5.35747 7 4.71003 7.26999 4.35313C7.50519 4.04222 7.8647 3.84982 8.25386 3.82658C8.70058 3.79991 9.23929 4.15904 10.3167 4.87732L24.3374 14.2245C25.2277 14.818 25.6728 15.1147 25.8279 15.4888C25.9635 15.8158 25.9635 16.1833 25.8279 16.5103C25.6728 16.8843 25.2277 17.1811 24.3374 17.7746L10.3167 27.1217C9.23928 27.84 8.70058 28.1991 8.25386 28.1725C7.8647 28.1492 7.50519 27.9568 7.26999 27.6459C7 27.289 7 26.6416 7 25.3467V6.65236Z"
-                          fill="white"
-                          stroke="white"
-                          stroke-width="2.66667"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    
-                  </div>
-                </div> */}
-                {/* )} */}
-
-                {/* Like and Comment Section */}
-                {/* <div className="absolute bottom-2 left-2 right-2 text-white text-sm px-2 py-1 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      <img src={Like} alt="Likes" className="h-5 w-5" />
-                      <span>{item.likes.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <img src={Message} alt="Likes" className="h-5 w-5" />
-                      <span>{item.comments.toLocaleString()}</span>
-                    </div>
-                  </div> */}
-              </div>
+                  )}
+                </div>
               </>
             ))}
           </div>

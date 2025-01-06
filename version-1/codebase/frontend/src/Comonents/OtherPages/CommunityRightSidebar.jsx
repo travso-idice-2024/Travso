@@ -129,7 +129,7 @@ const CommunityRightSidebar = () => {
 
   // to follow unfollow user in following section
   const handleFollowUnfollowForFollowing = async(followeeID) => {
-    console.log("=====followeeID====>", followeeID);
+    // console.log("=====followeeID====>", followeeID);
     
     try {
       const followUnfollowResponse = await dispatch(followUnfollowOnFollowing(followeeID)).unwrap();
@@ -214,8 +214,14 @@ const CommunityRightSidebar = () => {
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => handleFollowUnfollowForFollowing(user.id)}
-                // onClick={() => handleFollow(user.id)}
+                // onClick={() => handleFollowUnfollowForFollowing(user.id)}
+                onClick={() => {
+                  const action = user.is_mutual === 1 ? "unfollow" : "follow";
+                  const confirmAction = window.confirm(`Are you sure you want to ${action} this user?`);
+                  if (confirmAction) {
+                    handleFollowUnfollowForFollowing(user.id);
+                  }
+                }}
                 className={`w-[76px] h-[36px] text-sm font-semibold border-2 rounded-lg font-semibold ${
                   user.is_mutual == 0
                     ? "text-white border-[#2DC6BE] bg-[#2DC6BE] hover:bg-[#2DC6BE] hover:text-white"
@@ -241,7 +247,13 @@ const CommunityRightSidebar = () => {
                       ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                       : "text-[#2DC6BE] border-[#2DC6BE]"
                   }`}
-                onClick={() => handleAddBuddy(user?.id)}
+                  // onClick={() => handleAddBuddy(user?.id)}
+                  onClick={() => {
+                    const confirmAction = window.confirm("Are you sure you want to add this user as a buddy?");
+                    if (confirmAction) {
+                      handleAddBuddy(user?.id);
+                    }
+                  }}
                 >
                   <svg
                     width="14"
@@ -262,7 +274,13 @@ const CommunityRightSidebar = () => {
                   </>) : (<>
                     <button 
                     className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center"
-                    onClick={() => handleBuddyRemove(user?.id)}
+                    // onClick={() => handleBuddyRemove(user?.id)}
+                    onClick={() => {
+                      const confirmAction = window.confirm("Are you sure you want to remove this buddy?");
+                      if (confirmAction) {
+                        handleBuddyRemove(user?.id);
+                      }
+                    }}
                   >
                     <svg
                       width="10"

@@ -145,11 +145,21 @@ async function getBucketListByName(req, res) {
 
 async function getAllCategoryLists(req, res) {
   try {
+    // const [allCategorylist] = await pool.execute(`
+    //   SELECT 
+    //     list_name,id
+    //   FROM 
+    //     bucket_category_list
+    // `);
+
     const [allCategorylist] = await pool.execute(`
       SELECT 
-        list_name,id
+        list_name, 
+        MIN(id) AS id
       FROM 
         bucket_category_list
+      GROUP BY 
+        list_name
     `);
 
     return res.status(200).json({

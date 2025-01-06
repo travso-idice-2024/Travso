@@ -9,6 +9,8 @@ import soloTraveller from "../../../assets/Badges/ST.svg";
 import explorerBadge from "../../../assets/Badges/EX.svg";
 import foodieBadge from "../../../assets/Badges/FO.svg";
 import luxuryTravelerBadge from "../../../assets/Badges/LT.svg";
+import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
+
 const apiUrl = import.meta.env.VITE_API_URL;
 //getBlockedUser
 
@@ -114,7 +116,7 @@ const BlockSetting = () => {
               <div className="flex items-center space-x-2">
                 <div>
                   <img
-                    src={item.profile_image}
+                    src={item.profile_image || dummyUserImage}
                     alt={item.full_name}
                     className="w-[44px] h-[44px] rounded-full"
                   />

@@ -589,7 +589,7 @@ const PostCard = () => {
                                       className="absolute mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px]"
                                     >
                                       {post?.buddies_id?.map((buddy) => {
-                                        console.log("===buddybadge", buddy)
+                                        // console.log("===buddybadge", buddy)
                                         return (
                                           <div
                                             className="flex flex-col"
@@ -1107,6 +1107,7 @@ const PostCard = () => {
 
                   {activePostId === post?.id && isCommentWithSavedPopup && (
                     <SavedPopup
+                      post_id={post.id}
                       isOpen={isCommentWithSavedPopup}
                       // onClose={() => setIsCommentWithSavedPopup(false)}
                       onClose={() => handleBucketSavedPopupClose()}

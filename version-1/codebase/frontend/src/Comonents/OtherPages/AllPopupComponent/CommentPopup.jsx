@@ -698,6 +698,11 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     }
   };
 
+  /* when someone clicks on comment input */
+  const onClickOfComment = () => {
+     console.log("running")
+  }
+
   /* to edit comment when done through enter button*/
   const handleEditEnter = async (e, commentId) => {
     // console.log("=====commentInputVal====>", commentInputVal);
@@ -731,7 +736,6 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   /* handle input change on edit input */
   const handleEditInputChange = (e) => {
     const { value } = e.target;
-
     setEditInputVal(value);
     // setEditInputVal((prevComment) => prevComment + value);
     const match = value.match(/@(\w*)$/); // Match word after @
@@ -874,7 +878,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       (allPosts && allPosts[0]?.profile_image) || dummyUserImage
                     }
                     alt="Avatar"
-                    className="w-10 h-10 object-cover rounded-full"
+                    className="w-10 h-10 object-cover rounded-full "
                   />
                   <div>
                     <h3 className="font-poppins font-semibold text-left text-[16px] text-[#212626]">
@@ -1179,7 +1183,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                             <img
                               src={userPosts?.profile_image || dummyUserImage}
                               alt="User"
-                              className="w-9 h-8 rounded-full"
+                              className="w-9 h-8 rounded-full aspect-square object-cover"
                             />
 
                             {/* Content Section */}
@@ -1511,7 +1515,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                           dummyUserImage
                                         }
                                         alt="User"
-                                        className="w-8 h-8 rounded-full"
+                                        className="w-8 h-8 rounded-full object-cover aspect-square"
                                       />
 
                                       <div className="w-full flex flex-col space-y-2">
@@ -1907,7 +1911,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   dummyUserImage
                                 }
                                 alt="Profile"
-                                className="w-10 h-10 rounded-full"
+                                className="w-10 h-10 rounded-full aspect-square object-cover"
                               />
 
                               <div className="relative">
@@ -2036,7 +2040,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       dummyUserImage
                     }
                     alt="Profile"
-                    className="w-10 h-9 rounded-full object-cover"
+                    className="w-10 h-9 rounded-full object-cover "
                   />
 
                   {/* <div>
@@ -2087,6 +2091,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       value={commentInputVal}
                       // onChange={(e) => setCommentInputVal(e.target.value)}
                       onChange={(e) => handleCommentInputChange(e)}
+                      onClick={() => setReplyToCommentId(null)}
                       className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500 ml-2 text-sm"
                     />
 
