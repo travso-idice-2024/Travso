@@ -25,6 +25,7 @@ import SettingPages from './Comonents/OtherPages/AllSettingPages/SettingPages';
 import LandingPage from './Comonents/MainPages/LandingPage';
 import OtherUserPageHeader from './Comonents/OtherPages/OtherUserProfile/OtherUserPageHeader';
 import OtherUserProfile from './Comonents/OtherPages/OtherUserProfile/OtherUserProfile';
+import OtherUserPostDetails from './Comonents/OtherPages/OtherUserProfile/OtherUserPostDetails';
 
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           {/* <Route path="/profile/:userName/:userId" element={<OtherUserPageHeader />} /> */}
           <Route path="/profile/:userName/:userId" element={<OtherUserProfile />} />
+          <Route path="/profile/:userName/:userId/Postdata" element={<OtherUserPostDetails />} />
         </Route>
       </Routes>
     </Router>

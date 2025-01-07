@@ -1,15 +1,5 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
-import First from "../../../assets/PostImage/first.png";
-import Second from "../../../assets/PostImage/second.png";
-import Third from "../../../assets/PostImage/third.png";
-import Fourth from "../../../assets/PostImage/fourth.png";
-import Fifth from "../../../assets/PostImage/fifth.png";
-import Sixth from "../../../assets/PostImage/sixth.png";
-import Seventh from "../../../assets/PostImage/seventh.png";
-import Eighth from "../../../assets/PostImage/eigth.png";
-import Ninth from "../../../assets/PostImage/ninth.png";
-import Tenth from "../../../assets/PostImage/first.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -20,111 +10,19 @@ const OtherUserLeftBar = ({ userName, userId }) => {
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
 
-  const {
-    userBuddies,
-    user: userDetails,
-    userPosts,
-    userFollowers,
-    toWhomUserFollows,
-  } = useSelector((state) => state.auth);
-
   const { allBucketLists } = useSelector((state) => state.postSlice);
-
-
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      imageUrl: First,
-      title: "Post 1",
-    },
-    {
-      id: 2,
-      imageUrl: Second,
-      title: "Post 2",
-    },
-    {
-      id: 3,
-      imageUrl: Third,
-      title: "Post 3",
-    },
-    {
-      id: 4,
-      imageUrl: Fourth,
-      title: "Post 4",
-    },
-    {
-      id: 5,
-      imageUrl: Fifth,
-      title: "Post 5",
-    },
-    {
-      id: 6,
-      imageUrl: Sixth,
-      title: "Post 6",
-    },
-    {
-      id: 7,
-      imageUrl: Seventh,
-      title: "Post 7",
-    },
-    {
-      id: 8,
-      imageUrl: Eighth,
-      title: "Post 8",
-    },
-    {
-      id: 9,
-      imageUrl: Ninth,
-      title: "Post 9",
-    },
-    {
-      id: 10,
-      imageUrl: Tenth,
-      title: "Post 10",
-    },
-    {
-      id: 11,
-      imageUrl: Sixth,
-      title: "Post 11",
-    },
-    {
-      id: 12,
-      imageUrl: Seventh,
-      title: "Post 12",
-    },
-  ]);
-
-  const sampleData = [
-    {
-      title: "Europe Bucket List",
-      images: [
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgRYMoFhRn57IhIcTXWTPbhzqwmWBC1IxFDA&s",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHSxJDZIHumlGbMxGb77Uj2KhVlmRrdclAcw&s",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHSxJDZIHumlGbMxGb77Uj2KhVlmRrdclAcw&s",
-      ],
-    },
-    {
-      title: "Asia Bucket List",
-      images: [
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQutHQ734KtvKx-8La1Yprpvl4w769XbzThkw&s",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCmdZy7i30h7n6b7GRNA5vJV_hdQGwUyu8_g&s",
-        // "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCmdZy7i30h7n6b7GRNA5vJV_hdQGwUyu8_g&s",
-      ],
-    },
-  ];
 
   // State to toggle visibility of more posts
   const [showAllPost, setShowAllPost] = useState(false);
   const [showAllBuckets, setShowAllBuckets] = useState(false);
 
   // Show only first 9 posts or all posts based on state
-  // const visiblePosts = showAllPost ? posts : posts.slice(0, 9);
   const visiblePosts = showAllPost
-    ? userPosts
-      ? userPosts
+    ? otherUserData
+      ? otherUserData?.posts
       : []
-    : userPosts
-    ? userPosts.slice(0, 9)
+    : otherUserData
+    ? otherUserData?.posts.slice(0, 9)
     : [];
 
   // for capitalizing first word of string
@@ -133,7 +31,7 @@ const OtherUserLeftBar = ({ userName, userId }) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  // format in format for dob like 25 Aug 2002 and for joined Feb 2022
+  // format for dob like 25 Aug 2002 and for joined Feb 2022
   function formatDate(isoDate, type) {
     const date = new Date(isoDate);
 
@@ -169,7 +67,7 @@ const OtherUserLeftBar = ({ userName, userId }) => {
   }
 
   const handleAllPost = () => {
-    navigate("/postData");
+    navigate(`/profile/${userName}/${userId}/Postdata`);
   };
 
   return (
@@ -178,16 +76,6 @@ const OtherUserLeftBar = ({ userName, userId }) => {
         {/* Header Section */}
         <div className="flex justify-between items-center pb-3">
           <h2 className="text-lg font-semibold text-gray-800">About me</h2>
-          <Link to="/editprofile">
-            <button
-              aria-label="Edit Info"
-              className="flex items-center text-[#2DC6BE]"
-            >
-              <span className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline">
-                Edit
-              </span>
-            </button>
-          </Link>
         </div>
 
         {/* Info List */}
@@ -212,7 +100,7 @@ const OtherUserLeftBar = ({ userName, userId }) => {
               </svg>
 
               <span className="font-inter font-medium text-[16px] text-[#212626]">
-                {userDetails ? capitalizeFirstLetter(userDetails?.gender) : ""}
+                {otherUserData ? capitalizeFirstLetter(otherUserData?.gender) : ""}
               </span>
             </li>
             <li className="flex items-center text-gray-700">
@@ -235,7 +123,7 @@ const OtherUserLeftBar = ({ userName, userId }) => {
 
               <span className="font-inter font-medium text-[16px] text-[#212626]">
                 {/* DOB: 25 Aug 2002 */}
-                DOB: {userDetails ? formatDate(userDetails?.dob, "dob") : ""}
+                DOB: {otherUserData ? formatDate(otherUserData?.dob, "dob") : ""}
               </span>
             </li>
             <li className="flex items-center text-gray-700">
@@ -266,8 +154,8 @@ const OtherUserLeftBar = ({ userName, userId }) => {
               <span className="font-inter font-medium text-[16px] text-[#212626]">
                 {/* From: Nagpur, Maharashtra */}
                 From:{" "}
-                {userDetails
-                  ? `${userDetails?.city}, ${userDetails?.state}`
+                {otherUserData
+                  ? `${otherUserData?.city}, ${otherUserData?.state}`
                   : ""}
               </span>
             </li>
@@ -291,8 +179,8 @@ const OtherUserLeftBar = ({ userName, userId }) => {
 
               <span className="font-inter font-medium text-[16px] text-[#212626]">
                 Joined:{" "}
-                {userDetails
-                  ? formatDate(userDetails?.created_at, "joined")
+                {otherUserData
+                  ? formatDate(otherUserData?.created_at, "joined")
                   : ""}
               </span>
             </li>
@@ -303,7 +191,7 @@ const OtherUserLeftBar = ({ userName, userId }) => {
       <div className="w-[340px] bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 px-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
-            Posts ({userPosts ? userPosts?.length : "0"})
+            Posts ({otherUserData ? otherUserData?.posts?.length : "0"})
           </h2>
           <p
             onClick={handleAllPost}
@@ -314,20 +202,6 @@ const OtherUserLeftBar = ({ userName, userId }) => {
         </div>
         <div className="grid grid-cols-3 gap-2">
           {/* Dynamically render images and titles */}
-
-          {/* {visiblePosts &&
-            visiblePosts.map(
-              (post) =>
-                post.media_url.length > 0 && (
-                  <div key={post.id}>
-                    <img
-                      src={post.media_url[0]}
-                      alt={post.description}
-                      className="w-full h-[130px] rounded-sm object-cover"
-                    />
-                  </div>
-                )
-            )} */}
 
           {visiblePosts &&
             visiblePosts.map(

@@ -8,6 +8,7 @@ import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   addBuddy,
+  getOtherUserDetails,
   getSuggestionList,
   getUserBuddies,
   getUserFollowers,
@@ -27,6 +28,8 @@ const OtherUserRightBar = ({ userName, userId }) => {
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
 
+  // console.log("======otherUserData====>", otherUserData);
+
   const {
     userBuddies,
     user: userDetails,
@@ -36,12 +39,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
   } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!toWhomUserFollows) {
-      dispatch(toWhomUserIsFollowing());
-    }
-    if (!userBuddies) {
-      dispatch(getUserBuddies());
-    }
+    console.log("useeffect on rightbar");
   }, [dispatch]);
 
   useEffect(() => {
@@ -65,141 +63,6 @@ const OtherUserRightBar = ({ userName, userId }) => {
     }
   }, [location.pathname]);
 
-  const [buddies, setbuddies] = useState([
-    {
-      id: 1,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Girl,
-      follow: "Followed",
-    },
-    {
-      id: 2,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Boy1,
-      follow: "Followed",
-    },
-    {
-      id: 3,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Followed",
-    },
-    {
-      id: 4,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Boy1,
-      follow: "Followed",
-    },
-    {
-      id: 5,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Girl,
-      follow: "Followed",
-    },
-    {
-      id: 6,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Followed",
-    },
-  ]);
-
-  const [followers, setfollowers] = useState([
-    {
-      id: 1,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Girl,
-      follow: "Follow",
-    },
-    {
-      id: 2,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Boy1,
-      follow: "Following",
-    },
-    {
-      id: 3,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Follow",
-    },
-    {
-      id: 4,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Boy1,
-      follow: "Following",
-    },
-    {
-      id: 5,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Girl,
-      follow: "Following",
-    },
-    {
-      id: 6,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Following",
-    },
-  ]);
-
-  const [following, setfollowing] = useState([
-    {
-      id: 1,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Girl,
-      follow: "Follow",
-    },
-    {
-      id: 2,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Boy1,
-      follow: "Following",
-    },
-    {
-      id: 3,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Follow",
-    },
-    {
-      id: 4,
-      name: "Madhulika",
-      handle: "@Madhu.lika",
-      image: Boy1,
-      follow: "Following",
-    },
-    {
-      id: 5,
-      name: "Pankaj",
-      handle: "@Reet.Pankaj",
-      image: Girl,
-      follow: "Following",
-    },
-    {
-      id: 6,
-      name: "Rishab",
-      handle: "@frontend",
-      image: Boy2,
-      follow: "Following",
-    },
-  ]);
-
   // State to toggle visibility of more posts
   const [showAllbuddies, setShowAllbuddies] = useState(false);
   const [showAllfollowers, setShowAllfollowers] = useState(false);
@@ -210,38 +73,31 @@ const OtherUserRightBar = ({ userName, userId }) => {
   const [hideFollowerList, setHideFollowerList] = useState(false);
   const [hideFollowingList, setHideFollowingList] = useState(false);
 
-  // Show only first 9 posts or all posts based on state
-  // const visiblePostsbuddies = showAllbuddies ? buddies : buddies.slice(0, 3);
+  /* show user buddies */
   const visiblePostsbuddies = showAllbuddies
-    ? userBuddies
-      ? userBuddies
+    ? otherUserData
+      ? otherUserData?.buddies
       : []
-    : userBuddies
-    ? userBuddies.slice(0, 3)
+    : otherUserData
+    ? otherUserData?.buddies?.slice(0, 3)
     : [];
-  // console.log("====userBuddies===", userBuddies);
-  // const visiblePostsfollowes = showAllfollowers
-  //   ? followers
-  //   : followers.slice(0, 3);
 
+  /* show user followers list */
   const visiblePostsfollowes = showAllfollowers
-    ? userFollowers
-      ? userFollowers
+    ? otherUserData
+      ? otherUserData?.followers
       : []
-    : userFollowers
-    ? userFollowers.slice(0, 3)
+    : otherUserData
+    ? otherUserData?.followers.slice(0, 3)
     : [];
 
-  // const visiblePostsfollowing = showAllfollowing
-  //   ? following
-  //   : following.slice(0, 3);
-
+  /* show users following list */
   const visiblePostsfollowing = showAllfollowing
-    ? toWhomUserFollows
-      ? toWhomUserFollows
+    ? otherUserData
+      ? otherUserData?.following
       : []
-    : toWhomUserFollows
-    ? toWhomUserFollows.slice(0, 3)
+    : otherUserData
+    ? otherUserData?.following?.slice(0, 3)
     : [];
 
   const handleAllBuddiesList = () => {
@@ -264,6 +120,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
         followUnfollow(followeeID)
       ).unwrap();
       if (followUnfollowResponse) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(getUserBuddies());
         await dispatch(toWhomUserIsFollowing());
@@ -282,6 +139,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
         followUnfollowOnFollowing(followeeID)
       ).unwrap();
       if (followUnfollowResponse) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(toWhomUserIsFollowing());
         await dispatch(getUserBuddies());
@@ -297,6 +155,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
     try {
       const response = await dispatch(addBuddy(buddyId)).unwrap();
       if (response) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(getUserBuddies());
         await dispatch(toWhomUserIsFollowing());
@@ -311,6 +170,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
     try {
       const response = await dispatch(removeBuddy(buddyId));
       if (response) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(getUserBuddies());
         await dispatch(toWhomUserIsFollowing());
@@ -326,19 +186,19 @@ const OtherUserRightBar = ({ userName, userId }) => {
         <div className="w-[340px] bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 px-4 mb-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
-              Buddies ({userBuddies ? userBuddies.length : "0"})
+              Buddies ({otherUserData ? otherUserData?.buddies?.length : "0"})
             </h2>
-            <p
+            {/* <p
               onClick={handleAllBuddiesList}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p>
+            </p> */}
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
             {visiblePostsbuddies.map((buddy) => (
-              <div key={buddy.id} className="flex items-center justify-between">
+              <div key={buddy.buddies_id} className="flex items-center justify-between">
                 {/* User Info */}
                 <div className="flex items-center space-x-3">
                   <img
@@ -346,7 +206,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
                     alt={"Profile"}
                     className="w-[44px] h-[44px] rounded-full object-cover"
                   />
-                  <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`}>
+                  <Link to={`/profile/${buddy?.user_name}/${buddy?.buddies_id}`}>
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
                         {buddy.full_name}
@@ -366,40 +226,76 @@ const OtherUserRightBar = ({ userName, userId }) => {
                 <div className="flex items-center space-x-2">
                   <button
                     className={`w-[76px] h-[36px] text-[14px] border rounded-[4px] font-medium ${
-                      buddy.is_followers == 0
+                      !buddy.is_followed
                         ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                         : "text-[#2DC6BE] border-[#2DC6BE]"
-                    }`}
-                    // onClick={buddy.is_followers === 1 ? () => handleFollowUnfollowForFollowing(buddy?.id) : () =>handleFollowUnfollow(buddy?.id) }
+                    } hover:bg-[#2DC6BE] hover:text-white`}
+
                     onClick={() => {
-                      if (buddy.is_followers === 1) {
+                      if (buddy.is_followed) {
                         const confirmUnfollow = window.confirm(
                           "Are you sure you want to unfollow this user?"
                         );
                         if (confirmUnfollow) {
-                          handleFollowUnfollowForFollowing(buddy?.id); // Call the function to unfollow
+                          handleFollowUnfollowForFollowing(buddy?.buddies_id); // Call the function to unfollow
                         }
                       } else {
                         const confirmFollow = window.confirm(
                           "Do you want to follow this user?"
                         );
                         if (confirmFollow) {
-                          handleFollowUnfollow(buddy?.id); // Call the function to follow
+                          handleFollowUnfollowForFollowing(buddy?.buddies_id); // Call the function to follow
                         }
                       }
                     }}
                   >
-                    {buddy.is_followers === 0 ? "Follow" : "Following"}
+                    {!buddy.is_followed ? "Follow" : "Remove"}
                   </button>
-                  <button
-                    className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center"
+
+                  {/* start buddy */}
+
+                  {!buddy?.is_buddies ? (
+                    <>
+                      <button
+                        className={`w-[36px] h-[36px] text-[20px] text-sm border rounded-[4px] font-medium bg-[#2DC6BE] text-white border-[#2DC6BE] flex items-center justify-center `}
+
+                        onClick={() => {
+                          const confirmAddBuddy = window.confirm(
+                            "Do you want to add this user as a buddy?"
+                          );
+                          if (confirmAddBuddy) {
+                            handleAddBuddy(buddy?.buddies_id); // Call the function to add the buddy
+                          }
+                        }}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M6.99984 1.16699V12.8337M1.1665 7.00033H12.8332"
+                            stroke="white"
+                            strokeWidth="1.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                    className="w-[36px] h-[36px] text-[20px] text-[#2DC6BE] border border-[#2DC6BE] rounded-[4px] font-medium flex items-center justify-center "
                     // onClick={() => handleBuddyRemove(buddy?.id)}
                     onClick={() => {
                       const confirmRemove = window.confirm(
                         "Are you sure you want to remove this buddy?"
                       );
                       if (confirmRemove) {
-                        handleBuddyRemove(buddy?.id); // Call the function to remove the buddy
+                        handleBuddyRemove(buddy?.buddies_id); // Call the function to remove the buddy
                       }
                     }}
                   >
@@ -419,6 +315,11 @@ const OtherUserRightBar = ({ userName, userId }) => {
                       />
                     </svg>
                   </button>
+                    </>
+                  )}
+
+                  {/* end buddy */}
+                  
                 </div>
               </div>
             ))}
@@ -430,20 +331,20 @@ const OtherUserRightBar = ({ userName, userId }) => {
         <div className="w-[340px] bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 px-4 mb-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
-              Followers ({userFollowers ? userFollowers.length : "0"})
+              Followers ({otherUserData ? otherUserData?.followers?.length : "0"})
             </h2>
-            <p
+            {/* <p
               onClick={handleAllFollowers}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p>
+            </p> */}
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
             {visiblePostsfollowes.map((follower) => (
               <div
-                key={`${follower.id}_follower`}
+                key={`${follower.follower_id}_follower`}
                 className="flex items-center justify-between"
               >
                 {/* User Info */}
@@ -453,7 +354,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
                     alt={"Profile"}
                     className="w-[44px] h-[44px] rounded-full object-cover"
                   />
-                  <Link to={`/profile/${follower?.user_name}/${follower?.id}`}>
+                  <Link to={`/profile/${follower?.user_name}/${follower?.follower_id}`}>
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
                         {follower.full_name}
@@ -473,47 +374,42 @@ const OtherUserRightBar = ({ userName, userId }) => {
                 <div className="flex items-center space-x-2">
                   <button
                     className={`w-[76px] h-[36px] text-[14px] border rounded-[4px] font-medium ${
-                      follower.is_mutual == 0
+                      !follower.is_followed
                         ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                         : "text-[#2DC6BE] border-[#2DC6BE]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                     // onClick={() => handleFollowUnfollow(follower?.id)}
-                    // onClick={follower.is_mutual === 1 ? () => handleFollowUnfollow(follower?.id) : () =>handleFollowUnfollowForFollowing(follower?.id) }
                     onClick={() => {
-                      if (follower.is_mutual === 1) {
+                      if (follower.is_followed) {
                         const confirmUnfollow = window.confirm(
                           "Are you sure you want to unfollow this user?"
                         );
                         if (confirmUnfollow) {
-                          handleFollowUnfollow(follower?.id); // Call the function to unfollow
+                          handleFollowUnfollowForFollowing(follower?.follower_id); // Call the function to unfollow
                         }
                       } else {
                         const confirmFollow = window.confirm(
                           "Do you want to follow this user?"
                         );
                         if (confirmFollow) {
-                          handleFollowUnfollowForFollowing(follower?.id); // Call the function to follow
+                          handleFollowUnfollowForFollowing(follower?.follower_id); // Call the function to follow
                         }
                       }
                     }}
                   >
-                    {follower.is_mutual !== 0 ? "Remove" : "Follow"}
+                    {follower.is_followed ? "Remove" : "Follow"}
                   </button>
-                  {follower?.is_buddies === 0 ? (
+                  {!follower?.is_buddies ? (
                     <>
                       <button
-                        className={`w-[36px] h-[36px] text-[20px] text-sm border rounded-[4px] font-medium bg-[#2DC6BE] text-white border-[#2DC6BE] flex items-center justify-center ${
-                          follower.is_buddies === 0
-                            ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
-                            : "text-[#2DC6BE] border-[#2DC6BE]"
-                        }`}
-                        // onClick={() => handleAddBuddy(follower?.id)}
+                        className={`w-[36px] h-[36px] text-[20px] text-sm border rounded-[4px] font-medium bg-[#2DC6BE] text-white border-[#2DC6BE] flex items-center justify-center `}
+
                         onClick={() => {
                           const confirmAddBuddy = window.confirm(
                             "Do you want to add this user as a buddy?"
                           );
                           if (confirmAddBuddy) {
-                            handleAddBuddy(follower?.id); // Call the function to add the buddy
+                            handleAddBuddy(follower?.follower_id); // Call the function to add the buddy
                           }
                         }}
                       >
@@ -544,7 +440,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
                             "Are you sure you want to remove this buddy?"
                           );
                           if (confirmRemoveBuddy) {
-                            handleBuddyRemove(follower?.id); // Call the function to remove the buddy
+                            handleBuddyRemove(follower?.follower_id); // Call the function to remove the buddy
                           }
                         }}
                       >
@@ -577,20 +473,20 @@ const OtherUserRightBar = ({ userName, userId }) => {
         <div className="w-[340px] bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 px-4 mb-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
-              Following ({toWhomUserFollows ? toWhomUserFollows.length : "0"})
+              Following ({otherUserData ? otherUserData?.following?.length : "0"})
             </h2>
-            <p
+            {/* <p
               onClick={handleAllFollowing}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p>
+            </p> */}
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
             {visiblePostsfollowing.map((userFollowing) => (
               <div
-                key={`${userFollowing.id}_following`}
+                key={`${userFollowing.followee_id}_following`}
                 className="flex items-center justify-between"
               >
                 {/* User Info */}
@@ -601,7 +497,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
                     className="w-[44px] h-[44px] rounded-full object-cover"
                   />
                   <Link
-                    to={`/profile/${userFollowing?.user_name}/${userFollowing?.id}`}
+                    to={`/profile/${userFollowing?.user_name}/${userFollowing?.followee_id}`}
                   >
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
@@ -622,46 +518,45 @@ const OtherUserRightBar = ({ userName, userId }) => {
                 <div className="flex items-center space-x-2">
                   <button
                     className={`w-[76px] h-[36px] text-[14px] border rounded-[4px] font-medium ${
-                      userFollowing.is_mutual === 0
+                      !userFollowing.is_followed
                         ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                         : "text-[#2DC6BE] border-[#2DC6BE]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                     // onClick={() => handleFollowUnfollowForFollowing(userFollowing.id)}
                     onClick={() => {
-                      if (userFollowing.is_mutual === 0) {
+                      if (!userFollowing.is_followed) {
                         const confirmFollow = window.confirm(
                           "Do you want to follow this user?"
                         );
                         if (confirmFollow) {
-                          handleFollowUnfollowForFollowing(userFollowing.id); // Call the function to follow
+                          handleFollowUnfollowForFollowing(userFollowing.followee_id); // Call the function to follow
                         }
                       } else {
                         const confirmUnfollow = window.confirm(
                           "Are you sure you want to unfollow this user?"
                         );
                         if (confirmUnfollow) {
-                          handleFollowUnfollowForFollowing(userFollowing.id); // Call the function to unfollow
+                          handleFollowUnfollowForFollowing(userFollowing.followee_id); // Call the function to unfollow
                         }
                       }
                     }}
                   >
-                    {userFollowing.is_mutual === 0 ? "Follow" : "Following"}
+                    {!userFollowing.is_followed ? "Follow" : "Remove"}
                   </button>
-                  {userFollowing?.is_buddies === 0 ? (
+                  {!userFollowing?.is_buddies ? (
                     <>
                       <button
                         className={`w-[36px] h-[36px] text-[16px] border rounded-[4px] font-medium bg-[#2DC6BE] text-white border-[#2DC6BE] flex items-center justify-center ${
-                          userFollowing.is_buddies === 0
+                          !userFollowing.is_buddies
                             ? "bg-[#2DC6BE] text-white border-[#2DC6BE]"
                             : "text-[#2DC6BE] border-[#2DC6BE]"
-                        }`}
-                        // onClick={() => handleAddBuddy(userFollowing.id)}
+                        } hover:bg-[#2DC6BE] hover:text-white`}
                         onClick={() => {
                           const confirmAddBuddy = window.confirm(
                             "Do you want to add this user as a buddy?"
                           );
                           if (confirmAddBuddy) {
-                            handleAddBuddy(userFollowing.id); // Call the function to add the buddy
+                            handleAddBuddy(userFollowing.followee_id); // Call the function to add the buddy
                           }
                         }}
                       >
@@ -692,7 +587,7 @@ const OtherUserRightBar = ({ userName, userId }) => {
                             "Are you sure you want to remove this buddy?"
                           );
                           if (confirmRemoveBuddy) {
-                            handleBuddyRemove(userFollowing?.id); // Call the function to remove the buddy
+                            handleBuddyRemove(userFollowing?.followee_id); // Call the function to remove the buddy
                           }
                         }}
                       >

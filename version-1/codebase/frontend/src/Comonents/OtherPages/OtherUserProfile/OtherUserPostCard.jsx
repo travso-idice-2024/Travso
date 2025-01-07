@@ -278,7 +278,8 @@ const OtherUserPostCard = ({ userName, userId }) => {
   };
 
   // to close comment popup
-  const handleCloseCommentPopup = () => {
+  const handleCloseCommentPopup = async() => {
+    await dispatch(getOtherUserDetails(userId));
     setIsCommentPopup(false);
     setActivePostId(null);
   };

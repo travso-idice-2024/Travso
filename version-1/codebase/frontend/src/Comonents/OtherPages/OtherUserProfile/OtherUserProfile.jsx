@@ -10,9 +10,9 @@ const OtherUserProfile = () => {
   return (
     <div>
         <div>
-            <OtherUserPageHeader userId={userId} userName={userName} />
-            {/* <OtherUserRightBar userId={userId} userName={userName} /> */}
-            <OtherUserPostCard userId={userId} userName={userName} />
+            <OtherUserPageHeader />
+            <OtherUserRightBar userId={userId} userName={userName} />
+            {/* <OtherUserPostCard userId={userId} userName={userName} /> */}
             {/* <OtherUserLeftBar userId={userId} userName={userName} /> */}
         </div>
     </div>

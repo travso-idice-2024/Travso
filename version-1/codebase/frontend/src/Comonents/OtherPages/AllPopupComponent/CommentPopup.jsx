@@ -83,6 +83,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   const [filteredSuggestionsForReply, setFilteredSuggestionsForReply] =
     useState([]);
 
+  const [isMoreOptionPost, setIsMoreOptionPost] = useState(false);
+
   /* for editing comment */
   const [openDropdownEditId, setOpenDropdownEditId] = useState(null);
   const [EditInputVal, setEditInputVal] = useState("");
@@ -91,7 +93,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   /* for editing reply */
   const [EditReplyInputVal, setEditReplyInputVal] = useState("");
   const [openDropdownReplyEditId, setOpenDropdownReplyEditId] = useState(null);
-  const [showEmojiPickerForReplyEdit, setShowEmojiPickerForReplyEdit] = useState(false);
+  const [showEmojiPickerForReplyEdit, setShowEmojiPickerForReplyEdit] =
+    useState(false);
 
   // to show share popup
   const [activePostId, setActivePostId] = useState(null);
@@ -154,7 +157,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   /* handle reply on reply click */
   const handleReplyToReplyClick = (replyId) => {
-    console.log("====replyId===>", replyId);
+    // console.log("====replyId===>", replyId);
     setReplyToReplyId(replyToReplyId === replyId ? null : replyId);
   };
 
@@ -279,7 +282,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           // handleFlashMessage(commentResult.message, 'success');
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
-          await dispatch(getUserPosts());   // will be using getAllPosts later
+          await dispatch(getUserPosts()); // will be using getAllPosts later
           setCommentInputVal("");
           setTaggedUsers([]);
         }
@@ -306,7 +309,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         // await dispatch(getAllPosts());
         // handleFlashMessage(commentResult.message, 'success');
         await dispatch(getCommentOnPost(postId));
-        await dispatch(getUserPosts());  // will be using getAllPosts later
+        await dispatch(getUserPosts()); // will be using getAllPosts later
         await dispatch(getAllPosts());
       }
     } catch (error) {
@@ -360,17 +363,16 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   function isTimeDifferenceWithinFiveMinutes(timestamp) {
     const givenDate = new Date(timestamp);
     const currentDate = new Date();
-  
+
     // Calculate the absolute difference in milliseconds
     const timeDifference = Math.abs(givenDate - currentDate);
-  
+
     // Convert the difference to minutes
     const minutesDifference = Math.floor(timeDifference / (1000 * 60));
     // console.log("=====minutesDifference====>", minutesDifference)
     // Check if the difference is within 5 minutes
     return minutesDifference <= 5;
   }
-  
 
   // Sample data for the popup
   const postDetails = {
@@ -655,20 +657,20 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   };
 
   /* to unblock an account */
-    const unBlockTheUser = async (unBlockId) => {
-      // console.log("=====unBlockId===>", unBlockId);
-      try {
-        const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
-        // console.log("===response===>", response);
-        if (response) {
-          setOpenDropdownId(null);
-          setOpenDropdownReplyId(null);
-          await dispatch(getCommentOnPost(postId));
-          await dispatch(getAllPosts());
-        }
-      } catch (error) {
-        console.log("===error in unBlockTheUser===>", error);
+  const unBlockTheUser = async (unBlockId) => {
+    // console.log("=====unBlockId===>", unBlockId);
+    try {
+      const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+      // console.log("===response===>", response);
+      if (response) {
+        setOpenDropdownId(null);
+        setOpenDropdownReplyId(null);
+        await dispatch(getCommentOnPost(postId));
+        await dispatch(getAllPosts());
       }
+    } catch (error) {
+      console.log("===error in unBlockTheUser===>", error);
+    }
   };
 
   // console.log("===allposts===", allPosts)
@@ -700,8 +702,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   /* when someone clicks on comment input */
   const onClickOfComment = () => {
-     console.log("running")
-  }
+    console.log("running");
+  };
 
   /* to edit comment when done through enter button*/
   const handleEditEnter = async (e, commentId) => {
@@ -837,6 +839,11 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   // console.log("====activePostId===>", activePostId);
 
+  /* to open more option popup */
+  const openOptionPopup = () => {
+    setIsMoreOptionPost(true);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -902,7 +909,49 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     src={dotThree}
                     alt="dotThree"
                     className="h-4 object-cover"
+                    // onClick={() => openOptionPopup()}
                   />
+                  {isMoreOptionPost && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                        <div className="flex items-center justify-between p-2 px-4 ">
+                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                            More Options
+                          </h6>
+
+                          {/* Close Button (X) */}
+                          <button
+                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                            onClick={() => setIsMoreOptionPost(false)}
+                            aria-label="Close"
+                          >
+                            &#x2715;
+                          </button>
+                        </div>
+                        <ul>
+                          {/* <li className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]">
+                                                <img
+                                                  src={reportIcon}
+                                                  alt="reportIcon"
+                                                  className="w-[20px] h-[20px] cursor-pointer mr-2 "
+                                                />{" "}
+                                                Report Account
+                                              </li> */}
+
+                          <li
+                            className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                          >
+                            <img
+                              src={blockIcon}
+                              alt="alert"
+                              className="w-[20px] h-[20px] cursor-pointer mr-2"
+                            />{" "}
+                            Block Account
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Top Fixed Section */}
@@ -1042,12 +1091,18 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
               <div className="flex items-center justify-between">
                 <ul className="flex gap-2">
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_likes) || 0} {allPosts && allPosts[0]?.total_likes > 1 ? "Likes" : "Like"} &nbsp;
-                    &nbsp;{" "}
+                    {(allPosts && allPosts[0]?.total_likes) || 0}{" "}
+                    {allPosts && allPosts[0]?.total_likes > 1
+                      ? "Likes"
+                      : "Like"}{" "}
+                    &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_comments) || 0} {allPosts && allPosts[0]?.total_comments > 1 ? "comments" : "comment" }
+                    {(allPosts && allPosts[0]?.total_comments) || 0}{" "}
+                    {allPosts && allPosts[0]?.total_comments > 1
+                      ? "comments"
+                      : "comment"}
                     &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
@@ -1057,8 +1112,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared
-                    &nbsp; &nbsp;
+                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared &nbsp;
+                    &nbsp;
                   </li>
                 </ul>
                 <p className="font-inter font-medium text-[12px] text-[#667877] ">
@@ -1262,25 +1317,28 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                     </li> */}
 
                                           {userPosts?.user_id ===
-                                            userDetails?.id && isTimeDifferenceWithinFiveMinutes(userPosts?.created_at) && (
-                                            <li
-                                              className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                              onClick={() =>
-                                                editCommentPopUpOpen(
-                                                  userPosts?.id,
-                                                  userPosts?.user_id,
-                                                  userPosts?.content
-                                                )
-                                              }
-                                            >
-                                              <img
-                                                src={trash}
-                                                alt="alert"
-                                                className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                              />
-                                              Edit comment
-                                            </li>
-                                          )}
+                                            userDetails?.id &&
+                                            isTimeDifferenceWithinFiveMinutes(
+                                              userPosts?.created_at
+                                            ) && (
+                                              <li
+                                                className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                onClick={() =>
+                                                  editCommentPopUpOpen(
+                                                    userPosts?.id,
+                                                    userPosts?.user_id,
+                                                    userPosts?.content
+                                                  )
+                                                }
+                                              >
+                                                <img
+                                                  src={trash}
+                                                  alt="alert"
+                                                  className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                                />
+                                                Edit comment
+                                              </li>
+                                            )}
 
                                           {(userPosts?.post_owner_id ===
                                             userDetails?.id ||
@@ -1312,11 +1370,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                               //   blockTheUser(userPosts?.user_id)
                                               // }
                                               onClick={() => {
-                                                const isConfirmed = window.confirm(
-                                                  `Are you sure you want to ${userPosts?.is_blocked ? "unblock" : "block"} this user?`
-                                                );
+                                                const isConfirmed =
+                                                  window.confirm(
+                                                    `Are you sure you want to ${
+                                                      userPosts?.is_blocked
+                                                        ? "unblock"
+                                                        : "block"
+                                                    } this user?`
+                                                  );
                                                 if (isConfirmed) {
-                                                  userPosts?.is_blocked ? unBlockTheUser(userPosts?.user_id) : blockTheUser(userPosts?.user_id);
+                                                  userPosts?.is_blocked
+                                                    ? unBlockTheUser(
+                                                        userPosts?.user_id
+                                                      )
+                                                    : blockTheUser(
+                                                        userPosts?.user_id
+                                                      );
                                                 }
                                               }}
                                             >
@@ -1326,7 +1395,9 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                 className="w-[20px] h-[20px] cursor-pointer mr-2"
                                               />{" "}
                                               {/* Block Account */}
-                                              {userPosts?.is_blocked ? "Unblock Account" : "Block Account"}
+                                              {userPosts?.is_blocked
+                                                ? "Unblock Account"
+                                                : "Block Account"}
                                             </li>
                                           )}
                                         </ul>
@@ -1337,24 +1408,23 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   {openDropdownEditId === userPosts?.id && (
                                     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                                       <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
-                                        
-                                          <div className="flex items-center justify-between p-2 px-4 ">
-                                            <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
-                                              Edit Comment
-                                            </h6>
+                                        <div className="flex items-center justify-between p-2 px-4 ">
+                                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                            Edit Comment
+                                          </h6>
 
-                                            {/* Close Button (X) */}
-                                            <button
-                                              className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
-                                              onClick={() =>
-                                                setOpenDropdownEditId(null)
-                                              }
-                                              aria-label="Close"
-                                            >
-                                              &#x2715;
-                                            </button>
-                                          </div>
-                                       
+                                          {/* Close Button (X) */}
+                                          <button
+                                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                            onClick={() =>
+                                              setOpenDropdownEditId(null)
+                                            }
+                                            aria-label="Close"
+                                          >
+                                            &#x2715;
+                                          </button>
+                                        </div>
+
                                         <ul>
                                           {userPosts?.user_id ===
                                             userDetails?.id && (
@@ -1595,25 +1665,28 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                     </li> */}
 
                                                     {userReply?.user_id ===
-                                                      userDetails?.id && isTimeDifferenceWithinFiveMinutes(userReply?.reply_created_at) && (
-                                                      <li
-                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                        onClick={() =>
-                                                          editReplyPopUpOpen(
-                                                            userReply?.reply_id,
-                                                            userReply?.user_id,
-                                                            userReply?.reply_content
-                                                          )
-                                                        }
-                                                      >
-                                                        <img
-                                                          src={trash}
-                                                          alt="alert"
-                                                          className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                                        />
-                                                        Edit Reply
-                                                      </li>
-                                                    )}
+                                                      userDetails?.id &&
+                                                      isTimeDifferenceWithinFiveMinutes(
+                                                        userReply?.reply_created_at
+                                                      ) && (
+                                                        <li
+                                                          className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                          onClick={() =>
+                                                            editReplyPopUpOpen(
+                                                              userReply?.reply_id,
+                                                              userReply?.user_id,
+                                                              userReply?.reply_content
+                                                            )
+                                                          }
+                                                        >
+                                                          <img
+                                                            src={trash}
+                                                            alt="alert"
+                                                            className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                                          />
+                                                          Edit Reply
+                                                        </li>
+                                                      )}
 
                                                     {(userReply?.post_owner_id ===
                                                       userDetails?.id ||
@@ -1646,11 +1719,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                         //   )
                                                         // }
                                                         onClick={() => {
-                                                          const isConfirmed = window.confirm(
-                                                            `Are you sure you want to ${userReply?.is_blocked ? "unblock" : "block"} this user?`
-                                                          );
+                                                          const isConfirmed =
+                                                            window.confirm(
+                                                              `Are you sure you want to ${
+                                                                userReply?.is_blocked
+                                                                  ? "unblock"
+                                                                  : "block"
+                                                              } this user?`
+                                                            );
                                                           if (isConfirmed) {
-                                                            userReply?.is_blocked ? unBlockTheUser(userReply?.user_id) : blockTheUser(userReply?.user_id);
+                                                            userReply?.is_blocked
+                                                              ? unBlockTheUser(
+                                                                  userReply?.user_id
+                                                                )
+                                                              : blockTheUser(
+                                                                  userReply?.user_id
+                                                                );
                                                           }
                                                         }}
                                                       >
@@ -1660,7 +1744,9 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />{" "}
                                                         {/* Block Account */}
-                                                        {userReply?.is_blocked ? "Unblock Account" : "Block Account"}
+                                                        {userReply?.is_blocked
+                                                          ? "Unblock Account"
+                                                          : "Block Account"}
                                                       </li>
                                                     )}
                                                   </ul>
@@ -1694,9 +1780,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                   <ul>
                                                     {userReply?.user_id ===
                                                       userDetails?.id && (
-                                                      <li
-                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                      >
+                                                      <li className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]">
                                                         {/* Edit comment */}
 
                                                         <div className="relative">
@@ -1735,7 +1819,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                               )
                                                             }
                                                             value={
-                                                              EditReplyInputVal || ""
+                                                              EditReplyInputVal ||
+                                                              ""
                                                             }
                                                             // onChange={(e) => setCommentInputVal(e.target.value)}
                                                             onChange={(e) =>

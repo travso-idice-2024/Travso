@@ -118,7 +118,7 @@ async function registerUser(req, res) {
 async function sendOTP(req, res) {
   try {
     const { mobileNumber } = req.body;
-
+    console.log("====mobileNumber===>", mobileNumber);
     // find user by mobile number
     const [user] = await pool.execute(
       "SELECT * FROM users WHERE mobile_number = ?",
@@ -162,12 +162,17 @@ async function sendOTP(req, res) {
     //     return res.status(404).json({ error: "Something went wrong while generating OTP" });
     //   }
 
-    const result = await sendMobileOTP(user[0].otp, mobileNumber);
+    // const result = await sendMobileOTP(user[0].otp, mobileNumber);
 
-    // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
+    const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
+      &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
+
+    // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=E2SpR20BBECJxogaiTLqGw&msisdn=${mobileNumber}&sid=SMSHUB
     //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
 
-    //       console.log("===otpResult====>", otpResult);
+     
+
+          console.log("===otpResult====>", otpResult);
 
     // if (result.success) {
     //   return res.status(200).json({ message: result.message });
@@ -914,7 +919,8 @@ async function getUserBuddies(req, res) {
         AND EXISTS (
           SELECT 1
           FROM followers f2
-          WHERE f2.follower_id = u.id AND f2.followee_id = ?
+          -- WHERE f2.follower_id = u.id AND f2.followee_id = ?
+          WHERE f2.follower_id = ? AND f2.followee_id = u.id
         ) AS is_followers,
         (
           SELECT COUNT(*)
@@ -1138,15 +1144,11 @@ async function toWhomUserFollows(req, res) {
           FROM followers 
           WHERE follower_id = ? AND followee_id = u.id
         ) AS is_mutual,
-         EXISTS(
+        EXISTS(
          SELECT 1
          FROM buddies b1
          WHERE b1.user_id = ? AND b1.buddies_id = u.id 
-        ) AND EXISTS(
-          SELECT 1
-          FROM buddies b2
-          WHERE b2.user_id = u.id AND buddies_id = ?
-         ) AS is_buddies
+        ) AS is_buddies
       FROM 
         followers f
       JOIN 
@@ -1156,7 +1158,7 @@ async function toWhomUserFollows(req, res) {
       WHERE 
         f.follower_id = ?
       `,
-      [userId, userId, userId, userId]
+      [userId, userId, userId]
     );
 
     return res.status(200).json({
@@ -1717,7 +1719,6 @@ async function unBlockUser(req ,res){
       `DELETE FROM block_user WHERE user_id = ? AND blocked_id = ?`, [userId, blockId]
     );
 
-    console.log("22222222")
     return res.status(200).json({
       message:"Unblocked Successfully",
       // data:[unblock]
@@ -1943,7 +1944,6 @@ async function unblockUser(req ,res){
 }
 
 // to get the details of other user
-
 async function getOtherUserDetail(req, res) {
   try {
     const userId = req.user.userId;
@@ -1953,13 +1953,19 @@ async function getOtherUserDetail(req, res) {
     // Query for user details, including followers, buddies, and post counts
     const [userDetails] = await pool.execute(
       `SELECT 
-      u.id,
+        u.id,
         u.full_name,
         u.user_name,
+        u.dob,
+        u.city,
+        u.state,
+        u.created_at,
+        u.gender,
         u.description,
         u.badge,
         u.profile_image,
         u.cover_image,
+        EXISTS (SELECT 1 FROM block_user WHERE user_id = ? AND blocked_id = ?) AS is_blocked,
         (SELECT COUNT(*) FROM followers f WHERE f.followee_id = ?) AS total_followers,
         (SELECT COUNT(*) FROM buddies b WHERE b.user_id = ? AND b.buddies_id = ?) AS total_buddies,
         EXISTS (
@@ -1976,6 +1982,7 @@ async function getOtherUserDetail(req, res) {
         users u 
       WHERE id = ?`,
       [
+        userId, otherUser_id,
         otherUser_id,
         userId, otherUser_id, 
         userId, otherUser_id, 
@@ -2002,25 +2009,45 @@ async function getOtherUserDetail(req, res) {
     // Get Followers List
     const [followers] = await pool.execute(
       `SELECT 
-        f.follower_id, u.full_name, u.user_name, u.profile_image,
+        f.follower_id, u.full_name,u.badge,u.cover_image,u.description,u.id, u.is_influencer, u.user_name, u.profile_image,
         EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = f.follower_id) AS is_followed,
-        EXISTS(SELECT 1 FROM followers WHERE follower_id = f.follower_id AND followee_id = ?) AS is_following
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = f.follower_id AND followee_id = ?) AS is_following,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = f.follower_id) AS is_buddies
       FROM followers f
       JOIN users u ON f.follower_id = u.id
       WHERE f.followee_id = ?`,
-      [userId, userId, otherUser_id]
+      [userId, userId, userId, otherUser_id]
     );
-
+    const [following] = await pool.execute(
+      `SELECT 
+          f.followee_id, 
+          u.full_name, 
+          u.user_name,
+          u.badge,
+          u.cover_image,
+          u.description,
+          u.id,
+          u.is_influencer, 
+          u.profile_image,
+          EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = f.followee_id) AS is_buddies,
+          EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = f.followee_id) AS is_followed,
+          EXISTS(SELECT 1 FROM followers WHERE follower_id = f.followee_id AND followee_id = ?) AS is_following
+       FROM followers f
+       JOIN users u ON f.followee_id = u.id
+       WHERE f.follower_id = ?`,
+      [userId, userId, userId, otherUser_id]
+    );
     
     // Get Buddies List
     const [buddies] = await pool.execute(
       `SELECT 
-        b.buddies_id, u.full_name, u.user_name, u.profile_image,
-        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = b.buddies_id) AS is_buddies
+        b.buddies_id, u.full_name,u.badge,u.cover_image,u.description,u.id, u.is_influencer, u.user_name, u.profile_image,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = b.buddies_id) AS is_buddies,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = b.buddies_id) AS is_followed
       FROM buddies b
       JOIN users u ON b.buddies_id = u.id
       WHERE b.user_id = ?`,
-      [userId, otherUser_id]
+      [userId, userId , otherUser_id]
     );
 
     // Get Posts by the other user
@@ -2046,7 +2073,8 @@ async function getOtherUserDetail(req, res) {
         (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS total_comments,
         (SELECT COUNT(*) FROM shared_post sp WHERE sp.post_id = p.id) AS total_shared,
         (SELECT COUNT(*) FROM bucket_list bl WHERE bl.post_id = p.id) AS total_buckets,
-        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked
+        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked,
+        EXISTS (SELECT 1 FROM block_user WHERE user_id = ? AND blocked_id = ?) AS is_blocked
       FROM 
         posts p
       JOIN users u ON p.user_id = u.id
@@ -2057,7 +2085,7 @@ async function getOtherUserDetail(req, res) {
         AND  p.user_id = ?
       ORDER BY 
         p.created_at DESC;`,
-      [userId, otherUser_id]
+      [userId, userId, otherUser_id, otherUser_id ]
     );
     
     // Get Stories by the other user
@@ -2101,22 +2129,33 @@ async function getOtherUserDetail(req, res) {
         ...follower,
         is_followed: !!follower.is_followed,
         is_following: !!follower.is_following,
+        is_buddies: !!follower.is_buddies
       })),
+      following: Array.isArray(following)
+  ? following.map((user) => ({
+      ...user,
+      followee_id: user.followee_id,
+      full_name: user.full_name,
+      user_name: user.user_name,
+      profile_image: user.profile_image,
+      is_followed: !!user.is_followed,  // Convert to Boolean
+      is_following: !!user.is_following, // Convert to Boolean
+      is_buddies: !!user.is_buddies,
+    }))
+  : [],
       buddies: buddies.map((buddy) => ({
         ...buddy,
+        is_buddies: !!buddy?.is_buddies,
+        is_followed: !!buddy?.is_followed
       })),
       posts: posts.map(post => ({
         ...post,
+        buddies_id: JSON.parse(post.buddies_id),  // Parse buddies_id as an array
         buddies_id: JSON.parse(post.buddies_id) || [],  // Parse buddies_id as an array
         media_url:  JSON.parse(post.media_url) || [], // Parse media_url as an array
         tag_id: JSON.parse(post?.tag_id) || [],
-        is_liked: !!post?.is_liked
-        // tag_details: {
-        //   profile_image: post.profile_image,
-        //   badge: post.badge,
-        //   user_name: post.user_name,
-        //   full_name: post.full_name
-        // }
+        is_liked: !!post?.is_liked,
+        is_blocked: !!post?.is_blocked,
       })),
       stories,
     };
@@ -2133,7 +2172,6 @@ async function getOtherUserDetail(req, res) {
     });
   }
 }
-
 module.exports = {
   getBlockedUser,
   unblockUser,

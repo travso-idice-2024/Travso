@@ -295,7 +295,7 @@ const SuggestionPage = () => {
                     </p>
                     <div className="flex items-center justify-between mt-4">
                       <button
-                        className={`w-[175px] h-[48px] font-inter font-medium text-[16px] p-[12px] rounded-[8px] ${
+                        className={`w-full h-[48px] font-inter font-medium text-[16px] p-[12px] rounded-[8px] ${
                           card.follow
                             ? "border-2 border-[#2DC6BE] text-[#2DC6BE]" // Second button's class
                             : "bg-teal-500 text-white hover:bg-teal-600" // First button's default class
@@ -304,9 +304,9 @@ const SuggestionPage = () => {
                       >
                         {!card.follow ? "Follow" : "Following"}
                       </button>
-                      <button className="border-2 border-[#2DC6BE] w-[175px] h-[48px] text-[#2DC6BE] font-inter font-medium text-[16px] p-[12px] rounded-[8px]">
+                      {/* <button className="border-2 border-[#2DC6BE] w-[175px] h-[48px] text-[#2DC6BE] font-inter font-medium text-[16px] p-[12px] rounded-[8px]">
                         Add as buddy
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>

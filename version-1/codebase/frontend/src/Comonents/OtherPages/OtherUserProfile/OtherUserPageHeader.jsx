@@ -28,9 +28,9 @@ import {
 import { followUnfollowOnFollowing } from "../../../redux/slices/postSlice";
 import OtherUserPostCard from "./OtherUserPostCard";
 
-const OtherUserPageHeader = ({userName, userId}) => {
+const OtherUserPageHeader = () => {
   const dispatch = useDispatch();
-  // const { userName, userId } = useParams();
+  const { userName, userId } = useParams();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const maxWordLimit = 100;
@@ -138,6 +138,7 @@ const OtherUserPageHeader = ({userName, userId}) => {
 
   /* to block a user */
   const blockTheUser = async (blockId) => {
+    console.log("=====userId===header>", userId);
     try {
       // console.log("=====blockId===>", blockId);
       const response = await dispatch(blockAccount(blockId)).unwrap();

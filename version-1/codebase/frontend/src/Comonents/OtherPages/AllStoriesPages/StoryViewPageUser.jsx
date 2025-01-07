@@ -321,7 +321,7 @@ const StoryViewPageUser = ({
           <img
             src={logo}
             alt="Travso Logo"
-            className="h-12 bg-white w-[248px] h-[80px] rounded-[16px] p-[16px]"
+            className="h-12 bg-white w-[210px] h-[65px] rounded-[16px] p-[16px]"
           />
         </div>
 

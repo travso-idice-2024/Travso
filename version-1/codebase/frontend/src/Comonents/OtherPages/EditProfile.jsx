@@ -636,31 +636,31 @@ const handleCoverUpload = async (e) => {
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Explorer - a person who travels around a place in order to learn about it"
+                      value="Explorer - Curious souls who love uncovering hidden gems and learning the stories behind new places."
                     >
                       Explorer
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Adventurer - Adventurers explore uncharted places, gather information, and share their experiences. They can also raise funds to support their travels"
+                      value="Adventurer - Lives for thrilling experiences like trekking, diving, or exploring the wild outdoors."
                     >
                       Adventurer
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Foodie - A foodie is a person who has an ardent or refined interest in food, and who eats food not only out of hunger but also as a hobby."
+                      value="Foodie - Travels to explore local cuisines, savoring unique flavors and culinary traditions."
                     >
                       Foodie
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Solo Traveler - A solo traveler is someone who travels independently, without friends or companions."
+                      value="Solo Traveler - Enjoys the freedom of exploring alone, meeting new people, and creating personal stories."
                     >
                       Solo Traveler
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Luxury Traveler - Luxury travel is a type of leisure tourism that involves high-end accommodations, personalized service, and exclusive experiences"
+                      value="Luxury Traveler - Loves traveling in comfort, enjoying luxurious stays, fine dining, and amazing experiences."
                     >
                       Luxury Traveler
                     </option>

@@ -345,7 +345,7 @@ const handleBuddyRemove = async(buddyId) => {
                       } else {
                         const confirmFollow = window.confirm("Do you want to follow this user?");
                         if (confirmFollow) {
-                          handleFollowUnfollow(buddy?.id); // Call the function to follow
+                          handleFollowUnfollowForFollowing(buddy?.id); // Call the function to follow
                         }
                       }
                     }}                     
