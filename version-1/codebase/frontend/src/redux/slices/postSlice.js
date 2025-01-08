@@ -31,6 +31,60 @@ export const getAllPosts = createAsyncThunk(
   }
 );
 
+export const getAllBucketListwithBuddies = createAsyncThunk(
+  'post/getAllBucketListwithBuddies',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getAllBucketListwithBuddies`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("error in getAllBucketListwithBuddies call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+export const getAllBucketListwithoutBuddies = createAsyncThunk(
+  'post/getAllBucketListwithoutBuddies',
+  async (_,{ rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/getAllBucketListwithoutBuddies`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("error in getAllBucketListwithoutBuddies call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
 export const getArchivePosts = createAsyncThunk(
   'post/getArchivePosts',
   async (_,{ rejectWithValue }) => {
@@ -923,6 +977,8 @@ const postSlice = createSlice({
     allBucketListByName:null,
     allArchivePosts:null,
     allArchiveStory:null,
+    allBucketwithbuddies:null,
+    allBucketwithoutbuddies:null
   },
   reducers: {
     resetPostsState: (state) => {
@@ -936,6 +992,8 @@ const postSlice = createSlice({
       state.allBucketListByName = null;
       state.allArchivePosts= null;
       state.allArchiveStory = null;
+      state.allBucketwithbuddies = null;
+      state.allBucketwithoutbuddies = null;
     },
    },
   extraReducers: (builder) => {
@@ -954,6 +1012,34 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      //handle getAllBucketListwithBuddies
+      .addCase(getAllBucketListwithBuddies.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllBucketListwithBuddies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allBucketwithbuddies = action.payload.data;
+      })
+      .addCase(getAllBucketListwithBuddies.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      //handle getAllBucketListwithoutBuddies
+      .addCase(getAllBucketListwithoutBuddies.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllBucketListwithoutBuddies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allBucketwithoutbuddies = action.payload.data;
+      })
+      .addCase(getAllBucketListwithoutBuddies.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
       
       .addCase(getArchivePosts.pending, (state) => {
         state.loading = true;

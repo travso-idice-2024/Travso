@@ -23,44 +23,40 @@ import {
   getAllPosts,
   LikeUnlikePost,
   likeUnlikeStory,
+  getAllBucketListwithBuddies,
+  getAllBucketListwithoutBuddies
 } from "../../../redux/slices/postSlice";
 
-const SavedPopup = ({post_id, isOpen, onClose }) => {
+const SavedPopup = ({post_id, isOpen, onClose,openBucketPopup}) => {
   const dispatch = useDispatch();
-   const navigate = useNavigate();
-  const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
-  const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
+  const navigate = useNavigate();
+   /**create bucket post data */
+     const [bucketFormData, setbucketFormData] = useState({
+          list_name:'',
+          buddies: [],
+          buddies_id: [],
+          post_id:''
+        });
   
-  const [postData, setPostData] = useState({
-      list_name:'',
-      buddies: [],
-      buddies_id: [],
-      post_id:''
-    });
   const {
     onlineFriends,
     allUsers,
     user: userDetails,
     error: reduxSliceError
   } = useSelector((state) => state.auth);
-  const { allPosts, activeStories } = useSelector((state) => state.postSlice);
+  
+  const { allPosts, activeStories ,allBucketwithbuddies, allBucketwithoutbuddies} = useSelector((state) => state.postSlice);
+  
+  //console.log("with buddies ", allBucketwithbuddies);
+  //console.log("without buddies", allBucketwithoutbuddies);
   useEffect(() => {
-      if (!onlineFriends) {
-        dispatch(getOnlineFriends());
+      if (!allBucketwithbuddies) {
+        dispatch(getAllBucketListwithBuddies());
       }
-  
-      if (!allUsers) {
-        dispatch(getAllUsers());
+      if (!allBucketwithoutbuddies) {
+        dispatch(getAllBucketListwithoutBuddies());
       }
-  
-      if (!userDetails) {
-        dispatch(getUserDetails());
-      }
-  
-      if (!activeStories) {
-        dispatch(getActiveStories());
-      }
-    }, [dispatch]);
+    }, [dispatch,allBucketwithbuddies,allBucketwithoutbuddies]);
 
  useEffect(() => {
     if (reduxSliceError?.message === 'Unauthorized') {
@@ -86,16 +82,56 @@ const SavedPopup = ({post_id, isOpen, onClose }) => {
     },
   ]);
 
+   const handlePostUpload = async () => {
+      try {
+        //console.log("bucketpostDatanew", bucketFormData);
+  
+        const bucketResult = await dispatch(bucketPost(bucketFormData)).unwrap();
+        if (bucketResult) {
+          // console.log("=====commentResult===>", commentResult.message);
+          await dispatch(getAllBucketListwithBuddies());
+          await dispatch(getAllBucketListwithBuddies());
+          
+          // await dispatch(getUserPosts());
+          setbucketFormData({
+            list_name: "",
+            post_id: "",
+            buddies: [],
+            buddies_id: [],
+          });
+        }
+      } catch (error) {
+        console.log("error in handlePostUpload", error);
+      }
+    };
+    useEffect(() => {
+      if (bucketFormData.post_id) {
+        handlePostUpload(); // Perform upload when post_id is set
+      }
+    }, [bucketFormData]);
+
   const [imageStates, setImageStates] = useState({});
 
-  const handleImageClick = (id) => {
+  const handleImageClick = (post_id, buddy_id, list_name) => {
+    setbucketFormData((prev) => ({
+      ...prev,
+      list_name: list_name,
+      buddies: [],
+      buddies_id: buddy_id,
+      post_id: post_id
+    }));
+  
+    // Optional: Use useEffect to log the state when it changes
     setImageStates((prevStates) => {
       const newState = { ...prevStates };
-      newState[id] =
-        newState[id] === communitybefore ? communityafter : communitybefore;
+      newState[post_id] =
+        newState[post_id] === communitybefore ? communityafter : communitybefore;
       return newState;
     });
+  
+    // handlePostUpload();
   };
+  
 
   const [selectedMonth, setSelectedMonth] = useState("December");
   const months = [
@@ -196,19 +232,9 @@ const SavedPopup = ({post_id, isOpen, onClose }) => {
             <div className="mb-4 space-y-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <button onClick={() => setIsCreatePostPopup(true)} className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
+                  <button onClick={() => openBucketPopup()} className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
                     <span style={{ fontSize: "35px" }}>&#43;</span>
                   </button>
-                  {isCreatePostPopup && (
-                    <CreateBucketListPopup
-                      post_id={post_id}
-                      isOpen={isCreatePostPopup}
-                      onClose={() => setIsCreatePostPopup(false)}
-                      openPostDetail={() => setIsPostDetailPopup(true)}
-                      postData={postData}
-                      setPostData={setPostData}
-                    />
-                  )}
                   <div>
                     <h2 className="font-inter font-medium text-[16px] text-[#212626] text-left">
                       Create New Bucket List
@@ -229,33 +255,64 @@ const SavedPopup = ({post_id, isOpen, onClose }) => {
                   </div>
                 </div>
               </div>
-              {joinBucket.map((buddy) => (
+              {allBucketwithbuddies?.map((buddy, index) => (
                 <div
-                  key={buddy.id}
+                  key={index}
                   className="flex items-center justify-between"
                 >
                   {/* User Info */}
                   <div className="flex items-center space-x-3">
                     <img
-                      src={buddy.image}
-                      alt={buddy.name}
+                      src={buddy?.media_url ? buddy.media_url : Boy1}
+                      alt={buddy.list_name}
                       className="w-[48px] h-[48px] rounded-[4px] object-cover"
                     />
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                        {buddy.name}
+                        {buddy.list_name}
                       </p>
-                      <p className="font-inter font-medium text-[12px] text-[#667877] text-left">
+                      {/* <p className="font-inter font-medium text-[12px] text-[#667877] text-left">
                         {buddy.handle}
-                      </p>
+                      </p> */}
                     </div>
                   </div>
 
                   {/* Show Image Data Section */}
                   <img
-                    src={imageStates[buddy.id] || communityafter}
+                    src={imageStates[buddy.post_id] || communityafter}
                     alt="Toggleable"
-                    onClick={() => handleImageClick(buddy.id)}
+                    onClick={() => handleImageClick(buddy.post_id, buddy.buddy_id, buddy.list_name)}
+                    className="w-[24px] h-[24px] cursor-pointer"
+                  />
+                </div>
+              ))}
+               {allBucketwithoutbuddies?.map((buddy,index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between"
+                >
+                  {/* User Info */}
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={buddy?.media_url ? buddy.media_url : Boy2}
+                      alt={buddy.list_name}
+                      className="w-[48px] h-[48px] rounded-[4px] object-cover"
+                    />
+                    <div>
+                      <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
+                        {buddy.list_name}
+                      </p>
+                      {/* <p className="font-inter font-medium text-[12px] text-[#667877] text-left">
+                        {buddy.handle}
+                      </p> */}
+                    </div>
+                  </div>
+
+                  {/* Show Image Data Section */}
+                  <img
+                    src={imageStates[buddy.post_id] || communityafter}
+                    alt="Toggleable"
+                    onClick={() => handleImageClick(buddy.post_id, buddy.buddy_id, buddy.list_name)}
                     className="w-[24px] h-[24px] cursor-pointer"
                   />
                 </div>

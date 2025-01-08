@@ -52,7 +52,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // allow cors
 app.use(cors({
-    origin: process.env.CORS_ORIGIN
+    origin: process.env.CORS_ORIGIN || 'http://travso.in'
 }));
 
 // calling routes

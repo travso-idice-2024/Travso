@@ -22,14 +22,13 @@ import {
   likeUnlikeStory,
 } from "../../../redux/slices/postSlice";
 const apiUrl = import.meta.env.VITE_API_URL;
-
+ 
 const CreateBucketListPopup = ({
   post_id,
   isOpen,
-  onClose,
-  openPostDetail,
-  postData,
-  setPostData,
+  bucketpostData,
+  setbucketpostData,
+  onCloseBucket
 }) => {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -44,91 +43,62 @@ const CreateBucketListPopup = ({
   const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
   const fileInputRef = useRef(null); // Create a ref for the file input
 
-  console.log(listName);
-
-  useEffect(async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/post/getAllCategoryLists`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        return rejectWithValue(errorData);
+  useEffect(() => {
+    const fetchCategoryLists = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${apiUrl}/post/getAllCategoryLists`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error fetching categories:", errorData);
+          return; // Handle or log the error as needed
+        }
+  
+        const data = await response.json();
+        setListName(data.data);
+        console.log("Fetched categories:", data.data);
+      } catch (error) {
+        console.error("Error in getAllCategoryLists fetch:", error.message);
       }
-
-      const data = await response.json();
-      setListName(data.data);
-      //console.log("=====data===in getAllPosts=>", data);
-      //return data;
-    } catch (error) {
-      console.log("error in getAllCategory call thunk", error.message);
-      return rejectWithValue(error.message);
-    }
-  }, []);
-
-  //   const handlePostUpload = async () => {
-  //     // console.log("running");
-  //     const isValid = await validateFields();
-  //     if (isValid) {
-  //       onClose();
-  //       // setIsPostDetailPopup(true);
-  //       openPostDetail();
-  //     } else {
-  //       alert("At least discription or image is required.");
-  //     }
-  //   };
+    };
+  
+    fetchCategoryLists();
+  }, [apiUrl]); // Add dependencies if `apiUrl` or other variables might change
+  
   const handlePostUpload = async () => {
     try {
-      console.log("postDatanew", postData);
+      //console.log("bucketpostDatanew", bucketpostData);
 
-      const bucketResult = await dispatch(bucketPost(postData)).unwrap();
+      const bucketResult = await dispatch(bucketPost(bucketpostData)).unwrap();
       if (bucketResult) {
         // console.log("=====commentResult===>", commentResult.message);
         await dispatch(getAllPosts());
         // await dispatch(getUserPosts());
-        setPostData({
+        setbucketpostData({
           list_name: "",
           post_id: "",
           buddies: [],
           buddies_id: [],
         });
-        setIsPostDetailPopup(false);
+        onCloseBucket();
+
         // handleFlashMessage(commentResult.message, 'success');
       }
     } catch (error) {
       console.log("error in handlePostUpload", error);
     }
   };
-  const handlePostDetailPopup = () => {
-    setIsPostDetailPopup(false);
-    isOpen();
-  };
+  
 
   /* user details from auth slice */
   const { user: userDetails, userBuddies } = useSelector((state) => state.auth);
-
-  //console.log(postData);
-  /* store data for post */
-  // const [postData, setPostData] = useState({
-  //   description: "",
-  //   location: "",
-  //   buddies: [],
-  //   tags: [],
-  //   media_url: [],
-  //   is_public: true,
-  //   buddies_id: []
-  // });
-
-  const handleLocationChange = (selectedOption) => {
-    console.log("Selected:", selectedOption);
-  };
-
   /* handle buddy tag */
   const handleBuddyTag = (e) => {
     const { value } = e.target;
@@ -149,12 +119,12 @@ const CreateBucketListPopup = ({
   /* handle public and private account choose */
   const handleOption = (option) => {
     if (option === "public") {
-      setPostData((prev) => ({
+      setbucketpostData((prev) => ({
         ...prev,
         is_public: true,
       }));
     } else if (option === "private") {
-      setPostData((prev) => ({
+      setbucketpostData((prev) => ({
         ...prev,
         is_public: false,
       }));
@@ -178,22 +148,13 @@ const CreateBucketListPopup = ({
   /* handle description change value and show words count*/
   useEffect(() => {
     if (post_id) {
-      setPostData((prev) => ({
+      setbucketpostData((prev) => ({
         ...prev,
         post_id,
       }));
     }
-  }, [post_id, setPostData]);
+  }, [post_id, setbucketpostData]);
 
-  /* handle list name set */
-  //   const handleListNameInputChange = async (e) => {
-  //     console.log(e.target.value);
-  //     const { value } = e.target;
-  //     setPostData((prev) => ({
-  //       ...prev,
-  //       list_name: value,
-  //     }));
-  //   };
   const handleListNameInputChange = (input) => {
     let value;
 
@@ -207,15 +168,15 @@ const CreateBucketListPopup = ({
     }
 
     // Update state with the new value
-    setPostData((prev) => ({
+    setbucketpostData((prev) => ({
       ...prev,
       list_name: value,
     }));
   };
 
   const handleSuggestionClick = (person) => {
-    // Add selected buddy to postData.buddies
-    setPostData((prevData) => {
+    // Add selected buddy to bucketpostData.buddies
+    setbucketpostData((prevData) => {
       const isAlreadyAdded = prevData.buddies.some(
         (buddy) => buddy.id === person.id
       );
@@ -244,7 +205,7 @@ const CreateBucketListPopup = ({
 
   // Remove buddy from tagged list
   const handleRemoveBuddy = (id) => {
-    setPostData((prevData) => ({
+    setbucketpostData((prevData) => ({
       ...prevData,
       buddies: prevData.buddies.filter((buddy) => buddy.id !== id),
       buddies_id: prevData.buddies_id.filter((buddyId) => buddyId !== id),
@@ -256,15 +217,16 @@ const CreateBucketListPopup = ({
     console.log("form");
   };
 
-  /* set postData to initial state if popup is closed */
+  /* set bucketpostData to initial state if popup is closed */
   const handlePopUpClose = () => {
-    setPostData({
+    console.log("create popup");
+    setbucketpostData({
       list_name: "",
       buddies: [],
       buddies_id: [],
       post_id: "",
     });
-    onClose();
+    onCloseBucket();
   };
 
   // Disable body scroll when popup is open
@@ -369,7 +331,7 @@ const CreateBucketListPopup = ({
                     className="flex items-center justify-center w-[120px] h-[24px] bg-[#FFFFFF] border border-[#D5D5D5] text-[#6D6D6D] font-normal text-[14px] rounded-full focus:outline-none"
                     onClick={() => setDropdownOpen((prev) => !prev)}
                   >
-                    {postData?.is_public ? "Public" : "Private"}
+                    {bucketpostData?.is_public ? "Public" : "Private"}
                     <img
                       src={chevron_down}
                       alt="Chevron"
@@ -416,7 +378,7 @@ const CreateBucketListPopup = ({
                     type="text"
                     onChange={(e) => handleListNameInputChange(e)}
                     placeholder="eg: travel"
-                    value={postData?.list_name || ""}
+                    value={bucketpostData?.list_name || ""}
                     className="flex-grow font-inter font-medium text-[16px] text-[#212626] w-full p-3 h-[48px] bg-[#F0F7F7] rounded-[8px] border-1 border-[#F5F5F5] placeholder:text-[#869E9D] focus:outline-none focus:ring-1 focus:ring-[#5E6F78] placeholder:font-inter placeholder:font-medium placeholder:text-[16px]"
                   />
                 </div>
@@ -428,17 +390,12 @@ const CreateBucketListPopup = ({
                       Category List
                     </p>
 
-                   
                     <div className="absolute top-[60px] bg-white border border-gray-200 rounded shadow-lg w-full z-10">
                       <select
                         className="p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5] text-[16px] text-[#212626] font-medium cursor-pointer w-full"
-                        onChange={(e) =>
-                          handleListNameInputChange(e)
-                        }
+                        onChange={(e) => handleListNameInputChange(e)}
                       >
-                        <option value="">
-                          Select an option
-                        </option>
+                        <option value="">Select an option</option>
                         {listName.map((list) => (
                           <option key={list.id} value={list.list_name}>
                             {list.list_name}
@@ -449,7 +406,6 @@ const CreateBucketListPopup = ({
                   </div>
                 )}
 
-                
                 <div className="flex flex-col relative mt-[75px]">
                   <p className="text-left font-inter font-medium text-[14px] text-[#212626] mb-3">
                     Add Buddies
@@ -457,7 +413,7 @@ const CreateBucketListPopup = ({
 
                   <div className="relative flex flex-wrap items-center gap-2 p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5]">
                     {/* Tag Show inside input */}
-                    {postData.buddies.map((buddy) => (
+                    {bucketpostData.buddies.map((buddy) => (
                       <span
                         key={buddy.id}
                         className="inline-flex items-center justify-center gap-2 bg-[#09857E] text-white w-[90px] h-[24px] rounded-[4px] text-[12px] font-inter font-medium p-2"
@@ -493,7 +449,7 @@ const CreateBucketListPopup = ({
                     <input
                       type="text"
                       placeholder={
-                        postData.buddies.length === 0 ? "eg: @calvin" : ""
+                        bucketpostData.buddies.length === 0 ? "eg: @calvin" : ""
                       }
                       className="flex-grow font-inter font-medium text-[16px] text-[#212626] h-[30px] bg-transparent outline-none placeholder:text-[#869E9D] placeholder:font-medium"
                       value={buddyInput}
@@ -520,7 +476,6 @@ const CreateBucketListPopup = ({
                     )}
                 </div>
 
-
                 <div className="mt-20 flex justify-end">
                   <button
                     type="button"
@@ -530,8 +485,8 @@ const CreateBucketListPopup = ({
                     Next
                   </button>
                 </div>
-               
               </form>
+             
             </div>
           </div>
         </div>

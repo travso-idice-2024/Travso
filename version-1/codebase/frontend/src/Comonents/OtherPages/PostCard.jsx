@@ -50,6 +50,7 @@ import { getAllTags } from "../../redux/slices/tagSlices";
 import PostLoading from "./AllStoriesPages/PostLoading";
 import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
 import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
+import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 
 const PostCard = () => {
   const dispatch = useDispatch();
@@ -71,6 +72,17 @@ const PostCard = () => {
   const [isEditPostPopup, setIsEditPostPopup] = useState(false);
   const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
 
+   const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
+
+   /**create bucket post data */
+      const [bucketpostData, setbucketpostData] = useState({
+           list_name:'',
+           buddies: [],
+           buddies_id: [],
+           post_id:''
+         });
+   
+
   /* used when we are editing any post */
   const [editPostData, setEditPostData] = useState({
     description: "",
@@ -79,10 +91,9 @@ const PostCard = () => {
     tags: [],
     media_url: [],
     is_public: true,
-    buddies_id:[],
-    post_id: ""
+    buddies_id: [],
+    post_id: "",
   });
-
 
   /* used when we are uploading a post */
   const [postData, setPostData] = useState({
@@ -416,7 +427,7 @@ const PostCard = () => {
       media_url: postFullData?.media_url || [],
       post_id: postFullData?.id || "",
       buddies_id: postFullData?.my_buddies_id || [],
-      is_public: postFullData?.is_public
+      is_public: postFullData?.is_public,
     });
     await setIsEditPostPopup(true);
   };
@@ -440,12 +451,12 @@ const PostCard = () => {
   };
 
   /* to update a post */
-  const handlePostUpdate = async() => {
+  const handlePostUpdate = async () => {
     console.log("==handlePostUpdate called==", editPostData);
     // return;
     try {
       const updateResult = await dispatch(updatePost(editPostData)).unwrap();
-      if(updateResult) {
+      if (updateResult) {
         await dispatch(getAllPosts());
         await dispatch(getUserPosts());
         setEditPostData({
@@ -455,21 +466,28 @@ const PostCard = () => {
           tags: [],
           media_url: [],
           is_public: true,
-          buddies_id:[],
-          post_id: ""
-        })
+          buddies_id: [],
+          post_id: "",
+        });
         setIsEditPreviewOpen(false);
         setIsPostLoaderOpen(true);
         handleFlashMessage("Post Updated Successfully", "success");
       }
-      
     } catch (error) {
       console.log("===error in handlePostUpdate===>", error);
       handleFlashMessage("Something went wrong", "error");
     }
-  }
+  };
 
   // console.log("====openpostpopupid=====", openPostPopupId);
+  const openBucketPopup = ()=>{
+    setIsCreateBucketPopup(true);
+  }
+
+  const onCloseBucket =()=>{
+    setIsCreateBucketPopup(false);
+    setIsCommentWithSavedPopup(false);
+  }
 
   return (
     <>
@@ -589,13 +607,15 @@ const PostCard = () => {
                                       className="absolute mt-0 w-[416px] p-[24px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-10 flex flex-col gap-[34px]"
                                     >
                                       {post?.buddies_id?.map((buddy) => {
-                                        console.log("===buddybadge", buddy)
+                                        console.log("===buddybadge", buddy);
                                         return (
                                           <div
                                             className="flex flex-col"
                                             key={buddy?.id}
                                           >
-                                            <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
+                                            <Link
+                                              to={`/profile/${buddy?.user_name}/${buddy?.id}`}
+                                            >
                                               <div className="flex items-center space-x-3">
                                                 <div>
                                                   <img
@@ -668,7 +688,8 @@ const PostCard = () => {
 
                                                       {buddy?.badge
                                                         ?.split("-")[0]
-                                                        ?.trim() == "Foodie" && (
+                                                        ?.trim() ==
+                                                        "Foodie" && (
                                                         <ShowBadgeIcon
                                                           badge={buddy?.badge}
                                                         />
@@ -698,7 +719,7 @@ const PostCard = () => {
                                         );
                                       })}
                                     </div>
-                                )}
+                                  )}
                               </div>
                             )}
                           </div>
@@ -1105,11 +1126,32 @@ const PostCard = () => {
                     />
                   )}
 
-                  {activePostId === post?.id && isCommentWithSavedPopup && (
+                  {/* {activePostId === post?.id && isCommentWithSavedPopup && (
                     <SavedPopup
                       isOpen={isCommentWithSavedPopup}
                       // onClose={() => setIsCommentWithSavedPopup(false)}
                       onClose={() => handleBucketSavedPopupClose()}
+                    />
+                  )} */}
+
+                  {activePostId === post?.id && isCommentWithSavedPopup && (
+                    <SavedPopup
+                      post_id={post.id}
+                      isOpen={isCommentWithSavedPopup}
+                      // onClose={() => setIsCommentWithSavedPopup(false)}
+                      onClose={() => handleBucketSavedPopupClose()}
+                      openBucketPopup={openBucketPopup}
+                    />
+                  )}
+
+                  {isCreateBucketPopup && (
+                    <CreateBucketListPopup
+                      post_id={post.id}
+                      isOpen={isCreateBucketPopup}
+                      onCloseBucket={onCloseBucket}
+                      //openPostDetail={() => setIsPostDetailPopup(true)}
+                      bucketpostData={bucketpostData}
+                      setbucketpostData={setbucketpostData}
                     />
                   )}
                 </div>
