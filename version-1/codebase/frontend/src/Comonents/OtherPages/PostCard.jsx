@@ -486,7 +486,7 @@ const PostCard = () => {
 
   const onCloseBucket =()=>{
     setIsCreateBucketPopup(false);
-    setIsCommentWithSavedPopup(false);
+    setIsCommentWithSavedPopup(true);
   }
 
   return (
