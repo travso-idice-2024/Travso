@@ -19,7 +19,7 @@ import Boy1 from "../../assets/headerIcon/boy1.png";
 import p1 from "../../assets/headerIcon/p1.png";
 import p2 from "../../assets/headerIcon/p2.png";
 import p3 from "../../assets/headerIcon/p3.png";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 import trash from "../../assets/trash.png";
 import entypo_bucket from "../../assets/entypo_bucket.png";
 import noto_fire from "../../assets/noto_fire.png";
@@ -72,16 +72,16 @@ const PostCard = () => {
   const [isEditPostPopup, setIsEditPostPopup] = useState(false);
   const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
 
-  /* for bucket list */
-  const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
+   const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
 
    /**create bucket post data */
-    const [bucketpostData, setbucketpostData] = useState({
-          list_name:'',
-          buddies: [],
-          buddies_id: [],
-          post_id:''
-    });
+      const [bucketpostData, setbucketpostData] = useState({
+           list_name:'',
+           buddies: [],
+           buddies_id: [],
+           post_id:''
+         });
+   
 
   /* used when we are editing any post */
   const [editPostData, setEditPostData] = useState({
@@ -479,16 +479,15 @@ const PostCard = () => {
     }
   };
 
+  // console.log("====openpostpopupid=====", openPostPopupId);
   const openBucketPopup = ()=>{
     setIsCreateBucketPopup(true);
   }
 
   const onCloseBucket =()=>{
     setIsCreateBucketPopup(false);
-    setIsCommentWithSavedPopup(false);
+    setIsCommentWithSavedPopup(true);
   }
-
-  // console.log("====openpostpopupid=====", openPostPopupId);
 
   return (
     <>

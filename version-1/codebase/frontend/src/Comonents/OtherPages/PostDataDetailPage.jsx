@@ -6,7 +6,7 @@ import { getUserDetails, getUserPosts } from "../../redux/slices/authSlice";
 import dummyUserImage from "../../assets/user_image-removebg-preview.png";
 import { Link, useNavigate } from "react-router-dom";
 import ShowBadgeIcon from "./ShowBadgeIcons";
-import dotThree from "../../assets/dotThree.png";
+import dotThree from "../../assets/dotthree.png";
 import morePostIcon from "../../assets/moreposticon.svg";
 import trash from "../../assets/trash.png";
 import { deletePost, getAllPosts } from "../../redux/slices/postSlice";

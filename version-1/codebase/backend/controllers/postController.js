@@ -2,7 +2,7 @@ const pool = require("../utils/db");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
-const host = "http://localhost:5000";
+const host = "http://127.0.0.1";
 
 const POST_UPLOAD_DIR = path.join(__dirname, "../uploads/post_img");
 const STORY_UPLOAD_DIR = path.join(__dirname, "../uploads/story_img");
@@ -85,8 +85,6 @@ async function getAllBucketLists(req, res) {
       WHERE 
         bcl.user_id = ? 
         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
-      GROUP BY 
-        bcl.list_name
     `, [userId, userId]);
 
     return res.status(200).json({
@@ -153,9 +151,14 @@ async function getAllCategoryLists(req, res) {
     // `);
 
     const [allCategorylist] = await pool.execute(`
+<<<<<<< HEAD
       SELECT 
         list_name, 
         MIN(id) AS id
+=======
+      SELECT DISTINCT 
+        list_name
+>>>>>>> master
       FROM 
         bucket_category_list
       GROUP BY 
@@ -2238,6 +2241,7 @@ const replyOnStory = async (req, res) => {
   //27-12-2024
   const from = req.user.userId;
   const to = req.body.story_owner_id;
+  console.log(from , to );
   //27-12-2024
   try {
     // const { user_id } = req.params; // Extract user_id from request parameters
@@ -3201,6 +3205,87 @@ async function unArchivePost(req, res) {
   }
 }
 
+async function bucketListWithBuddies(req, res) {
+  try {
+    //const { UserId } = req.params;
+    const UserId = req.user.userId;
+
+    const [data] = await pool.execute(
+      `SELECT DISTINCT bcl.post_id, bcl.list_name, p.media_url, bcl.buddy_id
+      FROM 
+          bucket_category_list bcl 
+      JOIN 
+         posts p
+      ON 
+        bcl.post_id = p.id
+      WHERE 
+        bcl.user_id = ?`,
+      [UserId]
+    );
+
+    
+    const filteredData = data
+      .map(item => ({
+        ...item,
+        media_url: Array.isArray(JSON.parse(item.media_url))
+          ? JSON.parse(item.media_url).at(-1) || "" 
+          : item.media_url, 
+        buddy_id: JSON.parse(item.buddy_id), 
+      }))
+      .filter(item => Array.isArray(item.buddy_id) && item.buddy_id.length > 0);
+
+    return res.status(200).json({
+      message: "Data fetched successfully",
+      data: filteredData,
+    });
+  } catch (error) {
+    console.error("===bucketListWithoutBuddies===>", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
+async function bucketListWithoutBuddies(req, res) {
+  try {
+    //const { UserId } = req.params;
+    const UserId = req.user.userId;
+
+    const [data] = await pool.execute(
+      `SELECT DISTINCT bcl.post_id, bcl.list_name, p.media_url, bcl.buddy_id
+      FROM 
+          bucket_category_list bcl 
+      JOIN 
+         posts p
+      ON 
+        bcl.post_id = p.id
+      WHERE 
+        bcl.user_id = ?`,
+      [UserId]
+    );
+
+    const filteredData = data
+      .map(item => ({
+        ...item,
+        media_url: Array.isArray(JSON.parse(item.media_url))
+          ? JSON.parse(item.media_url).at(-1) || "" 
+          : item.media_url, 
+        buddy_id: JSON.parse(item.buddy_id), 
+      }))
+      .filter(item => Array.isArray(item.buddy_id) && item.buddy_id.length === 0);
+
+    return res.status(200).json({
+      message: "Data fetched successfully",
+      data: filteredData,
+    });
+  } catch (error) {
+    console.error("===bucketListWithoutBuddies===>", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+}
+
 
 
 module.exports = {
@@ -3242,4 +3327,6 @@ module.exports = {
   editReply,
   deletePost,
   updatePost,
+  bucketListWithBuddies,
+  bucketListWithoutBuddies
 };
