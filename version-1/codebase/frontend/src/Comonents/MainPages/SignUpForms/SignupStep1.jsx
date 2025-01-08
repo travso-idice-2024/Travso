@@ -38,7 +38,7 @@ const SignupStep1 = ({
   const [genderData, setGenderData] = useState({
     male: "Male",
     female: "Female",
-    other: "Other",
+    "Not to Say": "Not to Say",
   });
 
   // useEffect(() => {

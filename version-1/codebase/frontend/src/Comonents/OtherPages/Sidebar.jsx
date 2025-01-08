@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import First from "../../assets/PostImage/first.png";
 import Second from "../../assets/PostImage/second.png";
 import Third from "../../assets/PostImage/third.png";
@@ -11,6 +11,7 @@ import Ninth from "../../assets/PostImage/ninth.png";
 import Tenth from "../../assets/PostImage/first.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { getAllBucketLists } from "../../redux/slices/postSlice";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -23,6 +24,16 @@ const Sidebar = () => {
     userFollowers,
     toWhomUserFollows,
   } = useSelector((state) => state.auth);
+
+  const { allBucketLists } = useSelector((state) => state.postSlice);
+
+  useEffect(() => {
+    if (!allBucketLists) {
+      dispatch(getAllBucketLists());
+    }
+  }, [dispatch, allBucketLists]);
+
+  // console.log("======allBucketLists====>", allBucketLists);
 
   const [posts, setPosts] = useState([
     {
@@ -101,13 +112,14 @@ const Sidebar = () => {
       images: [
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQutHQ734KtvKx-8La1Yprpvl4w769XbzThkw&s",
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCmdZy7i30h7n6b7GRNA5vJV_hdQGwUyu8_g&s",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCmdZy7i30h7n6b7GRNA5vJV_hdQGwUyu8_g&s",
+        // "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCmdZy7i30h7n6b7GRNA5vJV_hdQGwUyu8_g&s",
       ],
     },
   ];
 
   // State to toggle visibility of more posts
   const [showAllPost, setShowAllPost] = useState(false);
+  const [showAllBuckets, setShowAllBuckets] = useState(false);
 
   // Show only first 9 posts or all posts based on state
   // const visiblePosts = showAllPost ? posts : posts.slice(0, 9);
@@ -119,6 +131,18 @@ const Sidebar = () => {
     ? userPosts.slice(0, 9)
     : [];
 
+
+  // Show only first 2 bucket or all buckets based on state
+  const visibleBucketLists = showAllBuckets
+    ? allBucketLists
+      ? allBucketLists
+      : []
+    : allBucketLists
+    ? allBucketLists.slice(0, 2)
+    : [];
+
+
+  /* navigate to bucket list */
   const handleAllBucketList = () => {
     navigate("/bucketlist");
   };
@@ -367,34 +391,109 @@ const Sidebar = () => {
             See All
           </p>
         </div>
-        {sampleData.map((item, index) => (
-          <div key={index} className="mt-8">
-            {/* Flexbox for vertical and horizontal image arrangement */}
-            <div className="flex gap-2">
-              {/* Vertical image */}
-              <img
-                src={item.images[0]}
-                alt="Vertical Image"
-                className="w-1/2 h-auto object-cover rounded-md"
-              />
-              {/* Two horizontal images */}
-              <div className="flex flex-col w-1/2 gap-2">
-                {item.images.slice(1, 3).map((img, imgIndex) => (
+        {visibleBucketLists &&
+          visibleBucketLists?.map((item, index) => {
+            const images = item.media_url ? JSON.parse(item.media_url) : [];
+            return (
+              <div key={item?.id} className="mt-8 hidden md:flex md:flex-col">
+                {/* Flexbox for vertical and horizontal image arrangement */}
+
+                {/* start */}
+                {/* {images.length === 1 && (
                   <img
-                    key={imgIndex}
-                    src={img}
-                    alt="Horizontal Image"
-                    className="w-full h-24 object-cover rounded-md"
+                    src={images[0]}
+                    alt="Single Image"
+                    className="w-full h-[209px] object-cover rounded-md"
                   />
-                ))}
+                )} */}
+                {images.length === 1 &&
+                  (/\.(jpg|jpeg|png|gif|webp)$/i.test(images[0]) ? (
+                    <img
+                      src={images[0]}
+                      alt="Single Image"
+                      className="w-full h-[209px] object-cover rounded-md"
+                    />
+                  ) : /\.(mp4|webm|ogg)$/i.test(images[0]) ? (
+                    <video
+                      src={images[0]}
+                      controls
+                      className="w-full h-[209px] object-cover rounded-md"
+                    />
+                  ) : null)}
+
+                {images.length === 2 && (
+                  <div className="flex gap-2">
+                    {images.map((media, mediaIndex) =>
+                      /\.(jpg|jpeg|png|gif|webp)$/i.test(media) ? (
+                        <img
+                          key={mediaIndex}
+                          src={media}
+                          alt={`Image ${mediaIndex + 1}`}
+                          className="w-1/2 h-[209px] object-cover rounded-md"
+                        />
+                      ) : /\.(mp4|webm|ogg)$/i.test(media) ? (
+                        <video
+                          key={mediaIndex}
+                          src={media}
+                          controls
+                          className="w-1/2 h-[209px] object-cover rounded-md"
+                        />
+                      ) : null
+                    )}
+                  </div>
+                )}
+
+                {images.length >= 3 && (
+                  <div className="flex gap-2">
+                    {/* Vertical Image or Video */}
+                    {/\.(jpg|jpeg|png|gif|webp)$/i.test(images[0]) ? (
+                      <img
+                        src={images[0]}
+                        alt="Vertical Media"
+                        className="w-1/2 h-[209px] object-cover rounded-md"
+                      />
+                    ) : /\.(mp4|webm|ogg)$/i.test(images[0]) ? (
+                      <video
+                        src={images[0]}
+                        controls
+                        className="w-1/2 h-[209px] object-cover rounded-md"
+                      />
+                    ) : null}
+
+                    {/* Two Horizontal Images or Videos */}
+                    <div className="flex flex-col w-1/2 gap-2">
+                      {images
+                        .slice(1, 3)
+                        .map((media, mediaIndex) =>
+                          /\.(jpg|jpeg|png|gif|webp)$/i.test(media) ? (
+                            <img
+                              key={mediaIndex}
+                              src={media}
+                              alt={`Horizontal Media ${mediaIndex + 1}`}
+                              className="w-full h-[100px] object-cover rounded-md"
+                            />
+                          ) : /\.(mp4|webm|ogg)$/i.test(media) ? (
+                            <video
+                              key={mediaIndex}
+                              src={media}
+                              controls
+                              className="w-full h-[100px] object-cover rounded-md"
+                            />
+                          ) : null
+                        )}
+                    </div>
+                  </div>
+                )}
+
+                {/* end */}
+
+                {/* Title */}
+                <p className="text-left font-inter text-[16px] font-medium text-[#212626] mt-2">
+                  {item.list_name}
+                </p>
               </div>
-            </div>
-            {/* Title */}
-            <p className="text-left font-inter text-[16px] font-medium text-[#212626] mt-2">
-              {item.title}
-            </p>
-          </div>
-        ))}
+            );
+          })}
       </div>
     </>
   );

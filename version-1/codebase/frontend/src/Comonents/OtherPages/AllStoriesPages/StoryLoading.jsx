@@ -63,7 +63,7 @@ const StoryLoading = ({ isOpenLoader, onCloseLoader }) => {
             <div className="flex flex-col items-center justify-center">
               {/* GIF Loader */}
               <img
-                src="https://s3-alpha-sig.figma.com/img/c9e6/52dd/a0e5fbec4447bcc6b1e1ff0a6e77b367?Expires=1736121600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=KYqpxDQkN28~t~CQ0Jv09mWZJcijlYHk~8-2QZtO6SNjcP~~6hLDwn~9yxSZw30yBmD1xrfRg8Cklo8hM9Muah6p6Ytc6pP4nwvIjnl5N1rPXiyirWCIP1PGvkb~DgvyqmLn97OUlSzqJgfbeZ6LVuO~RXiwAWVpVc-SxvqComtUCKqwJhVBYCmCVRS-5grP3lHbCq6dxMro3YnoG3AVe0AI6mrHDJqe-WKSgXO3u5gcw5S1qhrJhBTLqaRt20gBCbyqCxZwtcy-4q9CuLbvOPErqbCO0cFtvXJH9VyLV2goWum71qKpnUER-X3vIlt7v4LCviaAQMrUhbkcvWRjoQ__"
+                src="https://s3-alpha-sig.figma.com/img/c9e6/52dd/a0e5fbec4447bcc6b1e1ff0a6e77b367?Expires=1737331200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=IzJokXxcfJiXt-SR7crGfM6L-Tz4KavyyTCLA8gWoiXiodvawb-oczeNlq3vWk1EB-nvu7qHYzJzKacDU4V5Qshj-jQBK3YUHMjStekpmpVxyGfjLagoltIEuGLVIiI-5UdWIcLYXPQdPNVKVXQmtb084roC2fcKGp7CWOroAkpRzxBi4YKjQcLQSU3XJnWqRb~T1Izg97Q~f4Qw-AiuCamjEsW~WSZuRAN-SPLLYwTCdIDYDtQfpOzVzsgKM4xvla7FiecWlm8AjC3Nao5Sl9qa~2tnMuwtnpvt1~K6RT6BtmKFvs-03eulpQ8VEmULVXeKCNgbmC6QjMqEzk2VUw__"
                 alt="Loading GIF"
                 className="w-24 h-24"
               />

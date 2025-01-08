@@ -1,43 +1,46 @@
 import React from "react";
 import logo from "../../assets/headerIcon/logo.png";
 import Hero from "../../assets/LandingSVG//Hero.png";
+import HeroMobile from "../../assets/LandingSVG//HeroMobile.svg";
 import HeroSVG from "../../assets/LandingSVG/HeroSnap.jpeg";
 import HeroSVGNew from "../../assets/LandingSVG/HeroSVGNew.svg";
 import BadgeIcon from "../../assets/LandingSVG/BadgeIcon.svg";
 import badgePhool from "../../assets/LandingSVG/badgePhool.svg";
 import bucketSVG from "../../assets/LandingSVG/bucketSVG.svg";
-import Africa1 from "../../assets/LandingSVG/africa1.svg";
-import Africa from "../../assets/LandingSVG/africa.svg";
-import Goa from "../../assets/LandingSVG/goa.svg";
-import Calcutta from "../../assets/LandingSVG/calcutta.svg";
-import China from "../../assets/LandingSVG/china.svg";
-import Himachal from "../../assets/LandingSVG/himachal.svg";
-import Korea from "../../assets/LandingSVG/Korea.svg";
-import Norway from "../../assets/LandingSVG/norway.svg";
-import Romania from "../../assets/LandingSVG/romania.svg";
-import Russia1 from "../../assets/LandingSVG/Russia1.svg";
+import Africa from "../../assets/LandingSVG/UpdateSVG/Africa.svg";
+import Goa from "../../assets/LandingSVG/UpdateSVG/Goa.svg";
+import Calcutta from "../../assets/LandingSVG/UpdateSVG/Calcutta.svg";
+import China from "../../assets/LandingSVG/UpdateSVG/china.svg";
+import Himachal from "../../assets/LandingSVG/UpdateSVG/Himachal.svg";
+import Korea from "../../assets/LandingSVG/UpdateSVG/korea.svg";
+import Norway from "../../assets/LandingSVG/UpdateSVG/Norway.svg";
+import Romania from "../../assets/LandingSVG/UpdateSVG/Romania.svg";
+import Russia1 from "../../assets/LandingSVG/UpdateSVG/Russia.svg";
 import Location from "../../assets/LandingSVG/location.svg";
-import Left from "../../assets/LandingSVG/left.svg";
-import Right from "../../assets/LandingSVG/right.svg";
+import Left from "../../assets/LandingSVG/leftNewLine.svg";
+import LeftMobile from "../../assets/LandingSVG/leftMobile.svg";
+import RightMobile from "../../assets/LandingSVG/rightMobile.svg";
+import Right from "../../assets/LandingSVG/rightNewLine.svg";
 import leftPlane from "../../assets/LandingSVG/leftPlane.svg";
 import rightPlane from "../../assets/LandingSVG/rightPlane.svg";
+import PlusSVG from "../../assets/LandingSVG/PlusSVG.svg";
 import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
-    <div className="px-20 flex flex-col bg-gradient-to-b from-teal-50 to-teal-100 min-h-screen">
-      <header className="">
-        <div className="w-full max-w-[99%] h-[80px] container mx-auto py-4 flex items-center justify-between">
+    <div className="md:px-20 px-3 py-4 flex flex-col justify-between bg-gradient-to-b from-teal-50 to-teal-100 min-h-screen">
+      <header className="px-3">
+        <div className="w-full max-w-[99%] h-[80px] container mx-auto flex items-center justify-between">
           {/* Left Section - Logo */}
           <div className="flex items-center">
             <img src={logo} alt="TravSo Logo" className="h-10" />
           </div>
         </div>
       </header>
-      <div className="flex mt-4 w-full gap-[20px]">
-        <div className="flex flex-col items-start w-[500px] gap-[15px] px-4">
-          <div className="flex items-center justify-center w-[170px] h-[55px] gap-[15px] bg-[#FFFFFF] rounded-full">
+      <div className="flex flex-col md:flex-row mt-4 w-full gap-[20px]">
+        <div className="flex flex-col items-start md:w-[500px] gap-[15px] px-4">
+          <div className="flex items-center justify-center w-[200px] md:w-[170px] h-[55px] gap-[15px] bg-[#FFFFFF] rounded-full">
             <svg
               width="25"
               height="25"
@@ -61,15 +64,15 @@ const navigate = useNavigate();
               CAPTURE
             </p>
           </div>
-          <h5 className="text-left font-poppins font-semibold text-[58px] text-[#212626] leading-[70px] w-[420px]">
-            Perfect Your <span className="text-[#2DC6BE]">Travel Moments</span>{" "}
-            with Travso
+          <h5 className="text-left font-poppins font-semibold text-[28px] md:text-[58px] text-[#212626] leading-[40px] md:leading-[70px] md:w-[420px]">
+          Expand Your <span className="text-[#2DC6BE]">Travel Horizons
+            </span>{" "}
+            {/* with Travso */}
           </h5>
           <p className="text-left font-inter font-medium text-[16px] text-[#212626]">
             Stay Travel Inspired, Join our curated community of travellers
             exploring collaboration across hospitality, food, and tourism!
           </p>
-          
           <button className="w-[140px] h-[48px] rounded-[4px] flex items-center justify-center font-poppins font-semibold text-[#EEEEEE] bg-[#2DC6BE]" onClick={() => navigate('/signup')}>
             Join Today
           </button>
@@ -80,101 +83,109 @@ const navigate = useNavigate();
           <img
             src={HeroSVGNew}
             alt="SVG"
-            className="w-[540px] h-[530px] object-cover"
+            className="w-[300px] h-[300px] md:w-[540px] md:h-[530px] object-cover z-10"
           />
 
           {/* Absolute Data */}
-          <div className="flex items-center justify-center w-[230px] h-[55px] gap-[8px] bg-[#FFFFFF] rounded-full absolute -bottom-2 right-[100px]">
+          <div className="flex items-center justify-center w-[128px] h-[29px] md:w-[240px] md:h-[55px] gap-[0px] md:gap-[8px] bg-[#FFFFFF] rounded-full absolute bottom-10 -right-[15px] z-10">
             <img src={BadgeIcon} alt="BadgeIcon" />
 
-            <p className="text-[#393E46] font-poppins font-semibold text-[14px]">
+            <p className="text-[#393E46] font-poppins font-semibold text-[9px] md:text-[14px]">
               Get Travel Badges
             </p>
           </div>
-          <div className="flex items-center justify-center w-[217px] h-[72px] px-2 gap-[5px] bg-[#FFFFFF] rounded-[12px] absolute bottom-[100px] -right-[80px]">
+          <div className="flex items-center justify-center w-[128px] md:w-[260px] h-[29px] md:h-[72px] px-2 gap-[0px] md:gap-[5px] bg-[#FFFFFF] rounded-full absolute bottom-[135px] -right-[80px] z-10">
             <img src={badgePhool} alt="BadgeIcon" />
 
-            <p className="text-[#212626] font-poppins font-semibold text-[15px]">
-              Connect with industry experts
+            <p className="text-[#212626] font-poppins font-semibold text-[10px] md:text-[15px] text-left">
+              Connect with industry <br/>experts
             </p>
           </div>
-          <div className="flex items-center justify-center w-[240px] h-[55px] gap-[8px] bg-[#FFFFFF] rounded-full absolute bottom-[70px] -left-[45px]">
-            <img src={bucketSVG} alt="bucketSVG" />
+          <div className="flex items-center justify-center w-[128px] h-[29px] md:w-[240px] md:h-[55px] gap-[0px] md:gap-[8px] bg-[#FFFFFF] rounded-full absolute bottom-[2px] left-[45px] z-10">
+            <img src={bucketSVG} alt="bucketSVG"  />
 
-            <p className="text-[#393E46] font-poppins font-semibold text-[14px]">
-              Fulfill your bucket list
+            <p className="text-[#393E46] font-poppins font-semibold text-[9px] md:text-[14px]">
+              Create your bucket list
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center w-[128px] h-[29px] md:w-[240px] md:h-[55px] gap-[0px] md:gap-[8px] bg-[#FFFFFF] rounded-full absolute bottom-[90px] -left-[45px] z-10">
+            <img src={PlusSVG} alt="bucketSVG" />
+
+            <p className="text-[#393E46] font-poppins font-semibold text-[9px] md:text-[14px]">
+            Follow Your Travel Buddy
             </p>
           </div>
 
           <img
             src={Africa}
             alt="Africa"
-            className="absolute -left-[24px] bottom-[150px]"
+            className="absolute -left-[15px] bottom-[86px] md:-left-[20px] md:bottom-[180px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
           <img
             src={Goa}
             alt="Goa"
-            className="absolute left-[150px] top-[220px]"
+            className="absolute left-[95px] top-[135px] md:left-[150px] md:top-[220px] w-[60px] h-[54px] md:w-[150px] md:h-[100px] z-10"
           />
           <img
             src={Calcutta}
             alt="Calcutta"
-            className="absolute right-[120px] top-[200px]"
+            className="absolute right-[70px] top-[124px] md:right-[110px] md:top-[210px] w-[60px] h-[54px] md:w-[150px] md:h-[100px] z-10"
           />
-          <img
+           <img
             src={Himachal}
             alt="Himachal"
-            className="absolute left-[180px] top-[105px]"
+            className="absolute left-[105px] top-[80px] md:left-[180px] md:top-[105px] w-[60px] h-[54px] md:w-[140px] md:h-[90px] z-10"
           />
           <img
             src={China}
             alt="China"
-            className="absolute right-[130px] top-[135px]"
+            className="absolute right-[83px] top-[90px] md:right-[130px] md:top-[135px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
-          <img
+           <img
             src={Korea}
             alt="Korea"
-            className="absolute -right-[15px] top-[180px]"
+            className="absolute -right-[10px] top-[110px] md:-right-[20px] md:top-[195px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
           <img
             src={Romania}
             alt="Romania"
-            className="absolute -left-[20px] top-[135px]"
+            className="absolute -left-[5px] top-[85px] md:-left-[20px] md:top-[150px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
           <img
             src={Norway}
             alt="Norway"
-            className="absolute left-[45px] top-[50px]"
+            className="absolute left-[18px] top-[50px] md:left-[45px] md:top-[45px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
           <img
             src={Russia1}
             alt="Russia"
-            className="absolute right-[100px] top-[7px]"
+            className="absolute right-[75px] top-[0px] md:right-[100px] md:top-[20px] w-[50px] h-[39px] md:w-[80px] md:h-[60px] z-10"
           />
           <img
             src={Location}
             alt="Location"
-            className="absolute right-[8px] top-[80px]"
-          />
+            className="absolute right-[0px] top-[50px] md:right-[8px] md:top-[80px] w-[20px] h-[20px] md:w-[30px] md:h-[24px] z-10"
+          /> 
           <img
             src={Left}
             alt="Left"
-            className="absolute -left-[160px] top-[90px]"
+            className="absolute -left-[70px] top-[62px] md:-left-[160px] md:top-[75px] z-0 h-[105px] md:h-[230px]"
           />
           <img
             src={leftPlane}
             alt="leftPlane"
-            className="absolute -left-[65px] top-[65px]"
+            className="absolute -left-[25px] top-[40px] md:-left-[55px] md:top-[52px]"
           />
           <img
             src={Right}
             alt="Right"
-            className="absolute -right-[100px] top-[35px]"
+            className="absolute -right-[30px] top-[26px] md:-right-[100px] md:top-[35px] z-0 h-[105px] md:h-[217px]"
           />
           <img
             src={rightPlane}
             alt="rightPlane"
-            className="absolute right-[20px] top-[15px]"
+            className="absolute right-[25px] top-[8px] md:right-[20px] md:top-[15px]"
           />
         </div>
         {/* <div className="flex justify-center items-center m-auto relative">
@@ -185,20 +196,20 @@ const navigate = useNavigate();
           />
         </div> */}
       </div>
-      <footer className="flex items-center justify-between mt-8">
-        <div className="flex items-center gap-[35px]">
-          <p className="text-left font-inter font-medium text-[16px] text-[#212626]">
+      <footer className="flex flex-col md:flex-row items-center justify-between mt-8">
+        <div className="flex items-center gap-[15px] md:gap-[35px]">
+          <p className="text-left font-inter font-medium text-[14px] md:text-[16px] text-[#212626]">
             Conatct us
           </p>
-          <p className="text-left font-inter font-medium text-[16px] text-[#212626]">
+          <p className="text-left font-inter font-medium text-[14px] md:text-[16px] text-[#212626]">
             Privacy policy
           </p>
-          <p className="text-left font-inter font-medium text-[16px] text-[#212626]">
+          <p className="text-left font-inter font-medium text-[14px] md:text-[16px] text-[#212626]">
             Terms and conditions
           </p>
         </div>
         <div>
-          <p className="text-left font-inter font-medium text-[16px] text-[#212626]">
+          <p className="text-left font-inter font-medium text-[14px] md:text-[16px] text-[#212626]">
             Ⓒ 2025 Travso All rights reserved.
           </p>
         </div>

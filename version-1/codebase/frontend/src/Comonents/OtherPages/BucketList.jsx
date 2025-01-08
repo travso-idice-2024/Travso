@@ -49,23 +49,26 @@ const BucketList = () => {
     }
   }, [allBucketLists, dispatch]); //
 
- // console.log("check data", resultdata);
+  // console.log("check data", resultdata);
 
   const handleBucketClick = (bucket) => {
     navigate(`/profile/${bucket}`);
   };
 
-  const handleBucketRemove = async(bucketTitle)=>{
+  const handleBucketRemove = async (bucketTitle) => {
     //console.log("=====list_name====>", bucketTitle);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${apiUrl}/post/delete-bucket/${bucketTitle}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-      });
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${apiUrl}/post/delete-bucket/${bucketTitle}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         // Read response body as text or JSON once
@@ -73,16 +76,14 @@ const BucketList = () => {
         console.error("Error deleting bucket:", errorData);
         return; // Stop further execution
       }
-  
+
       // Success case
       const data = await response.json();
-      if(data.status == true){
+      if (data.status == true) {
         dispatch(getAllBucketLists());
         //navigate('/bucketlist');
       }
       console.log("Bucket removed successfully:", data);
-      
-      
     } catch (error) {
       console.error("Error in handleBucketRemove:", error.message);
     }
@@ -114,20 +115,27 @@ const BucketList = () => {
 
     return `${day} ${shortMonth} ${year}`; // Example: 25 Aug 2002
   }
+
+  const RemoveIconData =
+    "https://cdn2.iconfinder.com/data/icons/medical-and-health-2-16/65/64-512.png";
+
   return (
     <>
       <Header />
       <ProfilePageHeaderData />
       <div className="min-h-screen bg-[#F0F7F7] p-4">
         <div className="container mx-auto flex flex-col gap-3">
-          <p className="font-poppins text-[#212626] font-semibold text-[28px] mb-5 text-left flex items-center">
+          <p 
+            className="font-poppins text-[#212626] font-semibold text-[28px] mb-5 text-left flex items-center cursor-pointer"
+            onClick={() => navigate("/profile")}
+          >
             <svg
               width="36"
               height="36"
               viewBox="0 0 36 36"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              onClick={() => navigate("/profile")}
+              
             >
               <path
                 d="M22.5 27L13.5 18L22.5 9"
@@ -140,219 +148,139 @@ const BucketList = () => {
             Your Bucket list
           </p>
 
-          {/* <div className="container mx-auto flex gap-5">
-            
-            <div className="w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                {resultdata &&
-                  resultdata.map(
-                    (post, index) =>
-                      post.images.length > 0 && (
-                        <div
-                          key={post?.id}
-                          className="h-[588px] bg-white relative rounded-[16px] shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 mb-4"
-                        >
-                          <div className="flex items-center mb-4">
-                            <img
-                              src={post?.profile_image || dummyUserImage}
-                              alt="User Avatar"
-                              className="w-[44px] h-[44px] rounded-full"
-                            />
-                            <div className="ml-3 w-full">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-poppins text-[20px] text-[#212626] font-semibold flex items-center gap-[5px]">
-                                  {post.user_name}
-                                  <span className="ml-1 text-blue-500 text-xs">
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 16 16"
-                                      fill="none"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="M8 0L14.2547 3.01208L15.7994 9.78017L11.4711 15.2078H4.52893L0.200577 9.78017L1.74535 3.01208L8 0Z"
-                                        fill="#9747FF"
-                                      />
-                                      <path
-                                        fillRule="evenodd"
-                                        clipRule="evenodd"
-                                        d="M11.6843 5.53463C11.8633 5.71362 11.8633 6.00382 11.6843 6.18281L7.40656 10.4606C7.22757 10.6396 6.93736 10.6396 6.75837 10.4606L4.31393 8.01615C4.13494 7.83716 4.13494 7.54696 4.31393 7.36797C4.49292 7.18898 4.78312 7.18898 4.96211 7.36797L7.08246 9.48832L11.0362 5.53463C11.2151 5.35564 11.5053 5.35564 11.6843 5.53463Z"
-                                        fill="white"
-                                      />
-                                    </svg>
-                                  </span>
-                                </h4>
-                                <svg
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13Z"
-                                    stroke="#212626"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                  <path
-                                    d="M12 6C12.5523 6 13 5.55228 13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44772 11 5C11 5.55228 11.4477 6 12 6Z"
-                                    stroke="#212626"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                  <path
-                                    d="M12 20C12.5523 20 13 19.5523 13 19C13 18.4477 12.5523 18 12 18C11.4477 18 11 18.4477 11 19C11 19.5523 11.4477 20 12 20Z"
-                                    stroke="#212626"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              </div>
-                              <p className="text-left text-[14px] text-[#667877] font-inter font-medium -mt-1">
-                                
-                                {post?.badge.split("-")[0]}{" "}
-                                {post?.location &&
-                                  post?.badge.split("-")[0] &&
-                                  "•"}{" "}
-                                {post?.location}
-                              </p>
-                            </div>
-                          </div>
-                          {post.images[0].match(
-                            /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/
-                          ) ? (
-                            <video
-                              src={post.images[0]}
-                              alt="Post"
-                              className="w-full rounded-[5px] h-[432px] object-cover"
-                              controls
-                              controlsList="nodownload"
-                            />
-                          ) : (
-                            <img
-                              src={post.images[0]}
-                              alt="Post"
-                              className="w-full rounded-[5px] h-[432px] object-cover"
-                            />
-                          )}
-                          <div className="mt-4 text-sm flex justify-between items-center text-gray-600">
-                            <div className="flex items-center gap-3 text-[12px] text-[#667877] font-inter font-medium">
-                              <span>{post.list_name}</span>
-                            </div>
-                            <div className="text-right text-[12px] text-[#667877] font-inter font-medium">
-                              {formatDate(post?.created_at)}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                  )}
-              </div>
-            </div>
-          </div> */}
-
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8 h-auto">
             {resultdata.map((bucket, index) => (
+              <div key={bucket?.id} className="relative">
+              <button
+                  className="absolute bottom-2 right-0 text-white cursor-pointer rounded-[8px] px-4 p-1 z-10"
+                  onClick={() => handleBucketRemove(bucket.list_name)}
+                >
+                  <img
+                    src={RemoveIconData}
+                    alt="Remove Icon"
+                    className="w-7 h-7"
+                  />
+                </button>
               <div
+                
+                className="bg-white rounded-md shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-3 md:p-4 cursor-pointer"
+                onClick={() => handleBucketClick(bucket.list_name)}
               >
-                <button onClick={()=>handleBucketRemove(bucket.list_name)}>Remove</button>
-                <div onClick={() => handleBucketClick(bucket.list_name)}  key={index}
-                className="bg-white rounded-md shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 grid grid-cols-2 gap-2 cursor-pointer">
-                {/* Large Image */}
-                <div className="">
-                  {/* <img
-                    src={bucket.images[0]}
-                    alt={bucket.list_name}
-                    className="w-full h-full object-cover rounded-md"
-                  /> */}
-                  {bucket.images && bucket.images.length > 0 ? (
-                    // Check if the first image is a video file
-                    /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
-                      bucket.images[0]
-                    ) ? (
-                      <video
-                        src={bucket.images[0]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                        controls
-                        controlsList="nodownload"
-                      />
-                    ) : (
-                      <img
-                        src={bucket.images[0]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )
-                  ) :null}
-                </div>
+                
+                {bucket.images && bucket.images.length > 0 ? (
+                  bucket.images.length === 3 ? (
+                    // 3 images layout
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Large Image/Video */}
+                      <div className="">
+                        {/\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
+                          bucket.images[0]
+                        ) ? (
+                          <video
+                            src={bucket.images[0]}
+                            className="w-full h-[329px] object-cover rounded-md"
+                            controls
+                            controlsList="nodownload"
+                          />
+                        ) : (
+                          <img
+                            src={bucket.images[0]}
+                            alt={bucket.list_name}
+                            className="w-full h-[329px] object-cover rounded-md"
+                          />
+                        )}
+                      </div>
 
-                {/* Small Images */}
-                <div className="grid grid-rows-2 gap-2">
-                  {/* <img
-                    src={bucket.images[1]}
-                    alt={`${bucket.list_name} - small 1`}
-                    className="w-full h-[250px] object-cover rounded-md"
-                  /> */}
-                  {bucket?.images && bucket.images[1] ? (
-                    // Check if the second image is a video file
-                    /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
-                      bucket.images[1]
-                    ) ? (
-                      <video
-                        src={bucket.images[1]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                        controls
-                        controlsList="nodownload"
-                      />
-                    ) : (
-                      <img
-                        src={bucket.images[1]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )
+                      {/* Small Images/Videos */}
+                      <div className="grid grid-rows-2 gap-2">
+                        {bucket.images
+                          .slice(1)
+                          .map((image, idx) =>
+                            /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
+                              image
+                            ) ? (
+                              <video
+                                key={idx}
+                                src={image}
+                                className="w-full h-full md:h-[160px] object-cover rounded-md"
+                                controls
+                                controlsList="nodownload"
+                                onClick={(e) => {
+                                  e.preventDefault(); // Prevent the default play action on click
+                                }}
+                              />
+                            ) : (
+                              <img
+                                key={idx}
+                                src={image}
+                                alt={`${bucket.list_name} - small ${idx + 1}`}
+                                className="w-full h-full md:h-[160px] object-cover rounded-md"
+                              />
+                            )
+                          )}
+                      </div>
+                    </div>
+                  ) : bucket.images.length === 2 ? (
+                    // 2 images layout
+                    <div className="flex gap-2">
+                      {bucket.images.map((image, idx) =>
+                        /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
+                          image
+                        ) ? (
+                          <video
+                            key={idx}
+                            src={image}
+                            className="w-1/2 h-[329px] object-cover rounded-md"
+                            controls
+                            controlsList="nodownload"
+                            onClick={(e) => {
+                              e.preventDefault(); // Prevent the default play action on click
+                            }}
+                          />
+                        ) : (
+                          <img
+                            key={idx}
+                            src={image}
+                            alt={`${bucket.list_name} - image ${idx + 1}`}
+                            className="w-1/2 h-[329px] object-cover rounded-md"
+                          />
+                        )
+                      )}
+                    </div>
                   ) : (
-                    null
-                  )}
+                    // 1 image/video layout
+                    <div>
+                      {/\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
+                        bucket.images[0]
+                      ) ? (
+                        <video
+                          src={bucket.images[0]}
+                          className="w-full h-[329px] object-cover rounded-md"
+                          controls
+                          controlsList="nodownload"
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevent the default play action on click
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={bucket.images[0]}
+                          alt={bucket.list_name}
+                          className="w-full h-[329px] object-cover rounded-md"
+                        />
+                      )}
+                    </div>
+                  )
+                ) : null}
 
-                  {/* <img
-                    src={bucket.images[2]}
-                    alt={`${bucket.list_name} - small 2`}
-                    className="w-full h-[250px] object-cover rounded-md"
-                  /> */}
-                  {bucket?.images && bucket.images[2] ? (
-                    // Check if the third image is a video file
-                    /\.(mp4|avi|mov|flv|webm|mkv|mpg|mpeg|3gp)$/i.test(
-                      bucket.images[2]
-                    ) ? (
-                      <video
-                        src={bucket.images[2]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                        controls
-                        controlsList="nodownload"
-                      />
-                    ) : (
-                      <img
-                        src={bucket.images[2]}
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )
-                  ) : (
-                    null
+                {/* Title */}
+                <p className="font-poppins font-semibold text-[14px] md:text-[16px] text-[#212626] text-left mt-2">
+                  {/* {bucket.list_name} */}
+                  {bucket.list_name && (
+                    bucket.list_name.charAt(0).toUpperCase() + bucket.list_name.slice(1)
                   )}
-                </div>
-                <p className="font-poppins font-semibold text-[16px] text-[#212626] text-left">
-                  {bucket.list_name}
                 </p>
-                </div>
+              </div>
               </div>
             ))}
           </div>

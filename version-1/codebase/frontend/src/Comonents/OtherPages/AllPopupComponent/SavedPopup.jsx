@@ -25,18 +25,11 @@ import {
   likeUnlikeStory,
 } from "../../../redux/slices/postSlice";
 
-const SavedPopup = ({post_id, isOpen, onClose }) => {
+const SavedPopup = ({post_id, isOpen, onClose,openBucketPopup}) => {
   const dispatch = useDispatch();
    const navigate = useNavigate();
   const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
-  const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
-  
-  const [postData, setPostData] = useState({
-      list_name:'',
-      buddies: [],
-      buddies_id: [],
-      post_id:''
-    });
+
   const {
     onlineFriends,
     allUsers,
@@ -136,7 +129,7 @@ const SavedPopup = ({post_id, isOpen, onClose }) => {
           }
         `}
     </style>
-    <div className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50 bg-[rgba(0,0,0,0.15)]">
+    <div className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50 bg-[rgba(0,0,0,0.40)]">
       <div className="w-[480px] max-h-[90vh] bg-white border border-gray-200 shadow-lg rounded-3xl p-3 px-7 overflow-hidden">
         {/* Popup Header */}
         <div className="flex justify-between items-center mb-2 border-b border-[#869E9D] py-2 sticky top-0 bg-white z-10">
@@ -196,19 +189,9 @@ const SavedPopup = ({post_id, isOpen, onClose }) => {
             <div className="mb-4 space-y-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <button onClick={() => setIsCreatePostPopup(true)} className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
+                  <button onClick={() => openBucketPopup()} className="text-white bg-[#1DB2AA] w-[48px] h-[48px] mr-2 rounded-[4px] font-bold text-lg">
                     <span style={{ fontSize: "35px" }}>&#43;</span>
                   </button>
-                  {isCreatePostPopup && (
-                    <CreateBucketListPopup
-                      post_id={post_id}
-                      isOpen={isCreatePostPopup}
-                      onClose={() => setIsCreatePostPopup(false)}
-                      openPostDetail={() => setIsPostDetailPopup(true)}
-                      postData={postData}
-                      setPostData={setPostData}
-                    />
-                  )}
                   <div>
                     <h2 className="font-inter font-medium text-[16px] text-[#212626] text-left">
                       Create New Bucket List

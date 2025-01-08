@@ -227,7 +227,7 @@ const handleBuddyRemove = async(buddyId) => {
                       profile?.is_buddies === 0
                         ? "bg-[#1DB2AA] text-white"
                         : "bg-[#F0F7F7] text-[#667877]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                     // onClick={profile?.is_buddies === 1 ? () => handleBuddyRemove(profile?.id) : () => handleAddBuddy(profile?.id)}
                     onClick={
                       profile?.is_buddies === 1
@@ -254,7 +254,7 @@ const handleBuddyRemove = async(buddyId) => {
                       profile?.is_mutual === 0
                         ? "bg-[#1DB2AA] text-white"
                         : "bg-[#F0F7F7] text-[#667877]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                     // onClick={profile.is_mutual === 1 ? () => handleFollowUnfollow(profile?.id) : () =>handleFollowUnfollowForFollowing(profile?.id) }
                     onClick={
                       profile.is_mutual === 1
@@ -285,7 +285,7 @@ const handleBuddyRemove = async(buddyId) => {
                       profile?.is_buddies === 0
                         ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                         : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                     onClick={profile?.is_buddies === 1 ? () => handleBuddyRemove(profile?.id) : () => handleAddBuddy(profile?.id)}
                   >
                     {profile?.is_buddies === 1 ? "Added" : "Add as Buddy"}
@@ -296,7 +296,7 @@ const handleBuddyRemove = async(buddyId) => {
                       profile?.is_mutual === 0
                         ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                         : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
-                    }`}
+                    } hover:bg-[#2DC6BE] hover:text-white`}
                   >
                     {profile?.is_mutual === 1 ? "Following" : "Follow"}
                   </button>

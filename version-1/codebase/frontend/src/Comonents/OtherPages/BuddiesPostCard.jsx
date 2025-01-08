@@ -92,6 +92,7 @@ const BuddiesPostCard = () => {
   };
 
   const handleFollowUnfollow = async (followeeID) => {
+    console.log("===followeeID===>", followeeID);
     try {
       // const followUnfollowResponse = await dispatch(followUnfollow(followeeID)).unwrap();
       const followUnfollowResponse = await dispatch(
@@ -225,7 +226,7 @@ const BuddiesPostCard = () => {
                         profile?.is_buddies === 0
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       // onClick={
                       //   profile?.is_buddies === 1
                       //     ? () => handleBuddyRemove(profile?.id)
@@ -253,7 +254,7 @@ const BuddiesPostCard = () => {
                         profile?.is_followers === 0
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       // onClick={() => handleFollowUnfollow(profile?.id)}
                       onClick={() => {
                         if (profile?.is_followers === 1) {

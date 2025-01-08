@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Boy1 from "../../../assets/headerIcon/boy1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -31,6 +31,7 @@ import noto_fire from "../../../assets/noto_fire.png";
 import face_smile from "../../../assets/face_smile.png";
 import Send from "../../../assets/Send.png";
 import trash from "../../../assets/trash.png";
+import reportIcon from "../../../assets/report-icon.svg";
 import alert from "../../../assets/alert.png";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -44,6 +45,7 @@ import {
   commentOnPost,
   commentOnReply,
   deleteCommentByPostOwner,
+  deletePost,
   deleteReplyByPostOwner,
   editComment,
   editReply,
@@ -58,6 +60,8 @@ import EmojiPicker from "emoji-picker-react";
 import "./AllPopupPage.css";
 import SuccessError from "../SuccessError";
 import SharePopup from "./SharePopup";
+import ShowBadgeIcon from "../ShowBadgeIcons";
+import { Link } from "react-router-dom";
 
 const CommentPopup = ({ isOpen, onClose, postId }) => {
   const dispatch = useDispatch();
@@ -83,6 +87,10 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   const [filteredSuggestionsForReply, setFilteredSuggestionsForReply] =
     useState([]);
 
+  const [isMoreOptionPost, setIsMoreOptionPost] = useState(false);
+  const [isotherDataVisible, setIsotherDataVisible] = useState(false);
+  const popupRef = useRef(null);
+
   /* for editing comment */
   const [openDropdownEditId, setOpenDropdownEditId] = useState(null);
   const [EditInputVal, setEditInputVal] = useState("");
@@ -91,7 +99,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   /* for editing reply */
   const [EditReplyInputVal, setEditReplyInputVal] = useState("");
   const [openDropdownReplyEditId, setOpenDropdownReplyEditId] = useState(null);
-  const [showEmojiPickerForReplyEdit, setShowEmojiPickerForReplyEdit] = useState(false);
+  const [showEmojiPickerForReplyEdit, setShowEmojiPickerForReplyEdit] =
+    useState(false);
 
   // to show share popup
   const [activePostId, setActivePostId] = useState(null);
@@ -154,7 +163,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   /* handle reply on reply click */
   const handleReplyToReplyClick = (replyId) => {
-    console.log("====replyId===>", replyId);
+    // console.log("====replyId===>", replyId);
     setReplyToReplyId(replyToReplyId === replyId ? null : replyId);
   };
 
@@ -279,7 +288,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
           // handleFlashMessage(commentResult.message, 'success');
           await dispatch(getCommentOnPost(postId));
           await dispatch(getAllPosts());
-          await dispatch(getUserPosts());   // will be using getAllPosts later
+          await dispatch(getUserPosts()); // will be using getAllPosts later
           setCommentInputVal("");
           setTaggedUsers([]);
         }
@@ -306,7 +315,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
         // await dispatch(getAllPosts());
         // handleFlashMessage(commentResult.message, 'success');
         await dispatch(getCommentOnPost(postId));
-        await dispatch(getUserPosts());  // will be using getAllPosts later
+        await dispatch(getUserPosts()); // will be using getAllPosts later
         await dispatch(getAllPosts());
       }
     } catch (error) {
@@ -360,17 +369,16 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   function isTimeDifferenceWithinFiveMinutes(timestamp) {
     const givenDate = new Date(timestamp);
     const currentDate = new Date();
-  
+
     // Calculate the absolute difference in milliseconds
     const timeDifference = Math.abs(givenDate - currentDate);
-  
+
     // Convert the difference to minutes
     const minutesDifference = Math.floor(timeDifference / (1000 * 60));
     // console.log("=====minutesDifference====>", minutesDifference)
     // Check if the difference is within 5 minutes
     return minutesDifference <= 5;
   }
-  
 
   // Sample data for the popup
   const postDetails = {
@@ -431,6 +439,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       ).unwrap();
       if (deleteResponse) {
         setOpenDropdownReplyId(null);
+        setReplyToCommentId(null)
         await dispatch(getCommentOnPost(postId));
         await dispatch(getUserPosts());
         handleFlashMessage(deleteResponse.message, "success");
@@ -655,21 +664,21 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   };
 
   /* to unblock an account */
-    const unBlockTheUser = async (unBlockId) => {
-      // console.log("=====unBlockId===>", unBlockId);
-      try {
-        const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
-        // console.log("===response===>", response);
-        if (response) {
-          setOpenDropdownId(null);
-          setOpenDropdownReplyId(null);
-          await dispatch(getCommentOnPost(postId));
-          await dispatch(getAllPosts());
-        }
-      } catch (error) {
-        console.log("===error in unBlockTheUser===>", error);
+  const unBlockTheUser = async (unBlockId) => {
+    // console.log("=====unBlockId===>", unBlockId);
+    try {
+      const response = await dispatch(unBlockAccount(unBlockId)).unwrap();
+      // console.log("===response===>", response);
+      if (response) {
+        setOpenDropdownId(null);
+        setOpenDropdownReplyId(null);
+        await dispatch(getCommentOnPost(postId));
+        await dispatch(getAllPosts());
       }
-    };
+    } catch (error) {
+      console.log("===error in unBlockTheUser===>", error);
+    }
+  };
 
   // console.log("===allposts===", allPosts)
 
@@ -696,6 +705,11 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     } catch (error) {
       console.log("==error in edit comment====>", error);
     }
+  };
+
+  /* when someone clicks on comment input */
+  const onClickOfComment = () => {
+    console.log("running");
   };
 
   /* to edit comment when done through enter button*/
@@ -731,7 +745,6 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   /* handle input change on edit input */
   const handleEditInputChange = (e) => {
     const { value } = e.target;
-
     setEditInputVal(value);
     // setEditInputVal((prevComment) => prevComment + value);
     const match = value.match(/@(\w*)$/); // Match word after @
@@ -819,6 +832,25 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     setShowEmojiPickerForReplyEdit(false);
   };
 
+  /* when clicked outside it will close the tagged buddies popup */
+  const handleOutsideClick = (event) => {
+    if (popupRef.current && !popupRef.current.contains(event.target)) {
+      setIsotherDataVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isotherDataVisible) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isotherDataVisible]);
+
   // Disable body scroll when popup is open
   useEffect(() => {
     if (isOpen) {
@@ -832,6 +864,37 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
   }, [isOpen]);
 
   // console.log("====activePostId===>", activePostId);
+
+  console.log("===allposts===>", allPosts && allPosts);
+
+  /* to open more option popup */
+  const openOptionPopup = () => {
+    setIsMoreOptionPost(true);
+  };
+
+  /* to open tagged buddies popup */
+  const togglePopup = (postId) => {
+    // setActivePostId((prevId) => (prevId === postId ? null : postId));
+    setIsotherDataVisible(!isotherDataVisible);
+  };
+
+  /* delete the post */
+  const deleteThisPost = async (post_id) => {
+    try {
+      const deleteResponse = await dispatch(deletePost(post_id)).unwrap();
+      // console.log("====deleteResponse===>", deleteResponse);
+      if (deleteResponse) {
+        await dispatch(getUserPosts());
+        await dispatch(getAllPosts());
+        setIsMoreOptionPost(false);
+        onClose();
+        handleFlashMessage("Post deleted successfully", "success");
+      }
+    } catch (error) {
+      handleFlashMessage("Something went wrong", "success");
+      console.log("===error in delete post api===>", error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -874,17 +937,153 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       (allPosts && allPosts[0]?.profile_image) || dummyUserImage
                     }
                     alt="Avatar"
-                    className="w-10 h-10 object-cover rounded-full"
+                    className="w-10 h-10 object-cover rounded-full "
                   />
                   <div>
-                    <h3 className="font-poppins font-semibold text-left text-[16px] text-[#212626]">
+                    <h3 className="font-poppins flex items-center gap-[5px] font-semibold text-left text-[16px] text-[#212626]">
                       {allPosts && allPosts[0]?.full_name}
+                      {allPosts && allPosts[0]?.buddies_id.length > 0 && (
+                        <>
+                          <span className="text-[#869E9D]">With</span>{" "}
+                          <span
+                            className="relative cursor-pointer"
+                            onClick={() => togglePopup(allPosts[0].id)}
+                          >
+                            {allPosts[0]?.buddies_id?.length} others{" "}
+                          </span>
+                          {/* 2 others Section start */}
+                          {isotherDataVisible && (
+                            <div
+                              ref={popupRef}
+                              className="absolute top-[135px] md:ml-24 mt-0 w-[416px] p-[14px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-20 flex flex-col gap-[34px] cursor-pointer"
+                            >
+                              {allPosts[0]?.buddies_id?.map((buddy) => {
+                                // console.log("===buddybadge", buddy?.badge?.split("-")[0])
+                                return (
+                                  <div
+                                    className="flex flex-col"
+                                    key={buddy?.id}
+                                  >
+                                    <Link
+                                      to={`/profile/${buddy?.user_name}/${buddy?.id}`}
+                                    >
+                                      <div className="flex items-center space-x-3">
+                                        <div>
+                                          <img
+                                            src={
+                                              buddy?.profile_image ||
+                                              dummyUserImage
+                                            }
+                                            alt="Image"
+                                            className="w-[44px] h-[44px] rounded-full"
+                                          />
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className="flex items-center gap-2">
+                                            <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
+                                              {buddy?.full_name}
+                                            </h5>
+                                            <div className="relative group">
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Solo Traveler" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() ==
+                                                "Luxury Traveler" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Adventurer" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Explorer" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Foodie" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
+                                              {buddy?.user_name}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </Link>
+                                    <div className="md:w-[338px] md:h-[32px] flex items-center justify-center rounded-full bg-[#E5FFFE] mt-3">
+                                      <p className="font-inter font-medium items-center text-center text-[12px] text-[#212626]">
+                                        {buddy?.badge?.split("-")[0]}{" "}
+                                        &nbsp;•&nbsp; 0 Trips &nbsp;•&nbsp;{" "}
+                                        {buddy?.followers_count || 0} followers
+                                        &nbsp;•&nbsp;{" "}
+                                        {buddy?.buddies_count || 0} Buddies
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {/* 2 others Section end */}
+                        </>
+                      )}
+                      {allPosts && (
+                        <>
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Solo Traveler" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Luxury Traveler" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Adventurer" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Explorer" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Foodie" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+                        </>
+                      )}
                     </h3>
                     <p className="-mt-1 font-inter font-medium text-left text-[12px] text-[#667877]">
-                      {/* {(allPosts && allPosts[0]?.badge?.split("-")[0].trim()) ||
-                        ""}{" "}
-                      • {allPosts && allPosts[0].location} */}
+                      
                       {allPosts && allPosts[0]?.badge.split("-")[0]}{" "}
+                      
                       {allPosts &&
                         allPosts[0]?.location &&
                         allPosts[0]?.badge.split("-")[0] &&
@@ -897,8 +1096,68 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                   <img
                     src={dotThree}
                     alt="dotThree"
-                    className="h-4 object-cover"
+                    className="h-4 object-cover cursor-pointer"
+                    onClick={() => openOptionPopup()}
                   />
+                  {isMoreOptionPost && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white border border-[#ddd] rounded-[8px] shadow-md w-[200px]">
+                        <div className="flex items-center justify-between p-2 px-4 ">
+                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                            More Options
+                          </h6>
+
+                          {/* Close Button (X) */}
+                          <button
+                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                            onClick={() => setIsMoreOptionPost(false)}
+                            aria-label="Close"
+                          >
+                            &#x2715;
+                          </button>
+                        </div>
+                        <ul>
+                          {allPosts &&
+                            allPosts[0]?.user_id === userDetails?.id && (
+                              <>
+                                <li
+                                  className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                  onClick={() => {
+                                    const isConfirmed = window.confirm(
+                                      "Are you sure you want to delete this post?"
+                                    );
+                                    if (isConfirmed) {
+                                      deleteThisPost(allPosts[0]?.id);
+                                    }
+                                  }}
+                                >
+                                  <img
+                                    src={trash}
+                                    alt="alert"
+                                    className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                  />
+                                  Delete Post
+                                </li>
+                              </>
+                            )}
+
+                          {allPosts &&
+                            allPosts[0]?.user_id !== userDetails?.id && (
+                              <>
+                                <li className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center cursor-pointer rounded-[8px] hover:bg-[#f0f0f0]">
+                                  <img
+                                    src={reportIcon}
+                                    alt="reportIcon"
+                                    className="w-[20px] h-[20px] cursor-pointer mr-2 "
+                                  />{" "}
+                                  <span className="-mt-1">Report Account</span>
+                                </li>
+                              </>
+                            )}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Top Fixed Section */}
@@ -991,14 +1250,14 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     </button>
 
                     {/* Dots */}
-                    <div className="flex justify-center mt-1">
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[68px] h-[16px] rounded-[16px] bg-[#FFFFFFBF]">
                       {mediaArray &&
                         mediaArray.length > 0 &&
                         mediaArray?.map((_, index) => (
                           <div
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className={`w-2 h-2 mx-1 rounded-full ${
+                            className={`w-2 h-2 mx-1 rounded-full transform transition-transform duration-300 ${
                               index === currentIndex
                                 ? "bg-[#2DC6BE]"
                                 : "bg-[#364045] hover:bg-[#2DC6BE]"
@@ -1006,6 +1265,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                           ></div>
                         ))}
                     </div>
+                    
                   </div>
                 )}
 
@@ -1038,12 +1298,18 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
               <div className="flex items-center justify-between">
                 <ul className="flex gap-2">
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_likes) || 0} {allPosts && allPosts[0]?.total_likes > 1 ? "Likes" : "Like"} &nbsp;
-                    &nbsp;{" "}
+                    {(allPosts && allPosts[0]?.total_likes) || 0}{" "}
+                    {allPosts && allPosts[0]?.total_likes > 1
+                      ? "Likes"
+                      : "Like"}{" "}
+                    &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_comments) || 0} {allPosts && allPosts[0]?.total_comments > 1 ? "comments" : "comment" }
+                    {(allPosts && allPosts[0]?.total_comments) || 0}{" "}
+                    {allPosts && allPosts[0]?.total_comments > 1
+                      ? "comments"
+                      : "comment"}
                     &nbsp; &nbsp;{" "}
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
@@ -1053,8 +1319,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     <div className="w-[4px] h-[4px] bg-[#869E9D] rounded-full"></div>
                   </li>
                   <li className="flex items-center font-inter font-medium text-[12px] text-[#667877] ">
-                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared
-                    &nbsp; &nbsp;
+                    {(allPosts && allPosts[0]?.total_shared) || 0} Shared &nbsp;
+                    &nbsp;
                   </li>
                 </ul>
                 <p className="font-inter font-medium text-[12px] text-[#667877] ">
@@ -1179,7 +1445,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                             <img
                               src={userPosts?.profile_image || dummyUserImage}
                               alt="User"
-                              className="w-9 h-8 rounded-full"
+                              className="w-9 h-8 rounded-full aspect-square object-cover"
                             />
 
                             {/* Content Section */}
@@ -1258,25 +1524,28 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                     </li> */}
 
                                           {userPosts?.user_id ===
-                                            userDetails?.id && isTimeDifferenceWithinFiveMinutes(userPosts?.created_at) && (
-                                            <li
-                                              className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                              onClick={() =>
-                                                editCommentPopUpOpen(
-                                                  userPosts?.id,
-                                                  userPosts?.user_id,
-                                                  userPosts?.content
-                                                )
-                                              }
-                                            >
-                                              <img
-                                                src={trash}
-                                                alt="alert"
-                                                className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                              />
-                                              Edit comment
-                                            </li>
-                                          )}
+                                            userDetails?.id &&
+                                            isTimeDifferenceWithinFiveMinutes(
+                                              userPosts?.created_at
+                                            ) && (
+                                              <li
+                                                className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                onClick={() =>
+                                                  editCommentPopUpOpen(
+                                                    userPosts?.id,
+                                                    userPosts?.user_id,
+                                                    userPosts?.content
+                                                  )
+                                                }
+                                              >
+                                                <img
+                                                  src={trash}
+                                                  alt="alert"
+                                                  className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                                />
+                                                Edit comment
+                                              </li>
+                                            )}
 
                                           {(userPosts?.post_owner_id ===
                                             userDetails?.id ||
@@ -1308,11 +1577,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                               //   blockTheUser(userPosts?.user_id)
                                               // }
                                               onClick={() => {
-                                                const isConfirmed = window.confirm(
-                                                  `Are you sure you want to ${userPosts?.is_blocked ? "unblock" : "block"} this user?`
-                                                );
+                                                const isConfirmed =
+                                                  window.confirm(
+                                                    `Are you sure you want to ${
+                                                      userPosts?.is_blocked
+                                                        ? "unblock"
+                                                        : "block"
+                                                    } this user?`
+                                                  );
                                                 if (isConfirmed) {
-                                                  userPosts?.is_blocked ? unBlockTheUser(userPosts?.user_id) : blockTheUser(userPosts?.user_id);
+                                                  userPosts?.is_blocked
+                                                    ? unBlockTheUser(
+                                                        userPosts?.user_id
+                                                      )
+                                                    : blockTheUser(
+                                                        userPosts?.user_id
+                                                      );
                                                 }
                                               }}
                                             >
@@ -1322,7 +1602,9 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                 className="w-[20px] h-[20px] cursor-pointer mr-2"
                                               />{" "}
                                               {/* Block Account */}
-                                              {userPosts?.is_blocked ? "Unblock Account" : "Block Account"}
+                                              {userPosts?.is_blocked
+                                                ? "Unblock Account"
+                                                : "Block Account"}
                                             </li>
                                           )}
                                         </ul>
@@ -1333,24 +1615,23 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   {openDropdownEditId === userPosts?.id && (
                                     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                                       <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
-                                        
-                                          <div className="flex items-center justify-between p-2 px-4 ">
-                                            <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
-                                              Edit Comment
-                                            </h6>
+                                        <div className="flex items-center justify-between p-2 px-4 ">
+                                          <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
+                                            Edit Comment
+                                          </h6>
 
-                                            {/* Close Button (X) */}
-                                            <button
-                                              className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
-                                              onClick={() =>
-                                                setOpenDropdownEditId(null)
-                                              }
-                                              aria-label="Close"
-                                            >
-                                              &#x2715;
-                                            </button>
-                                          </div>
-                                       
+                                          {/* Close Button (X) */}
+                                          <button
+                                            className="hover:text-[#2DC6BE] font-poppins font-semibold text-[16px] text-[#212626]"
+                                            onClick={() =>
+                                              setOpenDropdownEditId(null)
+                                            }
+                                            aria-label="Close"
+                                          >
+                                            &#x2715;
+                                          </button>
+                                        </div>
+
                                         <ul>
                                           {userPosts?.user_id ===
                                             userDetails?.id && (
@@ -1511,7 +1792,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                           dummyUserImage
                                         }
                                         alt="User"
-                                        className="w-8 h-8 rounded-full"
+                                        className="w-8 h-8 rounded-full object-cover aspect-square"
                                       />
 
                                       <div className="w-full flex flex-col space-y-2">
@@ -1546,7 +1827,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                             {openDropdownReplyId ===
                                               userReply?.reply_id && (
                                               <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                                <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                                                <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
                                                   <div className="flex items-center justify-between p-2 px-4 ">
                                                     <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
                                                       More Options
@@ -1591,25 +1872,28 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                     </li> */}
 
                                                     {userReply?.user_id ===
-                                                      userDetails?.id && isTimeDifferenceWithinFiveMinutes(userReply?.reply_created_at) && (
-                                                      <li
-                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                        onClick={() =>
-                                                          editReplyPopUpOpen(
-                                                            userReply?.reply_id,
-                                                            userReply?.user_id,
-                                                            userReply?.reply_content
-                                                          )
-                                                        }
-                                                      >
-                                                        <img
-                                                          src={trash}
-                                                          alt="alert"
-                                                          className="w-[20px] h-[20px] cursor-pointer mr-2"
-                                                        />
-                                                        Edit Reply
-                                                      </li>
-                                                    )}
+                                                      userDetails?.id &&
+                                                      isTimeDifferenceWithinFiveMinutes(
+                                                        userReply?.reply_created_at
+                                                      ) && (
+                                                        <li
+                                                          className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
+                                                          onClick={() =>
+                                                            editReplyPopUpOpen(
+                                                              userReply?.reply_id,
+                                                              userReply?.user_id,
+                                                              userReply?.reply_content
+                                                            )
+                                                          }
+                                                        >
+                                                          <img
+                                                            src={trash}
+                                                            alt="alert"
+                                                            className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                                          />
+                                                          Edit Reply
+                                                        </li>
+                                                      )}
 
                                                     {(userReply?.post_owner_id ===
                                                       userDetails?.id ||
@@ -1628,7 +1912,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                           alt="alert"
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />
-                                                        Delete comment
+                                                        Delete Reply
                                                       </li>
                                                     )}
 
@@ -1642,11 +1926,22 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                         //   )
                                                         // }
                                                         onClick={() => {
-                                                          const isConfirmed = window.confirm(
-                                                            `Are you sure you want to ${userReply?.is_blocked ? "unblock" : "block"} this user?`
-                                                          );
+                                                          const isConfirmed =
+                                                            window.confirm(
+                                                              `Are you sure you want to ${
+                                                                userReply?.is_blocked
+                                                                  ? "unblock"
+                                                                  : "block"
+                                                              } this user?`
+                                                            );
                                                           if (isConfirmed) {
-                                                            userReply?.is_blocked ? unBlockTheUser(userReply?.user_id) : blockTheUser(userReply?.user_id);
+                                                            userReply?.is_blocked
+                                                              ? unBlockTheUser(
+                                                                  userReply?.user_id
+                                                                )
+                                                              : blockTheUser(
+                                                                  userReply?.user_id
+                                                                );
                                                           }
                                                         }}
                                                       >
@@ -1656,7 +1951,9 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                           className="w-[20px] h-[20px] cursor-pointer mr-2"
                                                         />{" "}
                                                         {/* Block Account */}
-                                                        {userReply?.is_blocked ? "Unblock Account" : "Block Account"}
+                                                        {userReply?.is_blocked
+                                                          ? "Unblock Account"
+                                                          : "Block Account"}
                                                       </li>
                                                     )}
                                                   </ul>
@@ -1690,9 +1987,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                   <ul>
                                                     {userReply?.user_id ===
                                                       userDetails?.id && (
-                                                      <li
-                                                        className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                                                      >
+                                                      <li className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]">
                                                         {/* Edit comment */}
 
                                                         <div className="relative">
@@ -1731,7 +2026,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                                               )
                                                             }
                                                             value={
-                                                              EditReplyInputVal || ""
+                                                              EditReplyInputVal ||
+                                                              ""
                                                             }
                                                             // onChange={(e) => setCommentInputVal(e.target.value)}
                                                             onChange={(e) =>
@@ -1907,7 +2203,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                   dummyUserImage
                                 }
                                 alt="Profile"
-                                className="w-10 h-10 rounded-full"
+                                className="w-10 h-10 rounded-full aspect-square object-cover"
                               />
 
                               <div className="relative">
@@ -2036,7 +2332,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       dummyUserImage
                     }
                     alt="Profile"
-                    className="w-10 h-9 rounded-full object-cover"
+                    className="w-10 h-9 rounded-full object-cover "
                   />
 
                   {/* <div>
@@ -2087,6 +2383,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                       value={commentInputVal}
                       // onChange={(e) => setCommentInputVal(e.target.value)}
                       onChange={(e) => handleCommentInputChange(e)}
+                      onClick={() => setReplyToCommentId(null)}
                       className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500 ml-2 text-sm"
                     />
 

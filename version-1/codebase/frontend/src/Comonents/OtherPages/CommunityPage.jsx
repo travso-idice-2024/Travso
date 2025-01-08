@@ -65,6 +65,7 @@ import { getAllTags } from "../../redux/slices/tagSlices";
 import SuccessError from "./SuccessError";
 import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
 import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
+import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();
@@ -113,6 +114,15 @@ const CommunityPage = () => {
   const [isEditPostPopup, setIsEditPostPopup] = useState(false);
   const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
 
+  /* bucket popup */
+  const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
+  const [bucketpostData, setbucketpostData] = useState({
+    list_name:'',
+    buddies: [],
+    buddies_id: [],
+    post_id:''
+  });
+
   /* used when we are editing any post */
   const [editPostData, setEditPostData] = useState({
     description: "",
@@ -121,7 +131,7 @@ const CommunityPage = () => {
     tags: [],
     media_url: [],
     is_public: true,
-    buddies_id:[],
+    buddies_id: [],
     post_id: "",
   });
 
@@ -572,7 +582,6 @@ const CommunityPage = () => {
   // };
 
   const handleStoryReplyInputChange = (e, storyId) => {
-
     const { value } = e.target;
     setStoryReply((prev) => ({
       ...prev,
@@ -628,7 +637,13 @@ const CommunityPage = () => {
   //   }
   // };
 
-  const handleStoryCommentEnter = async (e, storyId, storyOwnerId, imageUrl, userFullName) => {
+  const handleStoryCommentEnter = async (
+    e,
+    storyId,
+    storyOwnerId,
+    imageUrl,
+    userFullName
+  ) => {
     // console.log("=======storyOwnerId===>", storyOwnerId);
     if (e.key === "Enter" && !e.shiftKey) {
       try {
@@ -642,7 +657,7 @@ const CommunityPage = () => {
           reply_text: storyReply[storyId], // Use the ref value
           story_owner_id: storyOwnerId,
           image_url: imageUrl,
-          user_full_name: userFullName
+          user_full_name: userFullName,
         };
 
         const replyResponse = await dispatch(
@@ -825,35 +840,34 @@ const CommunityPage = () => {
   };
 
   /* to update a post */
-  const handlePostUpdate = async() => {
+  const handlePostUpdate = async () => {
     console.log("==handlePostUpdate called==", editPostData);
     // return;
-      try {
-        const updateResult = await dispatch(updatePost(editPostData)).unwrap();
-        // console.log("======updateResult=====>", updateResult);
-        if(updateResult) {
-          await dispatch(getAllPosts());
-          await dispatch(getUserPosts());
-          setEditPostData({
-            description: "",
-            location: "",
-            buddies: [],
-            tags: [],
-            media_url: [],
-            is_public: true,
-            buddies_id:[],
-            post_id: ""
-          })
-          setIsEditPreviewOpen(false);
-          setIsPostLoaderOpen(true);
-          handleFlashMessage("Post Updated Successfully", "success");
-        }
-        
-      } catch (error) {
-        console.log("===error in handlePostUpdate===>", error);
-        handleFlashMessage("Something went wrong", "error");
+    try {
+      const updateResult = await dispatch(updatePost(editPostData)).unwrap();
+      // console.log("======updateResult=====>", updateResult);
+      if (updateResult) {
+        await dispatch(getAllPosts());
+        await dispatch(getUserPosts());
+        setEditPostData({
+          description: "",
+          location: "",
+          buddies: [],
+          tags: [],
+          media_url: [],
+          is_public: true,
+          buddies_id: [],
+          post_id: "",
+        });
+        setIsEditPreviewOpen(false);
+        setIsPostLoaderOpen(true);
+        handleFlashMessage("Post Updated Successfully", "success");
       }
+    } catch (error) {
+      console.log("===error in handlePostUpdate===>", error);
+      handleFlashMessage("Something went wrong", "error");
     }
+  };
 
   /* to open popup for edit post */
   const openEditPostPopup = async (postFullData) => {
@@ -866,10 +880,19 @@ const CommunityPage = () => {
       media_url: postFullData?.media_url || [],
       post_id: postFullData?.id,
       buddies_id: postFullData?.my_buddies_id || [],
-      is_public: postFullData?.is_public
+      is_public: postFullData?.is_public,
     });
     await setIsEditPostPopup(true);
   };
+
+  const openBucketPopup = ()=>{
+    setIsCreateBucketPopup(true);
+  }
+
+  const onCloseBucket =()=>{
+    setIsCreateBucketPopup(false);
+    setIsCommentWithSavedPopup(false);
+  }
 
   return (
     <>
@@ -1132,9 +1155,22 @@ const CommunityPage = () => {
                           <div>
                             <div className="flex items-center space-x-2">
                               <div className="flex items-center">
-                                <h3 className="font-poppins font-semibold text-left text-[20px] text-[#212626]">
-                                  {post?.full_name}
-                                </h3>
+                                {post?.user_id !== userDetails?.id ? (
+                                  <>
+                                    <Link to={`/profile/${post?.user_name}/${post?.user_id}`}>
+                                      <h3 className="font-poppins font-semibold text-left text-[20px] text-[#212626]">
+                                        {post?.full_name}
+                                      </h3>
+                                    </Link>
+                                  </>
+                                ) : (
+                                  <>
+                                    <h3 className="font-poppins font-semibold text-left text-[20px] text-[#212626]">
+                                      {post?.full_name}
+                                    </h3>
+                                  </>
+                                )}
+
                                 <div>
                                   {post?.buddies_id.length > 0 && (
                                     <div className="">
@@ -1160,87 +1196,89 @@ const CommunityPage = () => {
                                                   className="flex flex-col"
                                                   key={buddy?.id}
                                                 >
-                                                  <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
-                                                  <div className="flex items-center space-x-3">
-                                                    <div>
-                                                      <img
-                                                        src={
-                                                          buddy?.profile_image ||
-                                                          dummyUserImage
-                                                        }
-                                                        alt="Image"
-                                                        className="w-[44px] h-[44px] rounded-full"
-                                                      />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                      <div className="flex items-center gap-2">
-                                                        <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
-                                                          {buddy?.full_name}
-                                                        </h5>
-                                                        <div className="relative group">
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Solo Traveler" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                  <Link
+                                                    to={`/profile/${buddy?.user_name}/${buddy?.id}`}
+                                                  >
+                                                    <div className="flex items-center space-x-3">
+                                                      <div>
+                                                        <img
+                                                          src={
+                                                            buddy?.profile_image ||
+                                                            dummyUserImage
+                                                          }
+                                                          alt="Image"
+                                                          className="w-[44px] h-[44px] rounded-full"
+                                                        />
+                                                      </div>
+                                                      <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                          <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
+                                                            {buddy?.full_name}
+                                                          </h5>
+                                                          <div className="relative group">
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Solo Traveler" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Luxury Traveler" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Luxury Traveler" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Adventurer" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Adventurer" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Explorer" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Explorer" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
 
-                                                          {buddy?.badge
-                                                            ?.split("-")[0]
-                                                            ?.trim() ==
-                                                            "Foodie" && (
-                                                            <ShowBadgeIcon
-                                                              badge={
-                                                                buddy?.badge
-                                                              }
-                                                            />
-                                                          )}
+                                                            {buddy?.badge
+                                                              ?.split("-")[0]
+                                                              ?.trim() ==
+                                                              "Foodie" && (
+                                                              <ShowBadgeIcon
+                                                                badge={
+                                                                  buddy?.badge
+                                                                }
+                                                              />
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                        <div>
+                                                          <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
+                                                            {buddy?.user_name}
+                                                          </p>
                                                         </div>
                                                       </div>
-                                                      <div>
-                                                        <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
-                                                          {buddy?.user_name}
-                                                        </p>
-                                                      </div>
                                                     </div>
-                                                  </div>
                                                   </Link>
                                                   <div className="md:w-[338px] md:h-[32px] flex items-center justify-center rounded-full bg-[#E5FFFE] mt-3">
                                                     <p className="font-inter font-medium items-center text-center text-[12px] text-[#212626]">
@@ -1585,7 +1623,7 @@ const CommunityPage = () => {
                             onClick={toggleFullText}
                             className="text-[#2DC6BE] cursor-pointer"
                           >
-                            {post?.description?.length < 250
+                            {post?.description?.length < 170
                               ? ""
                               : isFullTextVisible
                               ? " See less"
@@ -1723,15 +1761,38 @@ const CommunityPage = () => {
                           />
                         )}
 
-                        {activePostId === post?.id &&
+                        {/* {activePostId === post?.id &&
+                          isCommentWithSavedPopup && (
+                            <SavedPopup
+                              post_id={post.id}
+                              isOpen={isCommentWithSavedPopup}
+                              onClose={() => handleBucketSavedPopupClose()}
+                            />
+                          )} */}
+
+{activePostId === post?.id &&
                           isCommentWithSavedPopup && (
                             <SavedPopup
                               post_id={post.id}
                               isOpen={isCommentWithSavedPopup}
                               // onClose={() => setIsCommentWithSavedPopup(false)}
                               onClose={() => handleBucketSavedPopupClose()}
+                              openBucketPopup={openBucketPopup}
                             />
                           )}
+
+                        {isCreateBucketPopup && (
+                          <CreateBucketListPopup
+                            post_id={post.id}
+                            isOpen={isCreateBucketPopup}
+                            onCloseBucket={onCloseBucket}
+                            //openPostDetail={() => setIsPostDetailPopup(true)}
+                            bucketpostData={bucketpostData}
+                            setbucketpostData={setbucketpostData}
+                    
+                          />
+                        )}
+
                       </div>
                       {/* Bottom Fixed Section */}
                     </div>

@@ -307,7 +307,7 @@ const FollowingPostCard = () => {
                         profile?.is_buddies === 0
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       // onClick={
                       //   profile?.is_buddies === 1
                       //     ? () => handleBuddyRemove(profile?.id)
@@ -337,7 +337,7 @@ const FollowingPostCard = () => {
                         profile?.is_mutual === 0
                           ? "bg-[#1DB2AA] text-white"
                           : "bg-[#F0F7F7] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       // onClick={() =>
                       //   handleFollowUnfollowForFollowing(profile.id)
                       // }
@@ -368,7 +368,7 @@ const FollowingPostCard = () => {
                         profile?.is_buddies === 0
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       // onClick={
                       //   profile?.is_buddies === 1
                       //     ? () => handleBuddyRemove(profile?.id)
@@ -398,7 +398,7 @@ const FollowingPostCard = () => {
                         profile?.is_mutual === 0
                           ? "bg-gradient-to-r from-[#1DB2AA] to-[#bae53dcc] text-white"
                           : "bg-gradient-to-r from-[#1db2aae0] to-[#bae53d6b] text-[#667877]"
-                      }`}
+                      } hover:bg-[#2DC6BE] hover:text-white`}
                       onClick={() => {
                         if (profile?.is_mutual === 1) {
                           const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
