@@ -33,6 +33,7 @@ import {
   unBlockAccount,
 } from "../../redux/slices/authSlice";
 import CreateaPostPopup from "./AllPopupComponent/CreateaPostPopup";
+import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 import PostDetailPopup from "./AllPopupComponent/PostDetailPopup";
 import {
   addCountOnStoryView,
@@ -57,6 +58,7 @@ import ShareStoryPopup from "./AllPopupComponent/ShareStoryPopup";
 import StoryPage from "./AllStoriesPages/StoryPage";
 import StoryViewPage from "./AllStoriesPages/StoryViewPage";
 import StoryViewPageUser from "./AllStoriesPages/StoryViewPageUser";
+import StoryUsernewPage from "./AllStoriesPages/StoryUsernewPage";
 import ShowBadgeIcon from "./ShowBadgeIcons";
 import { Link, useNavigate } from "react-router-dom";
 import StoryLoading from "./AllStoriesPages/StoryLoading";
@@ -79,6 +81,7 @@ const CommunityPage = () => {
   const [currentIndices, setCurrentIndices] = useState({}); // to track slider effect on post images
   const [isFullTextVisible, setIsFullTextVisible] = useState(false);
   const [isCreatePostPopup, setIsCreatePostPopup] = useState(false);
+
   const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
   const [isPostLoaderOpen, setIsPostLoaderOpen] = useState(false);
   const [flashMessage, setFlashMessage] = useState("");
@@ -136,6 +139,51 @@ const CommunityPage = () => {
   });
 
   const popupRef = useRef(null);
+
+  //----------- User Story View Function Start -------------//
+
+  const mediaArray = [
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLsD-XWlwUFF7TM7RSk7VSzV2BcYZrgdiejw&s",
+    },
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOftfCmQM2Q4Jk1EJn5Ah9zMr8I1AwLrCPZFysn35ACYpJ9fWP3guaZvrt1Qg0pTdqruc&usqp=CAU",
+    },
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOftfCmQM2Q4Jk1EJn5Ah9zMr8I1AwLrCPZFysn35ACYpJ9fWP3guaZvrt1Qg0pTdqruc&usqp=CAU",
+    },
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQW_fTAnI1sCjwqEeVSXZAsd2yzBmNB235YJ4TigYLzFl44jxBaotdsXozHgYJqATQHzA&usqp=CAU",
+    },
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpcio1oteDC0eKlgfcp5ee2Wa7XEPWwr7YSsiIBXnBexPphBI6Lsis7Nnt6Io970Hq3rM&usqp=CAU",
+    },
+    {
+      type: "image",
+      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ2qKufz3TlYXxXFq-K1cupXrYSjb0SAtqO79641AHGRVJxTtTJ3UwqIDFGAfY8aKUGQI&usqp=CAU",
+    },
+  ];
+
+  const [userStoryView, setUserStoryView] = useState(false);
+  const [currentUserStoryIndex, setCurrentUserStoryIndex] = useState(0);
+  const handleUserStoryNext = () => {
+    if (currentUserStoryIndex < mediaArray.length - 1) {
+      setCurrentUserStoryIndex(currentUserStoryIndex + 1);
+    }
+  };
+
+  const handleUserStoryPrevious = () => {
+    if (currentUserStoryIndex > 0) {
+      setCurrentUserStoryIndex(currentUserStoryIndex - 1);
+    }
+  };
+
+  //----------- User Story View Function End -------------//
 
   const handleOutsideClick = (event) => {
     if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -233,6 +281,7 @@ const CommunityPage = () => {
     // setCurrentBuddiesReelIndex(itemId-1);
     setCurrentBuddiesReelIndex(index + 1);
     setPopupBuddiesReelVisible(true); // Show the popup
+    setUserStoryView(true);
   };
 
   /* to close story popup */
@@ -891,7 +940,7 @@ const CommunityPage = () => {
 
   const onCloseBucket =()=>{
     setIsCreateBucketPopup(false);
-    setIsCommentWithSavedPopup(false);
+    setIsCommentWithSavedPopup(true);
   }
 
   return (
@@ -1043,11 +1092,38 @@ const CommunityPage = () => {
                   //    handleBuddiesStoryPrevious = {handleBuddiesStoryPrevious}
                   //    handleBuddiesStoryNext = {handleBuddiesStoryNext}
                   // />
-                  <StoryViewPageUser
+                  // <StoryViewPageUser
+                  //   closeBuddiesStoryPopup={closeBuddiesStoryPopup}
+                  //   currentBuddiesReelIndex={currentBuddiesReelIndex}
+                  //   isShowvisibleStoryViewID={isShowvisibleStoryViewID}
+                  //   storyData={activeStories[currentBuddiesReelIndex].stories}
+                  //   handleBuddiesStoryPrevious={handleBuddiesStoryPrevious}
+                  //   handleBuddiesStoryNext={handleBuddiesStoryNext}
+                  //   handleStoryCommentEnter={handleStoryCommentEnter}
+                  //   handleStoryReplyInputChange={handleStoryReplyInputChange}
+                  //   storyReply={storyReply}
+                  //   handleShareStoryPopupClose={handleShareStoryPopupClose}
+                  //   handleEmojiSelectUserID={handleEmojiSelectUserID}
+                  //   activeEmojiStoryId={activeEmojiStoryId}
+                  //   showEmojiPickerStory={showEmojiPickerStory}
+                  //   handleEmojiClickStory={handleEmojiClickStory}
+                  //   handleLikeUnlikeStory={handleLikeUnlikeStory}
+                  //   increaseViewersCount={increaseViewersCount}
+                  //   showEmojiPicker={showEmojiPicker}
+                  //   handleCloseEmojiPicker={handleCloseEmojiPicker}
+                  // />
+                  <StoryUsernewPage
+                    isOpen={userStoryView}
+                    onClose={() => setUserStoryView(false)}
+                    handleUserStoryNext={handleUserStoryNext}
+                    handleUserStoryPrevious={handleUserStoryPrevious}
+                    mediaArray={mediaArray}
+                    currentUserStoryIndex={currentUserStoryIndex}
+                    storyData={activeStories[currentBuddiesReelIndex].stories}
+
                     closeBuddiesStoryPopup={closeBuddiesStoryPopup}
                     currentBuddiesReelIndex={currentBuddiesReelIndex}
                     isShowvisibleStoryViewID={isShowvisibleStoryViewID}
-                    storyData={activeStories[currentBuddiesReelIndex].stories}
                     handleBuddiesStoryPrevious={handleBuddiesStoryPrevious}
                     handleBuddiesStoryNext={handleBuddiesStoryNext}
                     handleStoryCommentEnter={handleStoryCommentEnter}
@@ -1778,6 +1854,7 @@ const CommunityPage = () => {
                               // onClose={() => setIsCommentWithSavedPopup(false)}
                               onClose={() => handleBucketSavedPopupClose()}
                               openBucketPopup={openBucketPopup}
+                               setbucketpostData={setbucketpostData}
                             />
                           )}
 
@@ -1792,7 +1869,6 @@ const CommunityPage = () => {
                     
                           />
                         )}
-
                       </div>
                       {/* Bottom Fixed Section */}
                     </div>

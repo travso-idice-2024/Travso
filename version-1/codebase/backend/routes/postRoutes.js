@@ -36,7 +36,9 @@ const {
     editComment, 
     editReply, 
     deletePost, 
-    updatePost 
+    updatePost ,
+    bucketListWithBuddies,
+    bucketListWithoutBuddies
   } = require('../controllers/postController');
   
 const verifyToken = require("../utils/verifyToken");
@@ -87,6 +89,8 @@ router.post("/edit-comment", verifyToken, editComment );
 router.post("/edit-reply", verifyToken, editReply );
 router.post("/delete-post/:post_id", verifyToken, deletePost );
 router.post("/update-post/:post_id", verifyToken, updatePost );
+router.get('/getAllBucketListwithBuddies', verifyToken,bucketListWithBuddies);
+router.get('/getAllBucketListwithoutBuddies', verifyToken,bucketListWithoutBuddies );
 
 
 module.exports = router;

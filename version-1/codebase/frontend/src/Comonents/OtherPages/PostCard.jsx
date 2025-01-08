@@ -72,16 +72,16 @@ const PostCard = () => {
   const [isEditPostPopup, setIsEditPostPopup] = useState(false);
   const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
 
-  /* for bucket list */
-  const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
+   const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
 
    /**create bucket post data */
-    const [bucketpostData, setbucketpostData] = useState({
-          list_name:'',
-          buddies: [],
-          buddies_id: [],
-          post_id:''
-    });
+      const [bucketpostData, setbucketpostData] = useState({
+           list_name:'',
+           buddies: [],
+           buddies_id: [],
+           post_id:''
+         });
+   
 
   /* used when we are editing any post */
   const [editPostData, setEditPostData] = useState({
@@ -479,16 +479,15 @@ const PostCard = () => {
     }
   };
 
+  // console.log("====openpostpopupid=====", openPostPopupId);
   const openBucketPopup = ()=>{
     setIsCreateBucketPopup(true);
   }
 
   const onCloseBucket =()=>{
     setIsCreateBucketPopup(false);
-    setIsCommentWithSavedPopup(false);
+    setIsCommentWithSavedPopup(true);
   }
-
-  // console.log("====openpostpopupid=====", openPostPopupId);
 
   return (
     <>
