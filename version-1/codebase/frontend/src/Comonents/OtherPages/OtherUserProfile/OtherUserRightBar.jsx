@@ -25,43 +25,37 @@ const OtherUserRightBar = ({ userName, userId }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
+  console.log("======location.pathname====>", location.pathname);
+
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
 
   // console.log("======otherUserData====>", otherUserData);
 
-  const {
-    userBuddies,
-    user: userDetails,
-    userPosts,
-    userFollowers,
-    toWhomUserFollows,
-  } = useSelector((state) => state.auth);
-
   useEffect(() => {
-    console.log("useeffect on rightbar");
+    // console.log("useeffect on rightbar");
   }, [dispatch]);
 
   useEffect(() => {
     // Update the state based on the current route
-    if (location.pathname === "/buddiespage") {
+    if (location.pathname == `/profile/${userName}/${userId}/buddiesdata`) {
       setHideBuddiesList(true);
     } else {
       setHideBuddiesList(false);
     }
 
-    if (location.pathname === "/followers") {
+    if (location.pathname === `/profile/${userName}/${userId}/followersdata`) {
       setHideFollowerList(true);
     } else {
       setHideFollowerList(false);
     }
 
-    if (location.pathname === "/following") {
+    if (location.pathname === `/profile/${userName}/${userId}/followingsdata`) {
       setHideFollowingList(true);
     } else {
       setHideFollowingList(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, userId, userName]);
 
   // State to toggle visibility of more posts
   const [showAllbuddies, setShowAllbuddies] = useState(false);
@@ -72,6 +66,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
   const [hideBuddiesList, setHideBuddiesList] = useState(false);
   const [hideFollowerList, setHideFollowerList] = useState(false);
   const [hideFollowingList, setHideFollowingList] = useState(false);
+
+  console.table({
+    hideBuddiesList,
+    hideFollowerList,
+    hideFollowingList
+  })
 
   /* show user buddies */
   const visiblePostsbuddies = showAllbuddies
@@ -102,15 +102,15 @@ const OtherUserRightBar = ({ userName, userId }) => {
 
   const handleAllBuddiesList = () => {
     setHideBuddiesList(true);
-    navigate("/buddiespage");
+    navigate(`/profile/${userName}/${userId}/buddiesdata`);
   };
 
   const handleAllFollowers = () => {
-    navigate("/followers");
+    navigate(`/profile/${userName}/${userId}/followersdata`);
   };
 
   const handleAllFollowing = () => {
-    navigate("/following");
+    navigate(`/profile/${userName}/${userId}/followingsdata`);
   };
 
   // to follow and unfollow a user in follower section
@@ -188,12 +188,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
               Buddies ({otherUserData ? otherUserData?.buddies?.length : "0"})
             </h2>
-            {/* <p
+            <p
               onClick={handleAllBuddiesList}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p> */}
+            </p>
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
@@ -209,7 +209,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
                   <Link to={`/profile/${buddy?.user_name}/${buddy?.buddies_id}`}>
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                        {buddy.full_name}
+                        {/* {buddy.full_name} */}
+                        {buddy.full_name
+                          ? buddy.full_name.length > 9
+                            ? `${buddy.full_name.slice(0, 9)}...`
+                            : `${buddy.full_name}`
+                          : ""}
                       </p>
                       <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                         {buddy.user_name
@@ -333,12 +338,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
               Followers ({otherUserData ? otherUserData?.followers?.length : "0"})
             </h2>
-            {/* <p
+            <p
               onClick={handleAllFollowers}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p> */}
+            </p>
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
@@ -357,7 +362,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
                   <Link to={`/profile/${follower?.user_name}/${follower?.follower_id}`}>
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                        {follower.full_name}
+                        {/* {follower.full_name} */}
+                        {follower.full_name
+                          ? follower.full_name.length > 9
+                            ? `${follower.full_name.slice(0, 9)}...`
+                            : `${follower.full_name}`
+                          : ""}
                       </p>
                       <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                         {follower.user_name
@@ -475,12 +485,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
             <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
               Following ({otherUserData ? otherUserData?.following?.length : "0"})
             </h2>
-            {/* <p
+            <p
               onClick={handleAllFollowing}
               className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
             >
               See All
-            </p> */}
+            </p>
           </div>
           {/* User List */}
           <div className="mt-4 space-y-4">
@@ -501,7 +511,12 @@ const OtherUserRightBar = ({ userName, userId }) => {
                   >
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                        {userFollowing.full_name}
+                        {/* {userFollowing.full_name} */}
+                        {userFollowing.full_name
+                          ? userFollowing.full_name.length > 9
+                            ? `${userFollowing.full_name.slice(0, 9)}...`
+                            : `${userFollowing.full_name}`
+                          : ""}
                       </p>
                       <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                         {userFollowing.user_name

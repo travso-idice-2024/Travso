@@ -162,17 +162,17 @@ async function sendOTP(req, res) {
     //     return res.status(404).json({ error: "Something went wrong while generating OTP" });
     //   }
 
-    // const result = await sendMobileOTP(user[0].otp, mobileNumber);
+    const result = await sendMobileOTP(user[0].otp, mobileNumber);
 
-    const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
-      &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
+    // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
+    //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
 
     // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=E2SpR20BBECJxogaiTLqGw&msisdn=${mobileNumber}&sid=SMSHUB
     //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
 
      
 
-          console.log("===otpResult====>", otpResult);
+          // console.log("===otpResult====>", otpResult);
 
     // if (result.success) {
     //   return res.status(200).json({ message: result.message });
@@ -1063,11 +1063,7 @@ async function getUserFollower(req, res) {
          SELECT 1
          FROM buddies b1
          WHERE b1.user_id = ? AND b1.buddies_id = u.id 
-        ) AND EXISTS(
-          SELECT 1
-          FROM buddies b2
-          WHERE b2.user_id = u.id AND buddies_id = ?
-         ) AS is_buddies
+        ) AS is_buddies
       FROM 
         followers f
       JOIN 
@@ -1077,7 +1073,7 @@ async function getUserFollower(req, res) {
       WHERE 
         f.followee_id = ?
       `,
-      [userId, userId, userId, userId]
+      [userId, userId, userId]
     );
 
     return res.status(200).json({
@@ -1830,7 +1826,7 @@ async function suggestions(req, res) {
       WHERE 
         u.id != ? -- Exclude the requesting user
         AND u.id NOT IN (SELECT follower_id FROM followers WHERE followee_id = ?) -- Exclude already followed users
-      ORDER BY followers_count DESC, posts_count DESC -- Sort by activity/popularity
+      
       LIMIT ? OFFSET ?;
       `,
       [

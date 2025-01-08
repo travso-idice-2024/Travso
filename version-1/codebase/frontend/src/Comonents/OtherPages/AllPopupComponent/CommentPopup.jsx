@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Boy1 from "../../../assets/headerIcon/boy1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -31,6 +31,7 @@ import noto_fire from "../../../assets/noto_fire.png";
 import face_smile from "../../../assets/face_smile.png";
 import Send from "../../../assets/Send.png";
 import trash from "../../../assets/trash.png";
+import reportIcon from "../../../assets/report-icon.svg";
 import alert from "../../../assets/alert.png";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -44,6 +45,7 @@ import {
   commentOnPost,
   commentOnReply,
   deleteCommentByPostOwner,
+  deletePost,
   deleteReplyByPostOwner,
   editComment,
   editReply,
@@ -58,6 +60,8 @@ import EmojiPicker from "emoji-picker-react";
 import "./AllPopupPage.css";
 import SuccessError from "../SuccessError";
 import SharePopup from "./SharePopup";
+import ShowBadgeIcon from "../ShowBadgeIcons";
+import { Link } from "react-router-dom";
 
 const CommentPopup = ({ isOpen, onClose, postId }) => {
   const dispatch = useDispatch();
@@ -84,6 +88,8 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     useState([]);
 
   const [isMoreOptionPost, setIsMoreOptionPost] = useState(false);
+  const [isotherDataVisible, setIsotherDataVisible] = useState(false);
+  const popupRef = useRef(null);
 
   /* for editing comment */
   const [openDropdownEditId, setOpenDropdownEditId] = useState(null);
@@ -433,6 +439,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
       ).unwrap();
       if (deleteResponse) {
         setOpenDropdownReplyId(null);
+        setReplyToCommentId(null)
         await dispatch(getCommentOnPost(postId));
         await dispatch(getUserPosts());
         handleFlashMessage(deleteResponse.message, "success");
@@ -825,6 +832,25 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
     setShowEmojiPickerForReplyEdit(false);
   };
 
+  /* when clicked outside it will close the tagged buddies popup */
+  const handleOutsideClick = (event) => {
+    if (popupRef.current && !popupRef.current.contains(event.target)) {
+      setIsotherDataVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isotherDataVisible) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isotherDataVisible]);
+
   // Disable body scroll when popup is open
   useEffect(() => {
     if (isOpen) {
@@ -839,9 +865,35 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
 
   // console.log("====activePostId===>", activePostId);
 
+  console.log("===allposts===>", allPosts && allPosts);
+
   /* to open more option popup */
   const openOptionPopup = () => {
     setIsMoreOptionPost(true);
+  };
+
+  /* to open tagged buddies popup */
+  const togglePopup = (postId) => {
+    // setActivePostId((prevId) => (prevId === postId ? null : postId));
+    setIsotherDataVisible(!isotherDataVisible);
+  };
+
+  /* delete the post */
+  const deleteThisPost = async (post_id) => {
+    try {
+      const deleteResponse = await dispatch(deletePost(post_id)).unwrap();
+      // console.log("====deleteResponse===>", deleteResponse);
+      if (deleteResponse) {
+        await dispatch(getUserPosts());
+        await dispatch(getAllPosts());
+        setIsMoreOptionPost(false);
+        onClose();
+        handleFlashMessage("Post deleted successfully", "success");
+      }
+    } catch (error) {
+      handleFlashMessage("Something went wrong", "success");
+      console.log("===error in delete post api===>", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -888,14 +940,150 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     className="w-10 h-10 object-cover rounded-full "
                   />
                   <div>
-                    <h3 className="font-poppins font-semibold text-left text-[16px] text-[#212626]">
+                    <h3 className="font-poppins flex items-center gap-[5px] font-semibold text-left text-[16px] text-[#212626]">
                       {allPosts && allPosts[0]?.full_name}
+                      {allPosts && allPosts[0]?.buddies_id.length > 0 && (
+                        <>
+                          <span className="text-[#869E9D]">With</span>{" "}
+                          <span
+                            className="relative cursor-pointer"
+                            onClick={() => togglePopup(allPosts[0].id)}
+                          >
+                            {allPosts[0]?.buddies_id?.length} others{" "}
+                          </span>
+                          {/* 2 others Section start */}
+                          {isotherDataVisible && (
+                            <div
+                              ref={popupRef}
+                              className="absolute top-[135px] md:ml-24 mt-0 w-[416px] p-[14px] bg-white border border-gray-300 rounded-[16px] shadow-lg z-20 flex flex-col gap-[34px] cursor-pointer"
+                            >
+                              {allPosts[0]?.buddies_id?.map((buddy) => {
+                                // console.log("===buddybadge", buddy?.badge?.split("-")[0])
+                                return (
+                                  <div
+                                    className="flex flex-col"
+                                    key={buddy?.id}
+                                  >
+                                    <Link
+                                      to={`/profile/${buddy?.user_name}/${buddy?.id}`}
+                                    >
+                                      <div className="flex items-center space-x-3">
+                                        <div>
+                                          <img
+                                            src={
+                                              buddy?.profile_image ||
+                                              dummyUserImage
+                                            }
+                                            alt="Image"
+                                            className="w-[44px] h-[44px] rounded-full"
+                                          />
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className="flex items-center gap-2">
+                                            <h5 className="font-poppins font-semibold text-[20px] text-[#212626] text-left">
+                                              {buddy?.full_name}
+                                            </h5>
+                                            <div className="relative group">
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Solo Traveler" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() ==
+                                                "Luxury Traveler" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Adventurer" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Explorer" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+
+                                              {buddy?.badge
+                                                ?.split("-")[0]
+                                                ?.trim() == "Foodie" && (
+                                                <ShowBadgeIcon
+                                                  badge={buddy?.badge}
+                                                />
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <p className="-mt-2 font-inter font-medium text-[16px] text-[#667877] text-left">
+                                              {buddy?.user_name}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </Link>
+                                    <div className="md:w-[338px] md:h-[32px] flex items-center justify-center rounded-full bg-[#E5FFFE] mt-3">
+                                      <p className="font-inter font-medium items-center text-center text-[12px] text-[#212626]">
+                                        {buddy?.badge?.split("-")[0]}{" "}
+                                        &nbsp;•&nbsp; 0 Trips &nbsp;•&nbsp;{" "}
+                                        {buddy?.followers_count || 0} followers
+                                        &nbsp;•&nbsp;{" "}
+                                        {buddy?.buddies_count || 0} Buddies
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {/* 2 others Section end */}
+                        </>
+                      )}
+                      {allPosts && (
+                        <>
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Solo Traveler" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Luxury Traveler" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Adventurer" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Explorer" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+
+                          {allPosts[0]?.badge?.split("-")[0]?.trim() ==
+                            "Foodie" && (
+                            <ShowBadgeIcon badge={allPosts[0]?.badge} />
+                          )}
+                        </>
+                      )}
                     </h3>
                     <p className="-mt-1 font-inter font-medium text-left text-[12px] text-[#667877]">
-                      {/* {(allPosts && allPosts[0]?.badge?.split("-")[0].trim()) ||
-                        ""}{" "}
-                      • {allPosts && allPosts[0].location} */}
+                      
                       {allPosts && allPosts[0]?.badge.split("-")[0]}{" "}
+                      
                       {allPosts &&
                         allPosts[0]?.location &&
                         allPosts[0]?.badge.split("-")[0] &&
@@ -908,12 +1096,12 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                   <img
                     src={dotThree}
                     alt="dotThree"
-                    className="h-4 object-cover"
-                    // onClick={() => openOptionPopup()}
+                    className="h-4 object-cover cursor-pointer"
+                    onClick={() => openOptionPopup()}
                   />
                   {isMoreOptionPost && (
                     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-                      <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                      <div className="bg-white border border-[#ddd] rounded-[8px] shadow-md w-[200px]">
                         <div className="flex items-center justify-between p-2 px-4 ">
                           <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
                             More Options
@@ -929,25 +1117,43 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                           </button>
                         </div>
                         <ul>
-                          {/* <li className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]">
-                                                <img
-                                                  src={reportIcon}
-                                                  alt="reportIcon"
-                                                  className="w-[20px] h-[20px] cursor-pointer mr-2 "
-                                                />{" "}
-                                                Report Account
-                                              </li> */}
+                          {allPosts &&
+                            allPosts[0]?.user_id === userDetails?.id && (
+                              <>
+                                <li
+                                  className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0] rounded-[8px]"
+                                  onClick={() => {
+                                    const isConfirmed = window.confirm(
+                                      "Are you sure you want to delete this post?"
+                                    );
+                                    if (isConfirmed) {
+                                      deleteThisPost(allPosts[0]?.id);
+                                    }
+                                  }}
+                                >
+                                  <img
+                                    src={trash}
+                                    alt="alert"
+                                    className="w-[20px] h-[20px] cursor-pointer mr-2"
+                                  />
+                                  Delete Post
+                                </li>
+                              </>
+                            )}
 
-                          <li
-                            className="px-4 py-2 flex items-center cursor-pointer hover:bg-[#f0f0f0]"
-                          >
-                            <img
-                              src={blockIcon}
-                              alt="alert"
-                              className="w-[20px] h-[20px] cursor-pointer mr-2"
-                            />{" "}
-                            Block Account
-                          </li>
+                          {allPosts &&
+                            allPosts[0]?.user_id !== userDetails?.id && (
+                              <>
+                                <li className="font-inter font-medium text-[16px] text-[#E30000] px-4 py-2 flex items-center cursor-pointer rounded-[8px] hover:bg-[#f0f0f0]">
+                                  <img
+                                    src={reportIcon}
+                                    alt="reportIcon"
+                                    className="w-[20px] h-[20px] cursor-pointer mr-2 "
+                                  />{" "}
+                                  <span className="-mt-1">Report Account</span>
+                                </li>
+                              </>
+                            )}
                         </ul>
                       </div>
                     </div>
@@ -1044,14 +1250,14 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                     </button>
 
                     {/* Dots */}
-                    <div className="flex justify-center mt-1">
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[68px] h-[16px] rounded-[16px] bg-[#FFFFFFBF]">
                       {mediaArray &&
                         mediaArray.length > 0 &&
                         mediaArray?.map((_, index) => (
                           <div
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className={`w-2 h-2 mx-1 rounded-full ${
+                            className={`w-2 h-2 mx-1 rounded-full transform transition-transform duration-300 ${
                               index === currentIndex
                                 ? "bg-[#2DC6BE]"
                                 : "bg-[#364045] hover:bg-[#2DC6BE]"
@@ -1059,6 +1265,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                           ></div>
                         ))}
                     </div>
+                    
                   </div>
                 )}
 
@@ -1620,7 +1827,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                             {openDropdownReplyId ===
                                               userReply?.reply_id && (
                                               <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                                <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
+                                                <div className="bg-white border border-[#ddd] rounded-md rounded-[16px] shadow-md w-[200px]">
                                                   <div className="flex items-center justify-between p-2 px-4 ">
                                                     <h6 className="font-poppins font-semibold text-[16px] text-[#212626]">
                                                       More Options

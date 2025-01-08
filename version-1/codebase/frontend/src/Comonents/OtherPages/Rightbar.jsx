@@ -316,7 +316,9 @@ const handleBuddyRemove = async(buddyId) => {
                   <Link to={`/profile/${buddy?.user_name}/${buddy?.id}`} >
                     <div>
                       <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                        {buddy.full_name}
+                      {buddy.full_name ? buddy.full_name.length > 9
+                          ? `${buddy.full_name.slice(0, 9)}...`
+                          : `${buddy.full_name}` : ""}
                       </p>
                       <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                         {buddy.user_name ? buddy.user_name.length > 9
@@ -415,7 +417,9 @@ const handleBuddyRemove = async(buddyId) => {
                 <Link to={`/profile/${follower?.user_name}/${follower?.id}`} >
                   <div>
                     <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                      {follower.full_name}
+                      {follower.full_name ? follower.full_name.length > 9
+                        ? `${follower.full_name.slice(0, 9)}...`
+                        : `${follower.full_name}` : ""}
                     </p>
                     <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                     {follower.user_name ? follower.user_name.length > 9
@@ -550,7 +554,9 @@ const handleBuddyRemove = async(buddyId) => {
                 <Link to={`/profile/${userFollowing?.user_name}/${userFollowing?.id}`} >
                   <div>
                     <p className="font-inter font-medium text-[16px] text-[#212626] text-left">
-                      {userFollowing.full_name}
+                    {userFollowing.full_name ? userFollowing.full_name.length > 9
+                        ? `${userFollowing.full_name.slice(0, 9)}...`
+                        : `${userFollowing.full_name}` : ""}
                     </p>
                     <p className="font-inter font-medium text-[14px] text-[#667877] text-left">
                     {userFollowing.user_name ? userFollowing.user_name.length > 9

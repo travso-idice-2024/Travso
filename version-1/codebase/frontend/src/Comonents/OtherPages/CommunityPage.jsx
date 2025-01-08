@@ -65,6 +65,7 @@ import { getAllTags } from "../../redux/slices/tagSlices";
 import SuccessError from "./SuccessError";
 import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
 import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
+import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();
@@ -112,6 +113,15 @@ const CommunityPage = () => {
   const [showPostDotsOption, setShowPostDotsOption] = useState(false);
   const [isEditPostPopup, setIsEditPostPopup] = useState(false);
   const [isEditPreviewOpen, setIsEditPreviewOpen] = useState(false);
+
+  /* bucket popup */
+  const [isCreateBucketPopup, setIsCreateBucketPopup] = useState(false);
+  const [bucketpostData, setbucketpostData] = useState({
+    list_name:'',
+    buddies: [],
+    buddies_id: [],
+    post_id:''
+  });
 
   /* used when we are editing any post */
   const [editPostData, setEditPostData] = useState({
@@ -874,6 +884,15 @@ const CommunityPage = () => {
     });
     await setIsEditPostPopup(true);
   };
+
+  const openBucketPopup = ()=>{
+    setIsCreateBucketPopup(true);
+  }
+
+  const onCloseBucket =()=>{
+    setIsCreateBucketPopup(false);
+    setIsCommentWithSavedPopup(false);
+  }
 
   return (
     <>
@@ -1742,15 +1761,38 @@ const CommunityPage = () => {
                           />
                         )}
 
-                        {activePostId === post?.id &&
+                        {/* {activePostId === post?.id &&
+                          isCommentWithSavedPopup && (
+                            <SavedPopup
+                              post_id={post.id}
+                              isOpen={isCommentWithSavedPopup}
+                              onClose={() => handleBucketSavedPopupClose()}
+                            />
+                          )} */}
+
+{activePostId === post?.id &&
                           isCommentWithSavedPopup && (
                             <SavedPopup
                               post_id={post.id}
                               isOpen={isCommentWithSavedPopup}
                               // onClose={() => setIsCommentWithSavedPopup(false)}
                               onClose={() => handleBucketSavedPopupClose()}
+                              openBucketPopup={openBucketPopup}
                             />
                           )}
+
+                        {isCreateBucketPopup && (
+                          <CreateBucketListPopup
+                            post_id={post.id}
+                            isOpen={isCreateBucketPopup}
+                            onCloseBucket={onCloseBucket}
+                            //openPostDetail={() => setIsPostDetailPopup(true)}
+                            bucketpostData={bucketpostData}
+                            setbucketpostData={setbucketpostData}
+                    
+                          />
+                        )}
+
                       </div>
                       {/* Bottom Fixed Section */}
                     </div>

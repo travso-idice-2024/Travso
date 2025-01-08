@@ -1022,12 +1022,14 @@ const authSlice = createSlice({
       state.error = null;
       state.token = null;
       state.userBuddies = null;
+      state.userPosts = null,
       state.userFollowers = null;
       state.toWhomUserFollows = null;
       state.onlineFriends = null;
       state.blockUsers = null;
       state.checkPass = null;
       state.otherUserData = null;
+      state.suggestionList = null;
     },
   },
   extraReducers: (builder) => {

@@ -26,6 +26,12 @@ import LandingPage from './Comonents/MainPages/LandingPage';
 import OtherUserPageHeader from './Comonents/OtherPages/OtherUserProfile/OtherUserPageHeader';
 import OtherUserProfile from './Comonents/OtherPages/OtherUserProfile/OtherUserProfile';
 import OtherUserPostDetails from './Comonents/OtherPages/OtherUserProfile/OtherUserPostDetails';
+import OtherUserBuddiesPostCard from './Comonents/OtherPages/OtherUserProfile/OtherUserBuddiesPostCard';
+import OtherUserFollowersPostCard from './Comonents/OtherPages/OtherUserProfile/OtherUserFollowersPostCard';
+import OtherUserFollowingPostCard from './Comonents/OtherPages/OtherUserProfile/OtherUserFollowingPostCard';
+import OtherUserBuddiesPage from './Comonents/OtherPages/OtherUserProfile/OtherUserBuddiesPage';
+import OtherUserFollowerPage from './Comonents/OtherPages/OtherUserProfile/OtherUserFollowerPage';
+import OtherUserFollowingPage from './Comonents/OtherPages/OtherUserProfile/OtherUserFollowingPage';
 
 
 function App() {
@@ -61,6 +67,9 @@ function App() {
           {/* <Route path="/profile/:userName/:userId" element={<OtherUserPageHeader />} /> */}
           <Route path="/profile/:userName/:userId" element={<OtherUserProfile />} />
           <Route path="/profile/:userName/:userId/Postdata" element={<OtherUserPostDetails />} />
+          <Route path="/profile/:userName/:userId/buddiesdata" element={<OtherUserBuddiesPage />} />
+          <Route path="/profile/:userName/:userId/followersdata" element={<OtherUserFollowerPage />} />
+          <Route path="/profile/:userName/:userId/followingsdata" element={<OtherUserFollowingPage />} />
         </Route>
       </Routes>
     </Router>

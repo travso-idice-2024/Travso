@@ -11,6 +11,7 @@ import { deletePost, getAllPosts } from "../../../redux/slices/postSlice";
 import OtherUserPageHeader from "./OtherUserPageHeader";
 import ShowBadgeIcon from "../ShowBadgeIcons";
 import CommentPopup from "../AllPopupComponent/CommentPopup";
+import Header from "../Header";
 
 const OtherUserPostDetails = () => {
   const dispatch = useDispatch();
@@ -33,8 +34,6 @@ const OtherUserPostDetails = () => {
   const [showPostDotsOption, setShowPostDotsOption] = useState(false);
   const editPostRef = useRef(null);
   const popupRef = useRef(null);
-
-  const { userPosts, user: userDetails } = useSelector((state) => state.auth);
 
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
@@ -201,6 +200,7 @@ const OtherUserPostDetails = () => {
 
   return (
     <>
+      <Header />
       <OtherUserPageHeader />
       <div className="min-h-screen bg-gray-50 p-4">
         <p className="font-poppins text-[#212626] font-semibold text-[28px] mb-5 text-left flex items-center">
