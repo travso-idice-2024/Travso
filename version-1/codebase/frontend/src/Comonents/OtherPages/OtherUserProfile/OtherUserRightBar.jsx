@@ -67,11 +67,6 @@ const OtherUserRightBar = ({ userName, userId }) => {
   const [hideFollowerList, setHideFollowerList] = useState(false);
   const [hideFollowingList, setHideFollowingList] = useState(false);
 
-  console.table({
-    hideBuddiesList,
-    hideFollowerList,
-    hideFollowingList
-  })
 
   /* show user buddies */
   const visiblePostsbuddies = showAllbuddies
