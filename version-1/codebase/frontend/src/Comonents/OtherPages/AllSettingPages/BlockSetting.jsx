@@ -10,6 +10,7 @@ import explorerBadge from "../../../assets/Badges/EX.svg";
 import foodieBadge from "../../../assets/Badges/FO.svg";
 import luxuryTravelerBadge from "../../../assets/Badges/LT.svg";
 import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
+import { getAllPosts } from "../../../redux/slices/postSlice";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 //getBlockedUser
@@ -63,13 +64,13 @@ const BlockSetting = () => {
   const [popupDataBlock, setPopupDataBlock] = useState(null);
 
   const { blockUsers } = useSelector((state) => state.auth || {});
-  console.log("block users", blockUsers);
+  // console.log("block users", blockUsers);
 
   useEffect(() => {
     if (!blockUsers) {
       dispatch(getBlockedUser());
     }
-  }, [blockUsers]); //
+  }, [dispatch,blockUsers]); //
 
 
    const unBlockUser = async (blockId)=>{
@@ -91,7 +92,8 @@ const BlockSetting = () => {
           
           // setFlashMessage('success');
           // setFlashMessage(data.message);
-          dispatch(getBlockedUser()); // Refresh the archived posts
+          await dispatch(getBlockedUser()); // Refresh the archived posts
+          await dispatch(getAllPosts());
           navigate('/settings');
         }
         setPopupDataBlock(null);
@@ -112,7 +114,7 @@ const BlockSetting = () => {
         </h5>
         <div className="flex flex-col gap-[20px] px-2">
           {blockUsers?.map((item) => (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" key={item?.id}>
               <div className="flex items-center space-x-2">
                 <div>
                   <img
@@ -176,7 +178,7 @@ const BlockSetting = () => {
               </div>
               <div>
                 <button
-                  className="bg-[#F0F7F7] w-[196px] h-[36px] rounded-[4px] flex items-center justify-center font-inter font-medium text-[14px] text-[#667877]"
+                  className="bg-[#F0F7F7] w-[176px] h-[36px] rounded-[4px] flex items-center justify-center font-inter font-medium text-[14px] text-[#667877] hover:bg-[#1db2aa]  hover:text-white"
                   onClick={() => handleButtonBlockOpen(item.blocked_id)}
                 >
                   {item.buttonLabel}

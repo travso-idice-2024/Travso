@@ -3,6 +3,7 @@ import Icon from "../../../assets/Icon.png";
 import Select from "react-select";
 import "../EditProfile.css"
 import EditHeader from "../../OtherPages/EditHeader";
+import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +16,7 @@ import {
 } from "../../../redux/slices/authSlice";
 import { fetchCities } from "../../../redux/slices/stateCitySlice";
 import SuccessError from "../../OtherPages/SuccessError";
+import { getActiveStories } from "../../../redux/slices/postSlice";
 
 
 
@@ -75,7 +77,7 @@ const [coverPhoto, setCoverPhoto] = useState(null);
     const [genderData, setGenderData] = useState({
         male: "Male",
         female: "Female",
-        other: "Other",
+        "Not to Say": "Not to Say",
       });
 
   // for user details
@@ -98,10 +100,16 @@ const [coverPhoto, setCoverPhoto] = useState(null);
     const { user: userDetails } = useSelector((state) => state.auth);
     const { cities, states } = useSelector((state) => state.stateCity);
 
+    const { activeStories } = useSelector((state) => state.postSlice);
+    // console.log("===activeStories===>", activeStories);
 
     useEffect(() => {
         if (!userDetails) {
           dispatch(getUserDetails());
+        }
+
+        if(!activeStories) {
+          dispatch(getActiveStories());
         }
     
         if (cities.length === 0 && userDetails) {
@@ -186,7 +194,7 @@ const [coverPhoto, setCoverPhoto] = useState(null);
   /* handle image upload with validation of 2mb */
     const handleImageUpload = async (e) => {
       const file = e.target.files[0];
-      console.log("======file=====>", file);
+      // console.log("======file=====>", file);
       // Check if a file is selected and if it's not more than 2MB
       if (file) {
         const fileSizeInMB = file.size / (1024 * 1024); // Convert size to MB
@@ -478,14 +486,13 @@ const [coverPhoto, setCoverPhoto] = useState(null);
     //return `${day}-${month}-${year}`;
   };
 
-  console.log("===setFlashMessage===>", flashMessage);
+  // console.log("===setFlashMessage===>", flashMessage);
   return (
     <>
     {flashMessage && (
         <SuccessError message={flashMessage} messageType={flashMsgType} />
       )}
       {/* Header Section */}
-      <EditHeader />
     <div className="bg-white rounded-[16px] shadow-[0_4px_10px_rgba(0,0,0,0.15)] p-4 px-4 mb-4">
       {/* Title and Subtitle */}
       <div className="text-center mb-8">
@@ -561,10 +568,11 @@ const [coverPhoto, setCoverPhoto] = useState(null);
             {/* Profile Photo and Badge */}
             <div className="flex justify-between items-center mb-6">
               {/* Profile Photo Section */}
+              
               <div className="relative w-[220px] h-[220px] left-[64px] -top-[130px] rounded-full overflow-hidden border-[14px] border-[#FFFFFF] bg-[#F0F7F7] flex flex-col items-center justify-center group">
               {userDetails?.profile_image ? (
                   <img
-                    src={userDetails?.profile_image}
+                    src={userDetails?.profile_image || dummyUserImage}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -639,26 +647,26 @@ const [coverPhoto, setCoverPhoto] = useState(null);
                       Select your Badge
                     </option>
                     <option className="font-inter font-medium text-[16px] text-[#869E9D]"
-                    value="Explorer - a person who travels around a place in order to learn about it">
+                    value="Explorer - Curious souls who love uncovering hidden gems and learning the stories behind new places.">
                       Explorer
                     </option>
                     <option className="font-inter font-medium text-[16px] text-[#869E9D]"
-                    value="Adventurer - Adventurers explore uncharted places, gather information, and share their experiences. They can also raise funds to support their travels">
+                    value="Adventurer - Lives for thrilling experiences like trekking, diving, or exploring the wild outdoors.">
                       Adventurer
                     </option>
                     <option className="font-inter font-medium text-[16px] text-[#869E9D]"
-                    value="Foodie - A foodie is a person who has an ardent or refined interest in food, and who eats food not only out of hunger but also as a hobby.">
+                    value="Foodie - Travels to explore local cuisines, savoring unique flavors and culinary traditions.">
                       Foodie
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Solo Traveler - A solo traveler is someone who travels independently, without friends or companions."
+                      value="Solo Traveler - Enjoys the freedom of exploring alone, meeting new people, and creating personal stories."
                     >
                       Solo Traveler
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
-                      value="Luxury Traveler - Luxury travel is a type of leisure tourism that involves high-end accommodations, personalized service, and exclusive experiences"
+                      value="Luxury Traveler - Loves traveling in comfort, enjoying luxurious stays, fine dining, and amazing experiences."
                     >
                       Luxury Traveler
                     </option>

@@ -384,14 +384,25 @@ const Sidebar = () => {
           <h2 className="font-poppins font-semibold text-[20px] text-[#212626]">
             Bucket List
           </h2>
-          <p
+          {
+            visibleBucketLists && visibleBucketLists?.length > 0 && (
+              <p
             onClick={handleAllBucketList}
             className="font-inter font-medium text-[14px] text-[#2DC6BE] cursor-pointer hover:underline"
           >
             See All
           </p>
+            )
+          }
         </div>
-        {visibleBucketLists &&
+        {
+          visibleBucketLists && visibleBucketLists?.length === 0 && (
+            <>
+             <h2 className="mt-8 hidden md:flex md:flex-col">No Bucket Added</h2>
+            </>
+          )
+        }
+        {visibleBucketLists && visibleBucketLists?.length > 0 &&
           visibleBucketLists?.map((item, index) => {
             const images = item.media_url ? JSON.parse(item.media_url) : [];
             return (

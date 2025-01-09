@@ -67,7 +67,6 @@ import { getAllTags } from "../../redux/slices/tagSlices";
 import SuccessError from "./SuccessError";
 import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
 import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
-import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();

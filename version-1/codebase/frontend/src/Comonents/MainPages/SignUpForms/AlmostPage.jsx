@@ -2,8 +2,8 @@
 /* This is Signup step 3(final) */
 
 import React, { useState } from "react";
-//import backgroundImage from "../../../assets/almostthere.png";
-import backgroundImage from "../../../assets/almostthere.jpg";
+import backgroundImage from "../../../assets/almostthere.png";
+// import backgroundImage from "../../../assets/almostthere.jpg";
 import logo from "../../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 

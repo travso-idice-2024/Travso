@@ -5,7 +5,7 @@ import Boy1 from "../../../assets/headerIcon/boy1.png";
 import Boy2 from "../../../assets/headerIcon/boy2.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   addBuddy,
   getOtherUserDetails,
@@ -20,25 +20,20 @@ import {
   followUnfollowOnFollowing,
 } from "../../../redux/slices/postSlice";
 
-const OtherUserRightBar = ({ userName, userId }) => {
+const OtherUserRightBar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+  const { userName, userId } = useParams();
 
-  console.log("======location.pathname====>", location.pathname);
+  // console.log("======location.pathname====>", location.pathname);
 
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
 
-  // console.log("======otherUserData====>", otherUserData);
-
-  useEffect(() => {
-    // console.log("useeffect on rightbar");
-  }, [dispatch]);
-
   useEffect(() => {
     // Update the state based on the current route
-    if (location.pathname == `/profile/${userName}/${userId}/buddiesdata`) {
+    if (location.pathname === `/profile/${userName}/${userId}/buddiesdata`) {
       setHideBuddiesList(true);
     } else {
       setHideBuddiesList(false);

@@ -64,18 +64,11 @@ const OtherUserPostCard = ({ userName, userId }) => {
 
   /* getting all the details of other user */
   const { otherUserData } = useSelector((state) => state.auth);
-  console.log("=====otherUserData====>", otherUserData);
+  
   const {
     user: userDetails,
-    userPosts: allPosts,
     error: reduxSliceError,
   } = useSelector((state) => state.auth);
-
-//   useEffect(() => {
-//     if (!allPosts) {
-//       dispatch(getUserPosts());
-//     }
-//   }, [dispatch]);
 
   useEffect(() => {
     dispatch(getOtherUserDetails(userId));
@@ -314,12 +307,6 @@ const OtherUserPostCard = ({ userName, userId }) => {
   };
 
 
-  /* to open editable popup on edit click in edit preview section */
-  const handleEditPostDetailPopup = () => {
-    setIsEditPreviewOpen(false);
-    setIsEditPostPopup(true);
-  };
-
   /* to block a user */
   const blockTheUser = async (blockId) => {
     try {
@@ -351,8 +338,6 @@ const OtherUserPostCard = ({ userName, userId }) => {
       console.log("===error in unBlockTheUser===>", error);
     }
   };
-
-  // console.log("====openpostpopupid=====", openPostPopupId);
 
   return (
     <>

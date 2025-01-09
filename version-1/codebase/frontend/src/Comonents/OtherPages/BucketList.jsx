@@ -153,7 +153,13 @@ const BucketList = () => {
               <div key={bucket?.id} className="relative">
               <button
                   className="absolute bottom-2 right-0 text-white cursor-pointer rounded-[8px] px-4 p-1 z-10"
-                  onClick={() => handleBucketRemove(bucket.list_name)}
+                  // onClick={() => handleBucketRemove(bucket.list_name)}
+                  onClick={() => {
+                    const confirmRemove = window.confirm(`Are you sure you want to remove ${bucket.list_name}?`);
+                    if (confirmRemove) {
+                      handleBucketRemove(bucket.list_name);
+                    }
+                  }}
                 >
                   <img
                     src={RemoveIconData}

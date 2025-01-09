@@ -139,7 +139,7 @@ async function sendOTP(req, res) {
     const authToken = process.env.TWILIO_ACCOUNT_AUTH_TOKEN;
 
     // Create a Twilio client
-    const client = await twilio(accountSid, authToken);
+    // const client = await twilio(accountSid, authToken);
 
     // Send the SMS
     // const otpSent = await client.messages
@@ -162,13 +162,13 @@ async function sendOTP(req, res) {
     //     return res.status(404).json({ error: "Something went wrong while generating OTP" });
     //   }
 
-    const result = await sendMobileOTP(user[0].otp, mobileNumber);
+    // const result = await sendMobileOTP(user[0].otp, mobileNumber);
 
     // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=lUvHtyPCL0mIz0T3Y5hTBg&msisdn=${mobileNumber}&sid=AREPLY
     //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
 
-    // const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=E2SpR20BBECJxogaiTLqGw&msisdn=${mobileNumber}&sid=SMSHUB
-    //   &msg=Your One Time Password is ${user[0].otp}. Thanks SMSINDIAHUB&fl=0&gwid=2`)
+    const otpResult = await fetch(`http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?APIKey=E2SpR20BBECJxogaiTLqGw&msisdn=${mobileNumber}&sid=SMSHUB&msg=Welcome to the YOURENTITYNAME powered by SMSINDIAHUB. Your OTP for registration is ${user[0].otp}
+&fl=0&dc=0&gwid=2&route=0`)
 
      
 
@@ -1178,7 +1178,7 @@ const getUserDetails = async (req, res) => {
 
     // Query to fetch user details
     const [rows] = await pool.query(
-      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, badge, is_follow_selected FROM users WHERE id = ?",
+      "SELECT id, dob, email, created_at, user_name, profile_image, cover_image, description, first_name, last_name, city, state, gender, full_name, mobile_number, badge, is_follow_selected FROM users WHERE id = ?",
       [userId]
     );
 

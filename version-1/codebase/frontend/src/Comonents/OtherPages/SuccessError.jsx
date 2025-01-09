@@ -6,11 +6,11 @@ function SuccessError({message, messageType}) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   return (
-    <div className="App">
+    <div className="">
 
       {messageType === 'success' && (
         <div
-          className="fixed z-10 top-24 right-5 bg-green-500 text-white p-4 rounded shadow-lg"
+          className="fixed z-20 top-24 right-5 bg-green-500 text-white p-4 rounded shadow-lg"
         >
          {message}
         </div>
@@ -18,7 +18,7 @@ function SuccessError({message, messageType}) {
 
         {messageType === 'error' && (
         <div
-          className="fixed z-10 top-5 right-5 bg-red-500 text-white p-4 rounded shadow-lg"
+          className="fixed z-20 top-5 right-5 bg-red-500 text-white p-4 rounded shadow-lg"
         >
           {message}
         </div>
