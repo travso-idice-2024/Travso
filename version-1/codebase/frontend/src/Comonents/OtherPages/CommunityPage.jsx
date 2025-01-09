@@ -67,7 +67,6 @@ import { getAllTags } from "../../redux/slices/tagSlices";
 import SuccessError from "./SuccessError";
 import EditPostPreview from "./AllPopupComponent/EditPostSection/EditPostPreview";
 import EditPostPopUpDetail from "./AllPopupComponent/EditPostSection/EditPostPopUpDetail";
-import CreateBucketListPopup from "./AllPopupComponent/CreateBucketListPopup";
 
 const CommunityPage = () => {
   const dispatch = useDispatch();
@@ -657,7 +656,7 @@ const CommunityPage = () => {
     }));
 
     setShowEmojiPickerStory(false); // Close the emoji picker after selection
-    setActiveEmojiStoryId(null); // Reset the active story ID
+    setActiveEmojiStoryId(storyId); // Reset the active story ID
     setShowEmojiPicker(true);
   };
 
@@ -843,7 +842,8 @@ const CommunityPage = () => {
 
   // Handle Emoji Picker Close (Cancel)
   const handleCloseEmojiPicker = () => {
-    setShowEmojiPicker(false); // Close the emoji picker
+    setShowEmojiPicker(true); // Close the emoji picker
+    setActiveEmojiStoryId(null);
   };
 
   // console.log("===activestories", activeStories)

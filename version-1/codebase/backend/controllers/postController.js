@@ -2,7 +2,7 @@ const pool = require("../utils/db");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
-const host = "http://127.0.0.1";
+const host = "http://localhost:5000";
 
 const POST_UPLOAD_DIR = path.join(__dirname, "../uploads/post_img");
 const STORY_UPLOAD_DIR = path.join(__dirname, "../uploads/story_img");
@@ -26,12 +26,11 @@ async function allPosts(req, res) {
   }
 }
 
-
 // async function getAllBucketLists(req, res) {
 //   try {
 //     const userId = req.user.userId;
 //     const [allbucketlist] = await pool.execute(`
-//       SELECT 
+//       SELECT
 //         bcl.id,
 //         bcl.list_name,
 //         bcl.is_default,
@@ -39,18 +38,18 @@ async function allPosts(req, res) {
 //         p.media_url,
 //         u.user_name,
 //         u.profile_image,
-//         u.badge 
-//       FROM 
+//         u.badge
+//       FROM
 //         bucket_category_list bcl
-//       LEFT JOIN 
+//       LEFT JOIN
 //         posts p ON bcl.post_id = p.id
-//       LEFT JOIN 
+//       LEFT JOIN
 //         users u ON bcl.user_id = u.id
-//       WHERE 
-//         bcl.user_id = ? 
+//       WHERE
+//         bcl.user_id = ?
 //         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
 //     `, [userId, userId]);
-    
+
 //     return res.status(200).json({
 //       message: "All Posts data",
 //       data: allbucketlist,
@@ -66,7 +65,8 @@ async function allPosts(req, res) {
 async function getAllBucketLists(req, res) {
   try {
     const userId = req.user.userId;
-    const [allbucketlist] = await pool.execute(`
+    const [allbucketlist] = await pool.execute(
+      `
       SELECT 
         bcl.id,
         bcl.list_name,
@@ -85,7 +85,9 @@ async function getAllBucketLists(req, res) {
       WHERE 
         bcl.user_id = ? 
         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
-    `, [userId, userId]);
+    `,
+      [userId, userId]
+    );
 
     return res.status(200).json({
       message: "All Posts data",
@@ -99,14 +101,14 @@ async function getAllBucketLists(req, res) {
   }
 }
 
-
 async function getBucketListByName(req, res) {
   try {
     const userId = req.user.userId;
-    const {bucketTitle} = req.params;
+    const { bucketTitle } = req.params;
     //console.log("check", bucketTitle);
-    
-    const [allbucketlistByName] = await pool.execute(`
+
+    const [allbucketlistByName] = await pool.execute(
+      `
       SELECT 
         bcl.id,
         bcl.list_name,
@@ -127,8 +129,10 @@ async function getBucketListByName(req, res) {
         bcl.user_id = ? 
         AND bcl.list_name =?
         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
-    `, [userId, bucketTitle , userId]);
-    
+    `,
+      [userId, bucketTitle, userId]
+    );
+
     return res.status(200).json({
       message: "All data",
       data: allbucketlistByName,
@@ -143,27 +147,17 @@ async function getBucketListByName(req, res) {
 
 async function getAllCategoryLists(req, res) {
   try {
-    // const [allCategorylist] = await pool.execute(`
-    //   SELECT 
-    //     list_name,id
-    //   FROM 
-    //     bucket_category_list
-    // `);
-
-    const [allCategorylist] = await pool.execute(`
-<<<<<<< HEAD
-      SELECT 
-        list_name, 
-        MIN(id) AS id
-=======
+    const UserId = req.user.userId;
+    const [allCategorylist] = await pool.execute(
+      `
       SELECT DISTINCT 
         list_name
->>>>>>> master
       FROM 
         bucket_category_list
-      GROUP BY 
-        list_name
-    `);
+      WHERE user_id = ?
+    `,
+      [UserId]
+    );
 
     return res.status(200).json({
       message: "All Posts data",
@@ -176,7 +170,6 @@ async function getAllCategoryLists(req, res) {
     });
   }
 }
-
 
 // get all post of user buddies, followers and public posts
 async function communityPagePosts(req, res) {
@@ -256,7 +249,9 @@ async function communityPagePosts(req, res) {
         let myBuddiesId = [];
         try {
           tagId = post.tag_id ? JSON.parse(post.tag_id) : [];
-          myBuddiesId = post.my_buddies_id ? JSON.parse(post.my_buddies_id) : [];
+          myBuddiesId = post.my_buddies_id
+            ? JSON.parse(post.my_buddies_id)
+            : [];
           mediaUrl = post.media_url ? JSON.parse(post.media_url) : [];
         } catch (parseError) {
           console.error("Error parsing tag_id or media_url:", parseError);
@@ -539,7 +534,7 @@ async function getActiveStories(req, res) {
     const parseFields = (story) => ({
       ...story,
       //type: "image",
-      type:story.type,
+      type: story.type,
       paused: true,
       media_url: story.media_url || "",
       url: story.media_url || "", // Parse media_url to array
@@ -896,10 +891,15 @@ async function getUserPosts(req, res) {
         let myBuddiesId = [];
         try {
           tagId = post.tag_id ? JSON.parse(post.tag_id) : [];
-          myBuddiesId = post.my_buddies_id ? JSON.parse(post.my_buddies_id) : [];
+          myBuddiesId = post.my_buddies_id
+            ? JSON.parse(post.my_buddies_id)
+            : [];
           mediaUrl = post.media_url ? JSON.parse(post.media_url) : [];
         } catch (parseError) {
-          console.error("Error parsing tag_id or media_url or my_buddies_id:", parseError);
+          console.error(
+            "Error parsing tag_id or media_url or my_buddies_id:",
+            parseError
+          );
         }
 
         return {
@@ -2241,12 +2241,13 @@ const replyOnStory = async (req, res) => {
   //27-12-2024
   const from = req.user.userId;
   const to = req.body.story_owner_id;
-  console.log(from , to );
+  //console.log(from , to );
   //27-12-2024
   try {
     // const { user_id } = req.params; // Extract user_id from request parameters
     const user_id = req.user.userId;
-    const { story_id, reply_text, story_owner_id,image_url,user_full_name } = req.body; // Extract story_id and reply_text from the request body
+    const { story_id, reply_text, story_owner_id, image_url, user_full_name } =
+      req.body; // Extract story_id and reply_text from the request body
 
     // Validate required fields
     if (!user_id || !story_id || !reply_text) {
@@ -2287,11 +2288,10 @@ const replyOnStory = async (req, res) => {
         from: fromId,
         to: toId,
         message: reply_text,
-        type:'story',
+        type: "story",
         // story_owner_name: user_full_name,
         // login_user_name:req.user.full_name,
-        storyImagePath: image_url
-        
+        storyImagePath: image_url,
       });
     }
     //27-12-2024
@@ -2400,7 +2400,7 @@ async function storeStory1(req, res) {
 }
 
 // async function storeStory(req, res) {
-  
+
 //   try {
 //     // const { user_id } = req.params;
 //     const user_id = req.user.userId;
@@ -2501,7 +2501,12 @@ async function storeStory(req, res) {
   try {
     const user_id = req.user.userId;
     const userName = req.user.userName;
-    const { media_url = [], tags = [], view = "public", story_text = [] } = req.body;
+    const {
+      media_url = [],
+      tags = [],
+      view = "public",
+      story_text = [],
+    } = req.body;
 
     // Validate required fields
     if (!user_id) {
@@ -2535,8 +2540,13 @@ async function storeStory(req, res) {
             mediaTypes.push(type);
 
             // Extract base64 data and write the file to the system
-            const base64Data = media.replace(/^data:(image|video)\/\w+;base64,/, "");
-            await fs.promises.writeFile(filePath, base64Data, { encoding: "base64" });
+            const base64Data = media.replace(
+              /^data:(image|video)\/\w+;base64,/,
+              ""
+            );
+            await fs.promises.writeFile(filePath, base64Data, {
+              encoding: "base64",
+            });
           } else {
             console.error("Invalid media format, skipping...");
             return res.status(400).json({
@@ -2997,7 +3007,6 @@ async function updatePost(req, res) {
   }
 }
 
-
 async function removeBucketCollection(req, res) {
   try {
     const UserId = req.user.userId; // Correct destructuring for UserId from params
@@ -3018,7 +3027,7 @@ async function removeBucketCollection(req, res) {
 
     // Success response
     return res.status(200).json({
-      status:true,
+      status: true,
       message: "Bucket List Deleted Successfully",
     });
   } catch (error) {
@@ -3031,10 +3040,8 @@ async function removeBucketCollection(req, res) {
 
 async function getArchiveStory(req, res) {
   try {
-    const userId  = req.user.userId;
-    const [
-      data,
-    ] = await pool.execute(
+    const userId = req.user.userId;
+    const [data] = await pool.execute(
       // SELECT * FROM stories WHERE user_id = ? AND expires_at < CURRENT_TIMESTAMP,
       `SELECT 
         s.*,
@@ -3050,7 +3057,7 @@ async function getArchiveStory(req, res) {
         s.user_id = ? AND s.expires_at < CURRENT_TIMESTAMP
         ORDER BY 
         s.id DESC`,
-      
+
       [userId]
     );
     return res.status(200).json({
@@ -3065,11 +3072,9 @@ async function getArchiveStory(req, res) {
   }
 }
 
-
-
 async function getArchivePosts(req, res) {
   try {
-    const  UserId  = req.user.userId;
+    const UserId = req.user.userId;
 
     // Fetch the post data along with aggregate details
     const [data] = await pool.execute(
@@ -3177,7 +3182,7 @@ async function unArchivePost(req, res) {
 
     // Check if the post exists and belongs to the user
     const [rows] = await pool.execute(
-      'SELECT id FROM posts WHERE id = ? AND user_id = ?',
+      "SELECT id FROM posts WHERE id = ? AND user_id = ?",
       [postId, userId]
     );
 
@@ -3188,13 +3193,12 @@ async function unArchivePost(req, res) {
     }
 
     // Update the archive status of the post
-    await pool.execute(
-      'UPDATE posts SET is_archive = 0 WHERE id = ?',
-      [postId]
-    );
+    await pool.execute("UPDATE posts SET is_archive = 0 WHERE id = ?", [
+      postId,
+    ]);
 
     return res.status(200).json({
-      status:true,
+      status: true,
       message: "Post archive status updated successfully.",
     });
   } catch (error) {
@@ -3223,16 +3227,17 @@ async function bucketListWithBuddies(req, res) {
       [UserId]
     );
 
-    
     const filteredData = data
-      .map(item => ({
+      .map((item) => ({
         ...item,
         media_url: Array.isArray(JSON.parse(item.media_url))
-          ? JSON.parse(item.media_url).at(-1) || "" 
-          : item.media_url, 
-        buddy_id: JSON.parse(item.buddy_id), 
+          ? JSON.parse(item.media_url).at(-1) || ""
+          : item.media_url,
+        buddy_id: JSON.parse(item.buddy_id),
       }))
-      .filter(item => Array.isArray(item.buddy_id) && item.buddy_id.length > 0);
+      .filter(
+        (item) => Array.isArray(item.buddy_id) && item.buddy_id.length > 0
+      );
 
     return res.status(200).json({
       message: "Data fetched successfully",
@@ -3265,14 +3270,16 @@ async function bucketListWithoutBuddies(req, res) {
     );
 
     const filteredData = data
-      .map(item => ({
+      .map((item) => ({
         ...item,
         media_url: Array.isArray(JSON.parse(item.media_url))
-          ? JSON.parse(item.media_url).at(-1) || "" 
-          : item.media_url, 
-        buddy_id: JSON.parse(item.buddy_id), 
+          ? JSON.parse(item.media_url).at(-1) || ""
+          : item.media_url,
+        buddy_id: JSON.parse(item.buddy_id),
       }))
-      .filter(item => Array.isArray(item.buddy_id) && item.buddy_id.length === 0);
+      .filter(
+        (item) => Array.isArray(item.buddy_id) && item.buddy_id.length === 0
+      );
 
     return res.status(200).json({
       message: "Data fetched successfully",
@@ -3285,8 +3292,6 @@ async function bucketListWithoutBuddies(req, res) {
     });
   }
 }
-
-
 
 module.exports = {
   allPosts,
@@ -3328,5 +3333,5 @@ module.exports = {
   deletePost,
   updatePost,
   bucketListWithBuddies,
-  bucketListWithoutBuddies
+  bucketListWithoutBuddies,
 };

@@ -6,9 +6,11 @@ import Travel from "../../../assets/travel.png";
 import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
 import { useDispatch } from "react-redux";
 import { deleteStory, getActiveStories } from "../../../redux/slices/postSlice";
+import { blockAccount } from "../../../redux/slices/authSlice";
 import ShareStoryPopup from "../AllPopupComponent/ShareStoryPopup";
 import EmojiPicker from "emoji-picker-react";
 import ShowBadgeIcon from "../ShowBadgeIcons";
+import Progressbar from "../../Common/Progressbar";
 
 const StoryUsernewPage = ({
   isOpen,
@@ -33,6 +35,8 @@ const StoryUsernewPage = ({
   handleEmojiClickStory,
   handleLikeUnlikeStory,
   increaseViewersCount,
+  handleCloseEmojiPicker,
+  showEmojiPicker
 }) => {
   const dispatch = useDispatch();
   const [viewedStoryId, setViewedStoryId] = useState("");
@@ -46,7 +50,7 @@ const StoryUsernewPage = ({
     await increaseViewersCount(viewedStoryId);
   };
 
-  //console.log(storyData);
+  console.log(storyData);
 
   const data = [
     { id: 1, src: Girl, label: "Priya Sharma" },
@@ -91,7 +95,7 @@ const StoryUsernewPage = ({
     }
   };
   //=================play/pause===================
-
+    
   if (!isOpen) return null;
 
   return (
@@ -205,6 +209,7 @@ const StoryUsernewPage = ({
               }px))`,
             }}
           >
+            
             {storyData.map((story, index) => (
               <div
                 key={index}
@@ -218,7 +223,9 @@ const StoryUsernewPage = ({
                 {/* Top Data */}
                 <div className="flex items-center justify-between absolute top-9 w-[396px] px-4">
                   <div className="flex items-center gap-[8px]">
+                    
                     <div>
+
                       <img
                         //src={Girl}
                         src={story?.profile_image || dummyUserImage}
@@ -437,7 +444,19 @@ const StoryUsernewPage = ({
                               </svg>
                               Mute Story
                             </li>
-                            <li className="px-4 py-2 flex items-center gap-[5px] cursor-pointer hover:bg-[#f0f0f0]">
+                            <li className="px-4 py-2 flex items-center gap-[5px] cursor-pointer hover:bg-[#f0f0f0]"
+                             onClick={() => {
+                                const isConfirmed = window.confirm(
+                                  `Are you sure you want to ${
+                                    story?.is_blocked ? "unblock" : "block"
+                                  } this user?`
+                                );
+                                if (isConfirmed) {
+                                    story?.is_blocked
+                                    ? unBlockTheUser(story?.user_id)
+                                    : blockTheUser(story?.user_id);
+                                }
+                              }}>
                               <svg
                                 width="22"
                                 height="22"
@@ -468,13 +487,21 @@ const StoryUsernewPage = ({
                       type="text"
                       placeholder="Add a comment"
                       onKeyDown={(e) =>
-                        handleStoryCommentEnter(e, story?.id, story?.user_id, story?.url, story?.full_name)
+                        handleStoryCommentEnter(
+                          e,
+                          story?.id,
+                          story?.user_id,
+                          story?.url,
+                          story?.full_name
+                        )
                       }
                       className="flex-1 bg-[#FFFFFFBF] focus:outline-none text-[#212626] rounded-[24px] md:w-[256px] h-[44px] placeholder:font-inter placeholder:font-medium placeholder:text-[14px] placeholder:text-[#212626] pl-9"
                       value={storyReply[story?.id] || ""}
-                      onChange={(e) => handleStoryReplyInputChange(e, story?.id)}
+                      onChange={(e) =>
+                        handleStoryReplyInputChange(e, story?.id)
+                      }
                     />
-                    
+
                     <svg
                       width="20"
                       height="20"
@@ -499,16 +526,26 @@ const StoryUsernewPage = ({
                         </clipPath>
                       </defs>
                     </svg>
-                    {activeEmojiStoryId === story.id && showEmojiPickerStory && (
-                                  <div className="absolute -top-[380px] left-0 z-50">
-                                    <EmojiPicker
-                                      onEmojiClick={(emojiObject) =>
-                                        handleEmojiClickStory(emojiObject, story.id)
-                                      }
-                                      className="w-[250px] h-[300px] shadow-lg rounded-lg"
-                                    />
-                                  </div>
-                                )}
+                    
+                    {activeEmojiStoryId === story.id &&
+                      showEmojiPicker && (
+                        <>
+                        <button
+                        className="absolute top-0 right-0 z-60 p-2 bg-gray-300 rounded-full"
+                        onClick={handleCloseEmojiPicker}
+                      >
+                        X
+                      </button>
+                        <div className="absolute -top-[380px] left-0 z-50">
+                          <EmojiPicker
+                            onEmojiClick={(emojiObject) =>
+                              handleEmojiClickStory(emojiObject, story.id)
+                            }
+                            className="w-[250px] h-[300px] shadow-lg rounded-lg"
+                          />
+                        </div>
+                        </>
+                      )}
                   </div>
 
                   <div>
@@ -519,7 +556,7 @@ const StoryUsernewPage = ({
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                       className="cursor-pointer "
-              onClick={() => handleLikeUnlikeStory(story?.id)}
+                      onClick={() => handleLikeUnlikeStory(story?.id)}
                     >
                       <rect width="44" height="44" rx="22" fill="#2DC6BE" />
                       <path
