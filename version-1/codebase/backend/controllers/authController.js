@@ -1940,7 +1940,7 @@ async function unblockUser(req ,res){
 }
 
 // to get the details of other user
-async function getOtherUserDetail(req, res) {
+async function getOtherUserDetail1(req, res) {
   try {
     const userId = req.user.userId;
     // const { userId } = req.params;
@@ -2165,6 +2165,255 @@ async function getOtherUserDetail(req, res) {
     console.error("Error fetching user details:", error);
     return res.status(500).json({
       message: "Internal server Error",
+    });
+  }
+}
+
+async function getOtherUserDetail(req, res) {
+  try {
+    // const { userId } = req.params;
+    const userId = req.user.userId;
+    const { otherUser_id } = req.params;
+
+    // Fetch the basic user details
+    const [userDetails] = await pool.execute(
+      `SELECT 
+        u.id,
+        u.full_name,
+        u.user_name,
+        u.dob,
+        u.city,
+        u.state,
+        u.created_at,
+        u.gender,
+        u.description,
+        u.badge,
+        u.profile_image,
+        u.cover_image,
+        EXISTS (SELECT 1 FROM block_user WHERE user_id = ? AND blocked_id = ?) AS is_blocked,
+        (SELECT COUNT(*) FROM followers WHERE followee_id = ?) AS total_followers,
+        (SELECT COUNT(*) DIV 2 AS total_buddies
+        FROM buddies b1
+        WHERE (
+            b1.user_id = ? OR b1.buddies_id = ?
+        )
+        AND EXISTS (
+            SELECT 1
+            FROM buddies b2
+            WHERE b2.user_id = b1.buddies_id 
+              AND b2.buddies_id = b1.user_id
+        )) AS total_buddies,
+        EXISTS (SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = ?) AS is_buddies,
+        EXISTS (SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = ?) AS is_follow
+      FROM 
+        users u 
+      WHERE id = ?`,
+      [
+        userId, otherUser_id,
+        otherUser_id,
+        otherUser_id, otherUser_id,
+        userId, otherUser_id,
+        userId, otherUser_id,
+        otherUser_id,
+      ]
+    );
+
+    if (!userDetails || userDetails.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = userDetails[0];
+
+    // Fetch followers
+    const [followers] = await pool.execute(
+      `SELECT 
+        f.follower_id, 
+        u.full_name, 
+        u.badge, 
+        u.cover_image, 
+        u.description, 
+        u.id, 
+        u.is_influencer, 
+        u.user_name, 
+        u.profile_image,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = f.follower_id) AS is_followed,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = f.follower_id AND followee_id = ?) AS is_following,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = f.follower_id) AS is_buddies
+      FROM followers f
+      JOIN users u ON f.follower_id = u.id
+      WHERE f.followee_id = ?`,
+      [userId, userId, userId, otherUser_id]
+    );
+
+    // Fetch following
+    const [following] = await pool.execute(
+      `SELECT 
+        f.followee_id, 
+        u.full_name, 
+        u.user_name,
+        u.badge,
+        u.cover_image,
+        u.description,
+        u.id,
+        u.is_influencer, 
+        u.profile_image,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = f.followee_id) AS is_buddies,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = f.followee_id) AS is_followed,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = f.followee_id AND followee_id = ?) AS is_following
+      FROM followers f
+      JOIN users u ON f.followee_id = u.id
+      WHERE f.follower_id = ?`,
+      [userId, userId, userId, otherUser_id]
+    );
+
+    // Fetch buddies
+    // const [buddies] = await pool.execute(
+    //   `SELECT 
+    //     b.buddies_id, 
+    //     u.full_name, 
+    //     u.badge, 
+    //     u.cover_image, 
+    //     u.description, 
+    //     u.id, 
+    //     u.is_influencer, 
+    //     u.user_name, 
+    //     u.profile_image,
+    //     EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = b.buddies_id) AS is_buddies,
+    //     EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = b.buddies_id) AS is_followed
+    //   FROM buddies b
+    //   JOIN users u ON b.buddies_id = u.id
+    //   WHERE b.user_id = ?`,
+    //   [userId, userId, otherUser_id]
+    // );
+
+    const [buddies] = await pool.execute(
+      `SELECT 
+        b.buddies_id, 
+        u.full_name, 
+        u.badge, 
+        u.cover_image, 
+        u.description, 
+        u.id, 
+        u.is_influencer, 
+        u.user_name, 
+        u.profile_image,
+        EXISTS(SELECT 1 FROM buddies WHERE user_id = ? AND buddies_id = b.buddies_id) AS is_buddies,
+        EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = b.buddies_id) AS is_followed
+        FROM buddies b
+        JOIN users u ON b.buddies_id = u.id
+        WHERE b.user_id = ? 
+          AND EXISTS(
+            SELECT 1 
+            FROM buddies 
+            WHERE (user_id = ? AND buddies_id = b.buddies_id) 
+              OR (user_id = b.buddies_id AND buddies_id = ?)
+          )`,
+      [userId, userId, otherUser_id, userId, otherUser_id]
+    );    
+
+
+    // Fetch posts
+    const [posts] = await pool.execute(
+      `SELECT DISTINCT
+        p.id,
+        p.user_id,
+        p.is_public,
+        p.description,
+        p.buddies_id,
+        p.tag_id,
+        p.location,
+        p.media_url,
+        p.status,
+        p.block_post,
+        u.full_name,
+        u.user_name,
+        u.profile_image,
+        u.badge,
+        p.created_at AS post_created_at,
+        p.updated_at AS post_updated_at,
+        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS total_likes,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS total_comments,
+        (SELECT COUNT(*) FROM shared_post sp WHERE sp.post_id = p.id) AS total_shared,
+        (SELECT COUNT(*) FROM bucket_list bl WHERE bl.post_id = p.id) AS total_buckets,
+        EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked,
+        EXISTS (SELECT 1 FROM block_user WHERE user_id = ? AND blocked_id = ?) AS is_blocked
+      FROM 
+        posts p
+      JOIN users u ON p.user_id = u.id
+      WHERE 
+        p.status = 'active' 
+        AND p.user_id = ?
+      ORDER BY 
+        p.created_at DESC`,
+      [userId, userId, otherUser_id, otherUser_id]
+    );
+
+    const enhancedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const buddiesIds = post.buddies_id ? JSON.parse(post.buddies_id) : [];
+        let taggedBuddies = [];
+        if (buddiesIds.length) {
+          const placeholders = buddiesIds.map(() => "?").join(", ");
+          const [buddiesData] = await pool.execute(
+            `SELECT 
+              id, 
+              full_name, 
+              profile_image, 
+              badge,
+              user_name
+            FROM users
+            WHERE id IN (${placeholders})`,
+            buddiesIds
+          );
+          taggedBuddies = buddiesData;
+        }
+        return {
+          ...post,
+          buddies_id: taggedBuddies,
+          media_url: Array.isArray(JSON.parse(post.media_url))
+            ? JSON.parse(post.media_url)
+            : [],
+          tag_id: JSON.parse(post.tag_id || "[]"),
+          is_liked: !!post.is_liked,
+          is_blocked: !!post.is_blocked,
+        };
+      })
+    );
+
+    // Fetch stories
+    const [stories] = await pool.execute(
+      `SELECT 
+        stories.*, 
+        users.profile_image, 
+        users.full_name, 
+        users.user_name,
+        users.badge
+      FROM stories 
+      INNER JOIN users ON stories.user_id = users.id 
+      WHERE stories.user_id = ? AND stories.expires_at > NOW()`,
+      [otherUser_id]
+    );
+
+    // Combine all data
+    const parsedData = {
+      ...user,
+      is_buddies: !!user.is_buddies,
+      is_follow: !!user.is_follow,
+      posts: enhancedPosts,
+      followers,
+      following,
+      buddies,
+      stories,
+    };
+
+    return res.status(200).json({
+      message: "Data Fetched",
+      data: parsedData,
+    });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
     });
   }
 }

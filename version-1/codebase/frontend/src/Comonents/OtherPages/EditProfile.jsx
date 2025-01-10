@@ -627,8 +627,7 @@ const handleCoverUpload = async (e) => {
               </div>
 
               {/* Badge Selector */}
-              <div className="flex justify-center items-center">
-                <div className="relative right-[40px] -top-[130px] rounded-full border-[14px] border-[#FFFFFF] bg-[#F0F7F7] px-10 py-4 shadow-sm flex items-center">
+              
                   {/* Dropdown Select */}
                   {/* <select 
                     className="appearance-none bg-transparent text-[#667877] font-medium text-center w-full focus:outline-none cursor-pointer pr-4" 
@@ -682,16 +681,11 @@ const handleCoverUpload = async (e) => {
 
                   <BadgeDropdown formData={formData} handleBadgeSelect={handleBadgeSelect} />
 
-
-                  
                   {formDataError.badge && (
                       <p className="absolute top-[70px] error text-left text-[#ff0000] text-sm">
                         {formDataError.badge}
                       </p>
                   )}
-                </div>
-                  
-              </div>
             </div>
 
             {/* Input Fields */}

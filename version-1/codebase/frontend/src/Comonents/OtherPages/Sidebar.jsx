@@ -360,7 +360,7 @@ const Sidebar = () => {
                       <video
                         controls
                         preload="auto"
-                        className="w-full h-[130px] rounded-sm object-cover"
+                        className="w-full h-[130px] rounded-[5px] object-cover"
                         controlsList="nodownload"
                       >
                         <source src={post.media_url[0]} type="video/mp4" />
@@ -370,7 +370,7 @@ const Sidebar = () => {
                       <img
                         src={post.media_url[0]}
                         alt={post.description}
-                        className="w-full h-[130px] rounded-sm object-cover"
+                        className="w-full h-[130px] rounded-[5px] object-cover"
                       />
                     )}
                   </div>

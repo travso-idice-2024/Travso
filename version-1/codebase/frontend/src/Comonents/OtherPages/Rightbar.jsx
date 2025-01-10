@@ -444,7 +444,7 @@ const handleBuddyRemove = async(buddyId) => {
                     if (follower.is_mutual === 1) {
                       const confirmUnfollow = window.confirm("Are you sure you want to unfollow this user?");
                       if (confirmUnfollow) {
-                        handleFollowUnfollow(follower?.id); // Call the function to unfollow
+                        handleFollowUnfollowForFollowing(follower?.id); // Call the function to unfollow
                       }
                     } else {
                       const confirmFollow = window.confirm("Do you want to follow this user?");

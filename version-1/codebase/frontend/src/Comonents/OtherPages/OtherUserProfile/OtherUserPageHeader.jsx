@@ -221,7 +221,7 @@ const OtherUserPageHeader = () => {
             {/* Profile Photo */}
             <div className="flex flex-col items-center justify-center">
               <div className="relative -top-20 border-4 border-white bg-white rounded-full p-[2px]">
-                <div className="border-4 border-[#2DC6BE] rounded-full bg-[#F0F7F7] p-[2px]">
+                <div className={`${otherUserData && otherUserData?.stories?.length > 0 ? 'border-4 border-[#2DC6BE]' : 'border-4 border-[#e4ebeb]'} rounded-full p-[2px]`}>
                   {/* {activeStories && activeStories[0].stories.length > 0 ? (
                   <div>
                     <img
@@ -312,11 +312,24 @@ const OtherUserPageHeader = () => {
                         ? "bg-[#F0F7F7] text-[#667877]"
                         : "bg-[#2DC6BE] text-white"
                     } py-1 px-3 rounded-[4px] hover:bg-[#2DC6BE] hover:text-white`}
-                    onClick={
-                      otherUserData?.is_buddies
-                        ? () => handleBuddyRemove(userId)
-                        : () => handleAddBuddy(userId)
-                    }
+                    // onClick={
+                    //   otherUserData?.is_buddies
+                    //     ? () => handleBuddyRemove(userId)
+                    //     : () => handleAddBuddy(userId)
+                    // }
+                    onClick={() => {
+                      if (otherUserData?.is_buddies) {
+                        // Confirm before removing a buddy
+                        if (window.confirm("Are you sure you want to remove this buddy?")) {
+                          handleBuddyRemove(userId);
+                        }
+                      } else {
+                        // Confirm before adding a buddy
+                        if (window.confirm("Are you sure you want to add this user as a buddy?")) {
+                          handleAddBuddy(userId);
+                        }
+                      }
+                    }}
                   >
                     <span className="text-md font-normal">
                       {otherUserData?.is_buddies ? "Added" : "Add as Buddy"}
@@ -330,8 +343,14 @@ const OtherUserPageHeader = () => {
                         otherUserData?.is_follow
                           ? "bg-[#F0F7F7] text-[#667877]"
                           : "bg-[#2DC6BE] text-white"
-                      }  hover:text-gray-800 py-1 px-3 rounded-[4px] hover:bg-[#2DC6BE] hover:text-white`}
-                      onClick={() => handleFollowUnfollowForFollowing(userId)}
+                      }  py-1 px-3 rounded-[4px] hover:bg-[#2DC6BE] hover:text-white`}
+                      // onClick={() => handleFollowUnfollowForFollowing(userId)}
+                      onClick={() => {
+                        const action = otherUserData?.is_follow ? "unfollow" : "follow";
+                        if (window.confirm(`Are you sure you want to ${action} this user?`)) {
+                          handleFollowUnfollowForFollowing(userId);
+                        }
+                      }}
                     >
                       <span className="text-md font-normal">
                         {otherUserData?.is_follow ? "Following" : "Follow"}

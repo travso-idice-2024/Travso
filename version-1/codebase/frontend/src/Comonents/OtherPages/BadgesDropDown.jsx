@@ -61,67 +61,67 @@ const BadgeDropdown = ({ formData, handleBadgeSelect }) => {
   }, []);
 
   return (
-    <div className="relative w-full " ref={dropdownRef}>
-      {/* Display Selected Option */}
+    <div className="flex justify-center items-center" ref={dropdownRef}>
       <div
-        className="appearance-none bg-transparent text-[#667877] font-medium text-center w-full rounded cursor-pointer"
         onClick={() => setIsOpen((prev) => !prev)}
+        className="relative right-[40px] cursor-pointer -top-[130px] rounded-full border-[14px] border-[#FFFFFF] bg-[#F0F7F7] px-10 py-4 shadow-sm flex items-center"
       >
-        {selectedBadge ? (
-          <div className="flex items-center gap-2 justify-center">
-            <div className="flex items-center gap-2">
-              <img
-                src={selectedBadge.image}
-                alt={selectedBadge.label}
-                className="w-6 h-6"
-              />
-              <span>{selectedBadge.label}</span>
-            </div>
-            <div>
-              {/* Centered Dropdown Icon */}
-              <svg
-                className="absolute top-1/2 -right-5 transform -translate-y-1/2 pointer-events-none font-semibold"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="#667877"
-                width="18"
-                height="18"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
+        {/* Display Selected Option */}
+        <div className="appearance-none bg-transparent text-[#667877] font-medium text-center w-full rounded cursor-pointer">
+          {selectedBadge ? (
+            <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-2">
+                <img
+                  src={selectedBadge.image}
+                  alt={selectedBadge.label}
+                  className="w-6 h-6"
                 />
-              </svg>
+                <span>{selectedBadge.label}</span>
+              </div>
             </div>
+          ) : (
+            "Select your Badge"
+          )}
+          {/* Centered Dropdown Icon */}
+          <svg
+            className={`absolute top-1/2 right-4 cursor-pointer transform -translate-y-1/2 pointer-events-none font-semibold ${isOpen ? "rotate-180" : ""}`}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="#667877"
+            width="18"
+            height="18"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+
+        {/* Dropdown Options */}
+        {isOpen && (
+          <div className="absolute z-10 -left-2 top-12 bg-white rounded-[16px] shadow-lg flex flex-col items-center  mt-2 w-[190px] p-2">
+            {badges.map((badge) => (
+              <div
+                key={badge.value}
+                className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer w-full"
+                onClick={() => {
+                  handleBadgeSelect({
+                    target: { name: "badge", value: badge.value },
+                  });
+                  setIsOpen(false);
+                }}
+              >
+                <img src={badge.image} alt={badge.label} className="w-6 h-6" />
+                <span>{badge.label}</span>
+              </div>
+            ))}
           </div>
-        ) : (
-          "Select your Badge"
         )}
       </div>
-
-      {/* Dropdown Options */}
-      {isOpen && (
-        <div className="absolute z-10  -left-10 top-8 bg-white rounded-[16px] shadow-lg flex flex-col items-center  mt-2 w-[190px] p-2">
-          {badges.map((badge) => (
-            <div
-              key={badge.value}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer w-full"
-              onClick={() => {
-                handleBadgeSelect({
-                  target: { name: "badge", value: badge.value },
-                });
-                setIsOpen(false);
-              }}
-            >
-              <img src={badge.image} alt={badge.label} className="w-6 h-6" />
-              <span>{badge.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

@@ -3261,7 +3261,7 @@ async function getArchivePosts(req, res) {
       })
     );
 
-    console.log("===AllPosts Data===>", parsedData);
+    // console.log("===AllPosts Data===>", parsedData);
     return res.status(200).json({
       message: "Posts fetched successfully",
       data: parsedData,
