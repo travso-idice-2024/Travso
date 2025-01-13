@@ -38,7 +38,8 @@ const {
     deletePost, 
     updatePost ,
     bucketListWithBuddies,
-    bucketListWithoutBuddies
+    bucketListWithoutBuddies,
+    insertIntoExistingBucketList
   } = require('../controllers/postController');
   
 const verifyToken = require("../utils/verifyToken");
@@ -72,6 +73,7 @@ router.post("/like-a-comment/:comment_id",verifyToken, likeAnyComment);
 router.post("/reply-on-comment",verifyToken, replyOnComment);
 router.post("/commit-post",verifyToken, storePost);
 router.post("/bucket-post",verifyToken, storeBucketPost);
+router.post("/bucket-existing-post", verifyToken,insertIntoExistingBucketList);
 router.post("/owner-delete-comment/:id",verifyToken, deleteComments);
 router.post("/owner-delete-reply/:replyId",verifyToken, deleteReply);
 router.post("/follow-unfollow",verifyToken, followAndUnfollow);

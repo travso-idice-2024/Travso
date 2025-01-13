@@ -26,42 +26,6 @@ async function allPosts(req, res) {
   }
 }
 
-// async function getAllBucketLists(req, res) {
-//   try {
-//     const userId = req.user.userId;
-//     const [allbucketlist] = await pool.execute(`
-//       SELECT
-//         bcl.id,
-//         bcl.list_name,
-//         bcl.is_default,
-//         bcl.created_at,
-//         p.media_url,
-//         u.user_name,
-//         u.profile_image,
-//         u.badge
-//       FROM
-//         bucket_category_list bcl
-//       LEFT JOIN
-//         posts p ON bcl.post_id = p.id
-//       LEFT JOIN
-//         users u ON bcl.user_id = u.id
-//       WHERE
-//         bcl.user_id = ?
-//         OR JSON_CONTAINS(bcl.buddy_id, JSON_ARRAY(?), '$')
-//     `, [userId, userId]);
-
-//     return res.status(200).json({
-//       message: "All Posts data",
-//       data: allbucketlist,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching bucket lists:", error);
-//     return res.status(500).json({
-//       error: "Internal Server Error",
-//     });
-//   }
-// }
-
 async function getAllBucketLists(req, res) {
   try {
     const userId = req.user.userId;
@@ -89,9 +53,39 @@ async function getAllBucketLists(req, res) {
       [userId, userId]
     );
 
+    // Group by list_name and combine media_url
+    const groupedBucketList = allbucketlist.reduce((acc, item) => {
+      const mediaUrls = item.media_url ? JSON.parse(item.media_url) : [];
+      const existingItem = acc.find((bucket) => bucket.list_name === item.list_name);
+
+      if (existingItem) {
+        // Merge media_url arrays
+        existingItem.media_url.push(...mediaUrls);
+      } else {
+        // Add new bucket list item
+        acc.push({
+          id: item.id,
+          list_name: item.list_name,
+          is_default: item.is_default,
+          created_at: item.created_at,
+          media_url: mediaUrls,
+          user_name: item.user_name,
+          profile_image: item.profile_image,
+          badge: item.badge,
+        });
+      }
+      return acc;
+    }, []);
+
+    // Remove duplicate URLs in media_url
+    const formattedBucketList = groupedBucketList.map((item) => ({
+      ...item,
+      media_url: [...new Set(item.media_url)], // Remove duplicate URLs
+    }));
+
     return res.status(200).json({
-      message: "All Posts data",
-      data: allbucketlist,
+      message: "All Buckets data",
+      data: formattedBucketList,
     });
   } catch (error) {
     console.error("Error fetching bucket lists:", error);
@@ -1672,12 +1666,14 @@ async function replyOnComment(req, res) {
 
 async function storeBucketPost(req, res) {
   try {
-    const user_id = req.user.userId; // Extracting user ID from the token
+    const user_id = req.user.userId; 
+    // const { user_id } = req.params;
     let { buddies_id, list_name, post_id } = req.body;
 
     // Validate required fields
     if (!user_id) {
       return res.status(400).json({
+        status:false,
         message: "Missing required fields (user_id).",
       });
     }
@@ -1687,11 +1683,118 @@ async function storeBucketPost(req, res) {
     if (!list_name) {
       list_name = "Generic List";
       is_default = 1;
+
+      
+      const [genericResult] = await pool.execute(
+        `INSERT INTO bucket_category_list (
+          user_id,
+          list_name,
+          post_id,
+          buddy_id,
+          is_default,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          user_id,
+          list_name,
+          post_id,
+          JSON.stringify(buddies_id || []),
+          is_default,
+        ]
+      );
+
+      return res.status(200).json({
+        status:true,
+        message: "Generic Bucket List created successfully.",
+        bucket_id: genericResult.insertId,
+      });
     } else {
-      is_default = 0;
+      const [existingList] = await pool.execute(
+        'SELECT id FROM bucket_category_list WHERE user_id = ? AND list_name = ? LIMIT 1',
+        [user_id, list_name]
+      );
+
+      if (existingList.length > 0) {
+        return res.status(400).json({
+          status:false,
+          message: "Bucket list  already exists.",
+        });
+      }
+
+      
+      const [result] = await pool.execute(
+        `INSERT INTO bucket_category_list (
+          user_id,
+          list_name,
+          post_id,
+          buddy_id,
+          is_default,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          user_id,
+          list_name,
+          post_id,
+          JSON.stringify(buddies_id || []),
+          is_default,
+        ]
+      );
+
+      return res.status(200).json({
+        status:true,
+        message: "Bucket List created successfully.",
+      });
+    }
+  } catch (error) {
+    console.error("Error in storing bucket:", error);
+    return res.status(500).json({
+      status:false,
+      error: "Internal Server Error",
+    });
+  }
+}
+
+async function insertIntoExistingBucketList(req, res) {
+  try {
+    const user_id = req.user.userId; 
+    let { buddies_id, list_name, post_id } = req.body;
+
+    // Validate required fields
+    if (!user_id || !list_name || !post_id) {
+      return res.status(400).json({
+        status:false,
+        message: "Missing required fields (user_id, list_name, post_id).",
+      });
     }
 
-    // Insert the post into the database
+    // Check if the list_name exists for the user
+    const [existingList] = await pool.execute(
+      `SELECT * FROM bucket_category_list WHERE user_id = ? AND list_name = ?`,
+      [user_id, list_name]
+    );
+
+    if (existingList.length === 0) {
+      return res.status(404).json({
+        status:false,
+        message: "Bucket list ${list_name} does not exist.",
+      });
+    }
+
+    // Check if the post_id exists in the same list
+    const existingPost = existingList.find(
+      (item) => item.post_id === post_id
+    );
+
+    if (existingPost) {
+      return res.status(400).json({
+        status:false,
+        message: "Post ID already exists in the bucket list.",
+      });
+    }
+   
+    // Insert the new record with updated buddies_id
     const [result] = await pool.execute(
       `INSERT INTO bucket_category_list (
         user_id,
@@ -1706,19 +1809,21 @@ async function storeBucketPost(req, res) {
         user_id,
         list_name,
         post_id,
-        JSON.stringify(buddies_id || []),
-        is_default,
+        // JSON.stringify(updatedBuddies),
+        existingList[0].buddy_id,
+        existingList[0].is_default,
       ]
     );
 
-    // Respond with success message
     return res.status(200).json({
-      message: "Bucket List created successfully.",
-      bucket_id: result.insertId, // Return the ID of the newly created post
+      status:true,
+      message: "Post added to the bucket list successfully.",
+      bucket_id: result.insertId,
     });
   } catch (error) {
-    console.error("Error in storing bucket:", error);
+    console.error("Error in inserting into bucket list:", error);
     return res.status(500).json({
+      status:false,
       error: "Internal Server Error",
     });
   }
@@ -3211,40 +3316,80 @@ async function unArchivePost(req, res) {
 
 async function bucketListWithBuddies(req, res) {
   try {
-    //const { UserId } = req.params;
     const UserId = req.user.userId;
-
+    // Fetch bucket list data
+    // const [data] = await pool.execute(
+    //   `SELECT DISTINCT  bcl.id, bcl.post_id, bcl.list_name, p.media_url, bcl.buddy_id
+    //   FROM 
+    //       bucket_category_list bcl 
+    //   JOIN 
+    //      posts p
+    //   ON 
+    //     bcl.post_id = p.id
+    //   WHERE 
+    //     bcl.user_id = ?`,
+    //   [UserId]
+    // );
     const [data] = await pool.execute(
-      `SELECT DISTINCT bcl.post_id, bcl.list_name, p.media_url, bcl.buddy_id
-      FROM 
-          bucket_category_list bcl 
-      JOIN 
-         posts p
-      ON 
-        bcl.post_id = p.id
-      WHERE 
-        bcl.user_id = ?`,
+      `SELECT bcl.id, bcl.post_id, bcl.list_name, p.media_url, bcl.buddy_id
+       FROM bucket_category_list bcl
+       JOIN posts p ON bcl.post_id = p.id
+       WHERE bcl.user_id = ?
+         AND bcl.id = (
+           SELECT MIN(bcl_inner.id)
+           FROM bucket_category_list bcl_inner
+           WHERE bcl_inner.list_name = bcl.list_name
+         )`,
       [UserId]
     );
 
-    const filteredData = data
-      .map((item) => ({
-        ...item,
-        media_url: Array.isArray(JSON.parse(item.media_url))
-          ? JSON.parse(item.media_url).at(-1) || ""
-          : item.media_url,
-        buddy_id: JSON.parse(item.buddy_id),
-      }))
-      .filter(
-        (item) => Array.isArray(item.buddy_id) && item.buddy_id.length > 0
-      );
+    // Process and parse data
+    const processedData = data.map(item => ({
+      ...item,
+      media_url: Array.isArray(JSON.parse(item.media_url))
+        ? JSON.parse(item.media_url).at(-1) || ""
+        : item.media_url,
+      buddy_id: JSON.parse(item.buddy_id), // Parse buddy_id array
+    }));
 
+    // Fetch buddy details for all buddy IDs
+    const buddiesDetail = await Promise.all(
+      processedData.map(async (item) => {
+        if (Array.isArray(item.buddy_id) && item.buddy_id.length > 0) {
+          // Convert buddy_id array to a comma-separated list of placeholders
+          const placeholders = item.buddy_id.map(() => "?").join(",");
+          const [buddies] = await pool.execute(
+            `SELECT 
+              id, 
+              full_name, 
+              badge, 
+              user_name,
+              (SELECT COUNT(*) FROM followers WHERE followee_id = users.id) AS followers_count,
+              (SELECT COUNT(*) FROM buddies WHERE user_id = users.id) AS buddies_count
+             FROM users 
+             WHERE id IN (${placeholders})`,
+            item.buddy_id
+          );
+          return {
+            ...item,
+            buddyDetails: buddies, // Add buddy details
+          };
+        } else {
+          return {
+            ...item,
+            buddyDetails: [], // No buddies associated
+          };
+        }
+      })
+    );
+    //console.log(buddiesDetail);
+    // Respond with enriched data
     return res.status(200).json({
       message: "Data fetched successfully",
-      data: filteredData,
+      data: buddiesDetail,
     });
   } catch (error) {
-    console.error("===bucketListWithoutBuddies===>", error);
+    console.error("===bucketListWithBuddies===>", error);
     return res.status(500).json({
       error: "Internal Server Error",
     });
@@ -3334,4 +3479,5 @@ module.exports = {
   updatePost,
   bucketListWithBuddies,
   bucketListWithoutBuddies,
+  insertIntoExistingBucketList
 };

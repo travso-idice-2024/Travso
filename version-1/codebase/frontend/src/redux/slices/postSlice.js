@@ -57,32 +57,32 @@ export const getAllBucketListwithBuddies = createAsyncThunk(
     }
   }
 );
-export const getAllBucketListwithoutBuddies = createAsyncThunk(
-  'post/getAllBucketListwithoutBuddies',
-  async (_,{ rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${apiUrl}/post/getAllBucketListwithoutBuddies`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+// export const getAllBucketListwithoutBuddies = createAsyncThunk(
+//   'post/getAllBucketListwithoutBuddies',
+//   async (_,{ rejectWithValue }) => {
+//     try {
+//       const token = localStorage.getItem('token');
+//       const response = await fetch(`${apiUrl}/post/getAllBucketListwithoutBuddies`, {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${token}`,
+//         },
+//       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        return rejectWithValue(errorData);
-      }
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         return rejectWithValue(errorData);
+//       }
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.log("error in getAllBucketListwithoutBuddies call thunk", error.message)
-      return rejectWithValue(error.message);
-    }
-  }
-);
+//       const data = await response.json();
+//       return data;
+//     } catch (error) {
+//       console.log("error in getAllBucketListwithoutBuddies call thunk", error.message)
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
 
 
 export const getArchivePosts = createAsyncThunk(
@@ -415,6 +415,38 @@ export const bucketPost = createAsyncThunk(
     }
   }
 );
+
+export const bucketExistingPost = createAsyncThunk(
+  'post/bucketExistingPost',
+  async (postData,{ rejectWithValue }) => {
+    try {
+  
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/post/bucket-existing-post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      // console.log("=====data===in commentOnReply===>", data);
+      return data;
+    } catch (error) {
+      console.log("error in bucketExistingPost call thunk", error.message)
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
 
 
 // Thunk for deleteComment details(user can delete comment on it's post)
@@ -978,7 +1010,7 @@ const postSlice = createSlice({
     allArchivePosts:null,
     allArchiveStory:null,
     allBucketwithbuddies:null,
-    allBucketwithoutbuddies:null
+    //allBucketwithoutbuddies:null
   },
   reducers: {
     resetPostsState: (state) => {
@@ -993,7 +1025,7 @@ const postSlice = createSlice({
       state.allArchivePosts= null;
       state.allArchiveStory = null;
       state.allBucketwithbuddies = null;
-      state.allBucketwithoutbuddies = null;
+      //state.allBucketwithoutbuddies = null;
     },
    },
   extraReducers: (builder) => {
@@ -1027,18 +1059,18 @@ const postSlice = createSlice({
       })
 
       //handle getAllBucketListwithoutBuddies
-      .addCase(getAllBucketListwithoutBuddies.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllBucketListwithoutBuddies.fulfilled, (state, action) => {
-        state.loading = false;
-        state.allBucketwithoutbuddies = action.payload.data;
-      })
-      .addCase(getAllBucketListwithoutBuddies.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      // .addCase(getAllBucketListwithoutBuddies.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(getAllBucketListwithoutBuddies.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.allBucketwithoutbuddies = action.payload.data;
+      // })
+      // .addCase(getAllBucketListwithoutBuddies.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload;
+      // })
       
       
       .addCase(getArchivePosts.pending, (state) => {
@@ -1180,6 +1212,20 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      .addCase(bucketExistingPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bucketExistingPost.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(bucketExistingPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      
       // Handle deleteCommentByPostOwner
       .addCase(deleteCommentByPostOwner.pending, (state) => {
         state.loading = true;

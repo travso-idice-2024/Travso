@@ -20,15 +20,17 @@ import {
   getAllPosts,
   LikeUnlikePost,
   likeUnlikeStory,
+  getAllBucketListwithBuddies
 } from "../../../redux/slices/postSlice";
+import SuccessError from "../SuccessError";
 const apiUrl = import.meta.env.VITE_API_URL;
- 
+
 const CreateBucketListPopup = ({
   post_id,
   isOpen,
   bucketpostData,
   setbucketpostData,
-  onCloseBucket
+  onCloseBucket,
 }) => {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -42,60 +44,90 @@ const CreateBucketListPopup = ({
   const [filteredTagSuggestions, setFilteredTagSuggestions] = useState([]);
   const [isPostDetailPopup, setIsPostDetailPopup] = useState(false);
   const fileInputRef = useRef(null); // Create a ref for the file input
+  const [flashMessage, setFlashMessage] = useState("");
+  const [flashMsgType, setFlashMsgType] = useState("");
 
-  useEffect(() => {
-    const fetchCategoryLists = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${apiUrl}/post/getAllCategoryLists`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error fetching categories:", errorData);
-          return; // Handle or log the error as needed
-        }
-  
-        const data = await response.json();
-        setListName(data.data);
-        // console.log("Fetched categories:", data.data);
-      } catch (error) {
-        console.error("Error in getAllCategoryLists fetch:", error.message);
-      }
-    };
-  
-    fetchCategoryLists();
-  }, [apiUrl]); // Add dependencies if `apiUrl` or other variables might change
-  
+  // useEffect(() => {
+  //   const fetchCategoryLists = async () => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       const response = await fetch(`${apiUrl}/post/getAllCategoryLists`, {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         const errorData = await response.json();
+  //         console.error("Error fetching categories:", errorData);
+  //         return; // Handle or log the error as needed
+  //       }
+
+  //       const data = await response.json();
+  //       setListName(data.data);
+  //       // console.log("Fetched categories:", data.data);
+  //     } catch (error) {
+  //       console.error("Error in getAllCategoryLists fetch:", error.message);
+  //     }
+  //   };
+
+  //   fetchCategoryLists();
+  // }, [apiUrl]); // Add dependencies if `apiUrl` or other variables might change
+
+  const validateFields = () => {
+    const { list_name } = bucketpostData;
+
+    if (!list_name || list_name.trim().length === 0) {
+      return true;
+    }
+    return false;
+  };
+
+  const handleFlashMessage = (errorMessage, msgType) => {
+    setFlashMessage(errorMessage);
+    setFlashMsgType(msgType);
+    setTimeout(() => {
+      setFlashMessage("");
+      setFlashMsgType("");
+    }, 3000); // Hide the message after 3 seconds
+  };
+
   const handlePostUpload = async () => {
     try {
-      //console.log("bucketpostDatanew", bucketpostData);
+      const isValid = await validateFields();
+      if (isValid) {
+        alert("At least list name is required.");
+        //onCloseBucket();
+      } else {
+        //console.log("bucketpostDatanew", bucketpostData);
 
-      const bucketResult = await dispatch(bucketPost(bucketpostData)).unwrap();
-      if (bucketResult) {
-        // console.log("=====commentResult===>", commentResult.message);
-        await dispatch(getAllPosts());
-        // await dispatch(getUserPosts());
-        setbucketpostData({
-          list_name: "",
-          post_id: "",
-          buddies: [],
-          buddies_id: [],
-        });
-        onCloseBucket();
-
-        // handleFlashMessage(commentResult.message, 'success');
+        const bucketResult = await dispatch(bucketPost(bucketpostData));
+        //console.log(bucketResult.payload.status);
+        //console.log(bucketResult.payload.message);
+        if (bucketResult.payload.status == true) {
+          // console.log("=====commentResult===>", commentResult.message);
+          await dispatch(getAllPosts());
+          await dispatch(getAllBucketListwithBuddies);
+          // await dispatch(getUserPosts());
+          setbucketpostData({
+            list_name: "",
+            post_id: "",
+            buddies: [],
+            buddies_id: [],
+          });
+          handleFlashMessage(bucketResult.payload.message, "success");
+          onCloseBucket();
+        } else {
+          handleFlashMessage(bucketResult.payload.message, "error");
+          //handleFlashMessage(bucketResult.payload.message, "success");
+        }
       }
     } catch (error) {
       console.log("error in handlePostUpload", error);
     }
   };
-  
 
   /* user details from auth slice */
   const { user: userDetails, userBuddies } = useSelector((state) => state.auth);
@@ -252,6 +284,7 @@ const CreateBucketListPopup = ({
           }
         `}
       </style>
+
       <div className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50 bg-[rgba(0,0,0,0.03)]">
         <div className="bg-white rounded-[16px] shadow-lg w-[696px] px-1 py-5 md:w-[696px] h-[672px] flex flex-col overflow-hidden">
           {/* Header */}
@@ -383,30 +416,31 @@ const CreateBucketListPopup = ({
                   />
                 </div>
 
-                {Array.isArray(listName) && listName.length > 0 && (
-                  <div className="flex flex-col relative">
-                    {/* Label */}
-                    <p className="text-left font-inter font-medium text-[14px] text-[#212626] mb-3">
-                      Category List
-                    </p>
+                {
+                  //Array.isArray(listName) && listName.length > 0 && (
+                  // <div className="flex flex-col relative">
+                  //   {/* Label */}
+                  //   <p className="text-left font-inter font-medium text-[14px] text-[#212626] mb-3">
+                  //     Category List
+                  //   </p>
+                  //   <div className="absolute top-[60px] bg-white border border-gray-200 rounded shadow-lg w-full z-10">
+                  //     <select
+                  //       className="p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5] text-[16px] text-[#212626] font-medium cursor-pointer w-full"
+                  //       onChange={(e) => handleListNameInputChange(e)}
+                  //     >
+                  //       <option value="">Select an option</option>
+                  //       {listName.map((list) => (
+                  //         <option key={list.id} value={list.list_name}>
+                  //           {list.list_name}
+                  //         </option>
+                  //       ))}
+                  //     </select>
+                  //   </div>
+                  // </div>
+                  // )
+                }
 
-                    <div className="absolute top-[60px] bg-white border border-gray-200 rounded shadow-lg w-full z-10">
-                      <select
-                        className="p-2 bg-[#F0F7F7] rounded-[8px] border border-[#F5F5F5] text-[16px] text-[#212626] font-medium cursor-pointer w-full"
-                        onChange={(e) => handleListNameInputChange(e)}
-                      >
-                        <option value="">Select an option</option>
-                        {listName.map((list) => (
-                          <option key={list.id} value={list.list_name}>
-                            {list.list_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-col relative mt-[75px]">
+                <div className="flex flex-col relative mt-[40px]">
                   <p className="text-left font-inter font-medium text-[14px] text-[#212626] mb-3">
                     Add Buddies
                   </p>
@@ -485,8 +519,13 @@ const CreateBucketListPopup = ({
                     Next
                   </button>
                 </div>
+                {flashMessage && (
+                  <SuccessError
+                    message={flashMessage}
+                    messageType={flashMsgType}
+                  />
+                )}
               </form>
-             
             </div>
           </div>
         </div>

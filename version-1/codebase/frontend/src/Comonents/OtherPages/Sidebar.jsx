@@ -33,7 +33,7 @@ const Sidebar = () => {
     }
   }, [dispatch, allBucketLists]);
 
-  // console.log("======allBucketLists====>", allBucketLists);
+   console.log("======allBucketLists====>", allBucketLists);
 
   const [posts, setPosts] = useState([
     {
@@ -393,7 +393,10 @@ const Sidebar = () => {
         </div>
         {visibleBucketLists &&
           visibleBucketLists?.map((item, index) => {
-            const images = item.media_url ? JSON.parse(item.media_url) : [];
+            
+            //const images = item.media_url ? JSON.parse(item.media_url) : [];
+            const images = item.media_url ? item.media_url : [];
+            //console.log("images",item.media_url.length);
             return (
               <div key={item?.id} className="mt-8 hidden md:flex md:flex-col">
                 {/* Flexbox for vertical and horizontal image arrangement */}
