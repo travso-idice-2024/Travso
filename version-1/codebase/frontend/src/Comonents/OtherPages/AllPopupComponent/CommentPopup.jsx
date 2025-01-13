@@ -1150,7 +1150,7 @@ const CommentPopup = ({ isOpen, onClose, postId }) => {
                                     alt="reportIcon"
                                     className="w-[20px] h-[20px] cursor-pointer mr-2 "
                                   />{" "}
-                                  <span className="-mt-1">Report Account</span>
+                                  <span className="-mt-1">Report Post</span>
                                 </li>
                               </>
                             )}

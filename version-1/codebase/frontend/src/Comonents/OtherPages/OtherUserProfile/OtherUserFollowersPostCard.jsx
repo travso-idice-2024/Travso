@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import dummyUserImage from "../../../assets/user_image-removebg-preview.png";
 import {
   addBuddy,
+  getOtherUserDetails,
   getUserBuddies,
   getUserFollowers,
   removeBuddy,
@@ -16,6 +17,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ShowBadgeIcon from "../ShowBadgeIcons";
 import OtherUserPageHeader from "./OtherUserPageHeader";
+import ViewProfileButton from "./ViewProfileButton";
 
 const OtherUserFollowersPostCard = () => {
   const navigate = useNavigate();
@@ -31,13 +33,14 @@ const OtherUserFollowersPostCard = () => {
   };
 
   /* getting all the details of other user */
-  const { otherUserData } = useSelector((state) => state.auth);
+  const { otherUserData, user: userDetails } = useSelector((state) => state.auth);
 
   // handle add buddy
   const handleAddBuddy = async (buddyId) => {
     try {
       const response = await dispatch(addBuddy(buddyId));
       if (response) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(getUserBuddies());
         await dispatch(toWhomUserIsFollowing());
@@ -49,10 +52,11 @@ const OtherUserFollowersPostCard = () => {
 
   // handle remove buddy
   const handleBuddyRemove = async (buddyId) => {
-    console.log("===buddyId===>", buddyId);
+    // console.log("===buddyId===>", buddyId);
     try {
       const response = await dispatch(removeBuddy(buddyId));
       if (response) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(getUserBuddies());
         await dispatch(toWhomUserIsFollowing());
@@ -70,6 +74,7 @@ const OtherUserFollowersPostCard = () => {
         followUnfollowOnFollowing(followeeID)
       ).unwrap();
       if (followUnfollowResponse) {
+        await dispatch(getOtherUserDetails(userId));
         await dispatch(getUserFollowers());
         await dispatch(toWhomUserIsFollowing());
         await dispatch(getUserBuddies());
@@ -119,7 +124,7 @@ const OtherUserFollowersPostCard = () => {
                   />
                 </div>
                 
-                <Link to={`/profile/${profile?.user_name}/${profile?.id}`} >
+                <Link to={ profile?.follower_id === userDetails?.id ? '/profile' : `/profile/${profile?.user_name}/${profile?.id}`} >
                   <div className="flex items-center gap-[8px]">
                   <h5 className="font-poppins text-left text-[20px] font-semibold mt-1 text-[#212626]">
                     {profile.full_name}
@@ -185,7 +190,11 @@ const OtherUserFollowersPostCard = () => {
                   )}
                 </p>
 
-                {profile.is_influencer === 0 && (
+                {
+                  profile?.follower_id === userDetails?.id ? (<>
+                   <ViewProfileButton aligned='left' />
+                  </>) : (<>
+                  {profile.is_influencer === 0 && (
                   <div className="flex justify-center space-x-3 mt-4">
                     <button
                       className={`w-full font-inter font-medium text-[14px] h-[36px] rounded-[4px] ${
@@ -270,6 +279,9 @@ const OtherUserFollowersPostCard = () => {
                     </button>
                   </div>
                 )}
+                  </>)
+                }
+
               </div>
             );
           })}

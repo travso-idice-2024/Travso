@@ -72,7 +72,7 @@ const Header = () => {
     // Define the mapping of paths to active tab names
     const tabMapping = {
       "/explorer": "Explorer",
-      "/buddiesRequest": "Buddies",
+      "/buddies-request": "Buddies",
       "/Message": "Message",
       "/isNotificationsOpen": "isNotificationsOpen",
     };

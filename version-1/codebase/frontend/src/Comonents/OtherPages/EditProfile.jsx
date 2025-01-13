@@ -17,6 +17,15 @@ import { fetchCities } from "../../redux/slices/stateCitySlice";
 import SuccessError from "./SuccessError";
 import "./EditProfile.css";
 import { getAllPosts } from "../../redux/slices/postSlice";
+
+/*badges */
+import adventureBadge from "../../assets/Badges/AD.svg";
+import soloTraveller from "../../assets/Badges/ST.svg";
+import explorerBadge from "../../assets/Badges/EX.svg";
+import foodieBadge from "../../assets/Badges/FO.svg";
+import luxuryTravelerBadge from "../../assets/Badges/LT.svg";
+import BadgeDropdown from "./BadgesDropDown";
+
 // import dummyImage from "../../assets/user_image-removebg-preview.png";
 
 const genderOptions = [
@@ -73,7 +82,7 @@ const EditProfile = () => {
   const [genderData, setGenderData] = useState({
     male: "Male",
     female: "Female",
-    other: "Other",
+    "Not to Say": "Not to Say",
   });
 
   // for user details
@@ -618,10 +627,9 @@ const handleCoverUpload = async (e) => {
               </div>
 
               {/* Badge Selector */}
-              <div className="flex justify-center items-center">
-                <div className="relative right-[40px] -top-[130px] rounded-full border-[14px] border-[#FFFFFF] bg-[#F0F7F7] px-10 py-4 shadow-sm flex items-center">
+              
                   {/* Dropdown Select */}
-                  <select 
+                  {/* <select 
                     className="appearance-none bg-transparent text-[#667877] font-medium text-center w-full focus:outline-none cursor-pointer pr-4" 
                     onChange={(e) => handleBadgeSelect(e)}
                     name="badge"
@@ -635,62 +643,49 @@ const handleCoverUpload = async (e) => {
                       Select your Badge
                     </option>
                     <option
-                      className="font-inter font-medium text-[16px] text-[#869E9D]"
+                      className="font-inter flex items-center gap-2 font-medium text-[16px] text-[#869E9D]"
                       value="Explorer - Curious souls who love uncovering hidden gems and learning the stories behind new places."
                     >
+                      <img src={explorerBadge} alt="" />
                       Explorer
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
                       value="Adventurer - Lives for thrilling experiences like trekking, diving, or exploring the wild outdoors."
                     >
+                      <img src={adventureBadge} />
                       Adventurer
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
                       value="Foodie - Travels to explore local cuisines, savoring unique flavors and culinary traditions."
                     >
+                      <img src={foodieBadge} />
                       Foodie
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
                       value="Solo Traveler - Enjoys the freedom of exploring alone, meeting new people, and creating personal stories."
                     >
+                      <img src={soloTraveller} />
                       Solo Traveler
                     </option>
                     <option
                       className="font-inter font-medium text-[16px] text-[#869E9D]"
                       value="Luxury Traveler - Loves traveling in comfort, enjoying luxurious stays, fine dining, and amazing experiences."
                     >
+                      <img src={luxuryTravelerBadge} />
                       Luxury Traveler
                     </option>
-                  </select>
+                  </select> */}
 
-                  {/* Centered Dropdown Icon */}
-                  <svg
-                    className="absolute top-1/2 right-8 transform -translate-y-1/2 pointer-events-none font-semibold"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="#667877"
-                    width="18"
-                    height="18"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                  <BadgeDropdown formData={formData} handleBadgeSelect={handleBadgeSelect} />
+
                   {formDataError.badge && (
                       <p className="absolute top-[70px] error text-left text-[#ff0000] text-sm">
                         {formDataError.badge}
                       </p>
                   )}
-                </div>
-                  
-              </div>
             </div>
 
             {/* Input Fields */}

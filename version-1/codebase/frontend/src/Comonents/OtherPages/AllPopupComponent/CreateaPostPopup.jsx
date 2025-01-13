@@ -679,7 +679,7 @@ const CreateaPostPopup = ({
                     {postData.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center justify-center gap-2 bg-[#09857E] text-white w-[108px] h-[24px] rounded-[4px] text-[12px] font-inter font-medium "
+                        className="inline-flex items-center justify-center gap-2 bg-[#09857E] text-white px-2 w-auto h-[24px] rounded-[4px] text-[12px] font-inter font-medium "
                       >
                         {tag}
                         <button

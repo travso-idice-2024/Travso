@@ -128,7 +128,7 @@ const ProfilePageHeaderData = () => {
           {/* Profile Photo */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative -top-20 border-4 border-white bg-white rounded-full p-[2px]">
-              <div className={`border-4 ${activeStories && activeStories[0].stories.length ? 'border-[#2DC6BE]' : 'border-[#F0F7F7]'} rounded-full bg-[#F0F7F7] p-[2px]`}>
+              <div className={` ${activeStories && activeStories[0].stories.length > 0 ? 'border-4 border-[#2DC6BE]' : 'border-4 border-[#e4ebeb]'} rounded-full p-[2px]`}>
                 {activeStories && activeStories[0].stories.length > 0 ? (
                   <div>
                     <img
