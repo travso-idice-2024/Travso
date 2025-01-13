@@ -41,7 +41,6 @@ const {
 const verifyToken = require("../utils/verifyToken");
 
 
-
 router.get('/getBlockedUser', verifyToken, getBlockedUser);
 router.post('/unblockUser', verifyToken, unblockUser);
 router.post('/signup', registerUser);
